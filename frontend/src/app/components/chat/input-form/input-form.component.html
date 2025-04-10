@@ -35,7 +35,7 @@
             </nb-card>
             } @else {
             <textarea nbInput fullWidth shape="rectangle" placeholder="הקלד/י הודעה..." style="height: 100%"
-                maxlength="1024" [disabled]="showMarkdownPreview || isSending" [(ngModel)]="input"></textarea>
+                maxlength="2048" [disabled]="showMarkdownPreview || isSending" [(ngModel)]="input"></textarea>
             }
             <small class="position-absolute bottom-0 start-0 m-2 text-black-50">{{ input.length }}
                 /{{ maxMessageLength }}</small>
