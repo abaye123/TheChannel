@@ -37,7 +37,7 @@ import { MarkdownComponent } from "ngx-markdown";
 })
 export class InputFormComponent implements OnInit {
 
-  protected readonly maxMessageLength: number = 1024;
+  protected readonly maxMessageLength: number = 2048;
 
   message?: ChatMessage;
 
