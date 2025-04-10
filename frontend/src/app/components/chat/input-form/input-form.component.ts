@@ -1,4 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ChatMessage, ChatService, ChatFile , Attachment} from "../../../services/chat.service";
 import { HttpClient, HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
@@ -15,11 +16,13 @@ import {
 import { AngularEditorModule } from "@kolkov/angular-editor"; // Corrected import path
 import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
-import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip } from "@ng-icons/heroicons/outline";
+import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip, heroQuestionMarkCircle } from "@ng-icons/heroicons/outline";
+import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
 
 @Component({
   selector: 'app-input-form',
   imports: [
+    CommonModule,
     FormsModule,
     NbInputModule,
     NbIconModule,
@@ -34,6 +37,7 @@ import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip } f
     NbTagModule,
     NbAlertModule,
     NgIconsModule, // Use NgIconsModule directly, icons are configured in app.config.ts
+    MarkdownHelpComponent,
   ],
   templateUrl: './input-form.component.html',
   styleUrl: './input-form.component.scss'
@@ -49,6 +53,8 @@ export class InputFormComponent implements OnInit {
   input: string = '';
   isSending: boolean = false;
   showMarkdownPreview: boolean = false;
+  showMarkdownHelp: boolean = false;
+  hasScrollbar: boolean = false;
 
   @ViewChild('inputTextArea') inputTextArea!: ElementRef<HTMLTextAreaElement>;
 
@@ -187,6 +193,17 @@ export class InputFormComponent implements OnInit {
     this.input = this.input.replaceAll(attachment.embedded ?? '', '');
   }
 
+  toggleMarkdownHelp() {
+    this.showMarkdownHelp = !this.showMarkdownHelp;
+  }
+
+  checkScrollbar() {
+    if (this.inputTextArea?.nativeElement) {
+      const textarea = this.inputTextArea.nativeElement;
+      this.hasScrollbar = textarea.scrollHeight > textarea.clientHeight;
+    }
+  }
+
   applyFormat(format: 'bold' | 'italic' | 'underline' | 'code') {
     const textArea = this.inputTextArea.nativeElement;
     const start = textArea.selectionStart;
@@ -255,6 +272,27 @@ export class InputFormComponent implements OnInit {
            textArea.selectionEnd = cursorPos + placeholder.length;
            textArea.focus();
        });
+    }
+  }
+
+  ngAfterViewInit() {
+    this.checkScrollbar();
+    
+    if (this.inputTextArea?.nativeElement) {
+      this.inputTextArea.nativeElement.addEventListener('input', () => {
+        setTimeout(() => this.checkScrollbar(), 0);
+      });
+      
+      window.addEventListener('resize', () => {
+        setTimeout(() => this.checkScrollbar(), 0);
+      });
+    }
+  }
+  
+  ngOnDestroy() {
+    if (this.inputTextArea?.nativeElement) {
+      this.inputTextArea.nativeElement.removeEventListener('input', this.checkScrollbar);
+      window.removeEventListener('resize', this.checkScrollbar);
     }
   }
 }
