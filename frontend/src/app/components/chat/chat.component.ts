@@ -13,6 +13,7 @@ import {
   NbLayoutModule,
   NbListModule
 } from "@nebular/theme";
+import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip, heroQuestionMarkCircle } from "@ng-icons/heroicons/outline";
 import { ChannelHeaderComponent } from "./channel-header/channel-header.component";
 import { MessageComponent } from "./message/message.component";
 
