@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -57,8 +56,6 @@ func editChannelInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-
-	log.Println("Received request to edit channel info:", req)
 
 	if _, err := rdb.HSet(ctx, "channel:1", "name", req.Name, "description", req.Description, "logoUrl", req.LogoUrl).Result(); err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
