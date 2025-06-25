@@ -27,19 +27,27 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	// Protected with api key
+	r.Post("/import/post", addNewPost)
+
+	r.Post("/auth/login", login)
+	r.Post("/auth/logout", logout)
+
 	r.Route("/api", func(api chi.Router) {
+
+		if requireAuthForAll {
+			api.Use(checkLogin)
+		}
 		api.Get("/channel/info", getChannelInfo)
 		api.Get("/messages", getMessages)
 		api.Get("/events", getEvents)
-		api.Post("/auth/login", login)
-		api.Post("/auth/logout", logout)
 		api.Get("/files/{fileid}", serveFile)
+		api.Get("/user-info", getUserInfo)
 
-		api.Post("/import/post", addNewPost)
-
-		api.Route("/auth", func(protected chi.Router) {
+		api.Route("/admin", func(protected chi.Router) {
 			protected.Use(checkPrivilege)
-			protected.Get("/user-info", getUserInfo)
+
 			protected.Post("/edit-channel-info", editChannelInfo)
 			protected.Post("/new", addMessage)
 			protected.Post("/edit-message", updateMessage)

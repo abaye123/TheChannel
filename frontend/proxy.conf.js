@@ -4,7 +4,19 @@ const PROXY_CONFIG = {
         "changeOrigin": true,
         "ws": true,
         "cookieDomainRewrite": ""
-    }
+    },
+    "/auth/**": {
+        "target": "http://127.0.1:3000",
+        "changeOrigin": true,
+        "ws": true,
+        "cookieDomainRewrite": ""
+    },
+    "/import/**": {
+        "target": "http://127.0.1:3000",
+        "changeOrigin": true,
+        "ws": true,
+        "cookieDomainRewrite": ""
+    },
 };
 
 module.exports = PROXY_CONFIG;

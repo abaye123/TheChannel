@@ -22,7 +22,7 @@ export class LoginComponent {
 
   async login() {
     if (await this._authService.login(this.username, this.password)) {
-      this.router.navigate(['/chat']);
+      this.router.navigate(['/']);
     } else {
       alert('שגיאה');
     }

@@ -6,6 +6,7 @@ import {
   NbContextMenuModule,
   NbDialogService,
   NbIconModule,
+  NbMenuItem,
   NbMenuService,
   NbToastrService,
   NbUserModule
@@ -32,24 +33,37 @@ import Viewer from 'viewerjs';
 export class ChannelHeaderComponent implements OnInit {
 
   @Input()
-  userInfo?: User;
+  set userInfo(user: User | undefined) {
+    this._userInfo = user;
+    this.userMenu = [
+      ...(user?.isAdmin ? [{
+        title: 'ערוך פרטי ערוץ',
+        icon: 'edit-2-outline',
+      }] : []),
+      {
+        title: 'התנתק',
+        icon: 'log-out',
+      }
+    ];
+  }
+  get userInfo() {
+    return this._userInfo;
+  }
+  private _userInfo?: User;
 
   @Output()
   userInfoChange: EventEmitter<User> = new EventEmitter<User>();
 
   userMenuTag = 'user-menu';
-  userMenu = [
-    {
-      title: 'ערוך פרטי ערוץ',
-      icon: 'edit-2-outline',
-    },
-    {
-      title: 'התנתק',
-      icon: 'log-out',
-    },
-  ];
+  userMenu: NbMenuItem[] = [];
 
-  constructor(private chatService: ChatService, private _authService: AuthService, private dialogService: NbDialogService, private contextMenuService: NbMenuService, private toastrService: NbToastrService) {
+  constructor(
+    private chatService: ChatService,
+    private _authService: AuthService,
+    private dialogService: NbDialogService,
+    private contextMenuService: NbMenuService,
+    private toastrService: NbToastrService
+  ) {
   }
 
   channel?: Channel;

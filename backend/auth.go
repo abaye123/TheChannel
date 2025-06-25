@@ -14,6 +14,7 @@ var defaultPassword string = os.Getenv("DEFAULT_PASSWORD")
 var defaultUserName string = os.Getenv("DEFAULT_USERNAME")
 var store = &redistore.RediStore{}
 var cookieName = "channel_session"
+var requireAuthForAll bool = false
 
 type Auth struct {
 	UserName string
@@ -77,13 +78,27 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func checkPrivilege(next http.Handler) http.Handler {
+func checkLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, cookieName)
 
 		_, ok := session.Values["user"].(Session)
 		if !ok {
 			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func checkPrivilege(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, cookieName)
+
+		s, _ := session.Values["user"].(Session)
+		if !s.IsAdmin {
+			http.Error(w, "User not privilege", http.StatusUnauthorized)
 			return
 		}
 

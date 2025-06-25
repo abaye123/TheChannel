@@ -1,5 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 export interface User {
@@ -16,14 +17,17 @@ export interface ResponseResult {
   providedIn: 'root'
 })
 export class AuthService {
-  private userInfo?: User;
+  public userInfo?: User;
 
-  constructor(private _http: HttpClient) { }
+  constructor(
+    private _http: HttpClient,
+    private router: Router
+  ) { }
 
   async login(username: string, password: string) {
     let body = { username, password };
     try {
-      let res = await firstValueFrom(this._http.post<ResponseResult>('/api/auth/login', body));
+      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', body));
       return res.success;
     } catch {
       this.userInfo = undefined;
@@ -32,7 +36,7 @@ export class AuthService {
   }
 
   async logout() {
-    let res = await firstValueFrom(this._http.post<ResponseResult>('/api/auth/logout', {}));
+    let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/logout', {}));
     if (res.success) {
       this.userInfo = undefined;
     }
@@ -41,9 +45,10 @@ export class AuthService {
 
   async loadUserInfo() {
     try {
-      this.userInfo = this.userInfo || await lastValueFrom(this._http.get<User>('/api/auth/user-info'))
-    } catch {
+      this.userInfo = this.userInfo || await lastValueFrom(this._http.get<User>('/api/user-info'))
+    } catch (err: any) {
       this.userInfo = undefined;
+      throw err;
     }
     return this.userInfo;
   }

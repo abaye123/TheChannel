@@ -50,7 +50,7 @@ export class ChatService {
   }
 
   editChannelInfo(name: string, description: string, logoUrl: string): Observable<ResponseResult> {
-    return this.http.post<ResponseResult>('/api/auth/edit-channel-info', { name, description, logoUrl });
+    return this.http.post<ResponseResult>('/api/admin/edit-channel-info', { name, description, logoUrl });
   }
 
   getMessages(offset: number, limit: number): Observable<ChatResponse> {
@@ -63,15 +63,15 @@ export class ChatService {
   }
 
   addMessage(message: ChatMessage): Observable<ChatMessage> {
-    return this.http.post<ChatMessage>('/api/auth/new', message);
+    return this.http.post<ChatMessage>('/api/admin/new', message);
   }
 
   editMessage(message: ChatMessage): Observable<ChatMessage> {
-    return this.http.post<ChatMessage>(`/api/auth/edit-message`, message);
+    return this.http.post<ChatMessage>(`/api/admin/edit-message`, message);
   }
 
   deleteMessage(id: number | undefined): Observable<ChatMessage> {
-    return this.http.get<ChatMessage>(`/api/auth/delete-message/${id}`);
+    return this.http.get<ChatMessage>(`/api/admin/delete-message/${id}`);
   }
 
   sseListener(): EventSource {
@@ -99,7 +99,7 @@ export class ChatService {
   }
 
   uploadFile(formData: FormData) {
-    return this.http.post<ChatFile>('/api/auth/upload', formData, {
+    return this.http.post<ChatFile>('/api/admin/upload', formData, {
       reportProgress: true,
       observe: 'events',
       responseType: 'json'
