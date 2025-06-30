@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-
 	"net/http"
 	"strconv"
 	"time"
@@ -64,4 +63,30 @@ func editChannelInfo(w http.ResponseWriter, r *http.Request) {
 
 	res := Response{Success: true}
 	json.NewEncoder(w).Encode(res)
+}
+
+func registeringEmail(email string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	rdb.SAdd(ctx, "registered_emails", email)
+}
+
+func getUsersAmount(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	amount, err := rdb.SCard(ctx, "registered_emails").Result()
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Amount int64 `json:"amount"`
+	}{
+		Amount: amount,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

@@ -1,12 +1,13 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   isAdmin: boolean;
+  picture: string;
 }
 
 export interface ResponseResult {
@@ -19,19 +20,31 @@ export interface ResponseResult {
 export class AuthService {
   public userInfo?: User;
 
+  state = crypto.randomUUID();
+  params = new URLSearchParams({
+    client_id: environment.googleClientId,
+    redirect_uri: environment.googleRedirectUri,
+    scope: environment.googleOauthScope,
+    state: this.state,
+    response_type: 'code',
+    access_type: 'offline',
+  });
+
   constructor(
     private _http: HttpClient,
-    private router: Router
   ) { }
 
-  async login(username: string, password: string) {
-    let body = { username, password };
+  async loginWithGoogle() {
+    window.location.href = `${environment.googleOauthUrl}?${this.params.toString()}`;
+  }
+
+  async login(code: string) {
     try {
-      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', body));
+      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', { code }));
       return res.success;
-    } catch {
+    } catch (err: any) {
       this.userInfo = undefined;
-      return false;
+      throw err;
     }
   }
 

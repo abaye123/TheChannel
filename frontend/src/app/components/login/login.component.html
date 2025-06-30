@@ -3,22 +3,19 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-header text-center">
-          <h4 style="font-family: 'Assistant', sans-serif;">כניסה כמנהל</h4>
+          <h4 style="font-family: 'Assistant', sans-serif;">התחברות</h4>
         </div>
         <div class="card-body">
-          <form (ngSubmit)="login()">
-            <div class="mb-3">
-              <label for="username" class="form-label">שם משתמש</label>
-              <input type="text" id="username" class="form-control" [(ngModel)]="username" name="username"
-                placeholder="הכנס כאן את שם המשתמש שלך" required>
-            </div>
-            <div class="mb-3">
-              <label for="password" class="form-label">סיסמא</label>
-              <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password"
-                placeholder="הכנס כאן את הסיסמא שלך" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100" style="font-family: 'Assistant', sans-serif;">התחבר</button>
-          </form>
+          <div class="alert alert-danger" role="alert" *ngIf="status === 'failed'">
+            התחברות נכשלה, נסו שנית.
+          </div>
+          <button *ngIf="!code && !checkUserInfo" type="submit" class="btn btn-primary w-100"
+            style="font-family: 'Assistant', sans-serif;" (click)="login()">
+            התחבר באמצעות חשבון גוגל
+          </button>
+          <div *ngIf="code || checkUserInfo" class="text-center">
+            <div class="spinner-border text-primary"></div>
+          </div>
         </div>
       </div>
     </div>

@@ -62,18 +62,6 @@ export class ChatService {
     });
   }
 
-  addMessage(message: ChatMessage): Observable<ChatMessage> {
-    return this.http.post<ChatMessage>('/api/admin/new', message);
-  }
-
-  editMessage(message: ChatMessage): Observable<ChatMessage> {
-    return this.http.post<ChatMessage>(`/api/admin/edit-message`, message);
-  }
-
-  deleteMessage(id: number | undefined): Observable<ChatMessage> {
-    return this.http.get<ChatMessage>(`/api/admin/delete-message/${id}`);
-  }
-
   sseListener(): EventSource {
     if (this.eventSource) {
       this.eventSource.close();
@@ -96,13 +84,5 @@ export class ChatService {
     if (this.eventSource) {
       this.eventSource.close();
     }
-  }
-
-  uploadFile(formData: FormData) {
-    return this.http.post<ChatFile>('/api/admin/upload', formData, {
-      reportProgress: true,
-      observe: 'events',
-      responseType: 'json'
-    });
   }
 }

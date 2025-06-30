@@ -17,6 +17,8 @@ import { filter } from "rxjs";
 import { ChatService } from '../../../services/chat.service';
 import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form.component';
 import Viewer from 'viewerjs';
+import { UsersComponent } from '../../admin/users/users.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-channel-header',
@@ -39,6 +41,11 @@ export class ChannelHeaderComponent implements OnInit {
       ...(user?.isAdmin ? [{
         title: 'ערוך פרטי ערוץ',
         icon: 'edit-2-outline',
+      },
+      {
+        title: 'ניהול משתמשים',
+        icon: 'people-outline',
+
       }] : []),
       {
         title: 'התנתק',
@@ -62,7 +69,8 @@ export class ChannelHeaderComponent implements OnInit {
     private _authService: AuthService,
     private dialogService: NbDialogService,
     private contextMenuService: NbMenuService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private router: Router,
   ) {
   }
 
@@ -86,6 +94,9 @@ export class ChannelHeaderComponent implements OnInit {
           case 'edit-2-outline':
             this.openChannelEditerDialog();
             break;
+          case 'people-outline':
+            this.openUsersManagementDialog();
+            break;
         }
       });
   }
@@ -93,7 +104,15 @@ export class ChannelHeaderComponent implements OnInit {
   async logout() {
     if (await this._authService.logout()) {
       this.userInfo = undefined;
-      this.userInfoChange.emit(undefined)
+      this.userInfoChange.emit(undefined);
+      try {
+        await this._authService.loadUserInfo();
+      } catch (err: any) {
+        if (err.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      }
+
     } else {
       this.toastrService.danger("", "שגיאה בהתנתקות");
     }
@@ -105,6 +124,10 @@ export class ChannelHeaderComponent implements OnInit {
 
   openChannelEditerDialog() {
     this.dialogService.open(ChannelInfoFormComponent, { closeOnBackdropClick: true, context: { channel: this.channel } });
+  }
+
+  openUsersManagementDialog() {
+    this.dialogService.open(UsersComponent, { closeOnBackdropClick: true });
   }
 
   private v!: Viewer;

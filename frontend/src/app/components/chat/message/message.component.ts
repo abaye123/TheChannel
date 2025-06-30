@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ChatMessage, ChatService } from "../../../services/chat.service";
+import { ChatMessage } from "../../../services/chat.service";
 import { NgIf, CommonModule } from "@angular/common";
 import {
   NbButtonModule,
@@ -15,6 +15,7 @@ import { InputFormComponent } from "../input-form/input-form.component";
 import { MarkdownComponent } from "ngx-markdown";
 import Viewer from 'viewerjs';
 import { YoutubePlayerComponent } from '../youtube-player/youtube-player.component';
+import { AdminService } from '../../../services/admin.service';
 
 @Component({
   selector: 'app-message',
@@ -61,7 +62,7 @@ export class MessageComponent implements OnInit {
   ];
 
   constructor(
-    private _chatService: ChatService,
+    private _adminService: AdminService,
     private menuService: NbMenuService,
     private dialogService: NbDialogService,
   ) { }
@@ -91,16 +92,16 @@ export class MessageComponent implements OnInit {
   deleteMessage(message: ChatMessage) {
     const confirm = window.confirm('האם אתה בטוח שברצונך למחוק את ההודעה?');
     if (confirm)
-      this._chatService.deleteMessage(message.id).subscribe();
+      this._adminService.deleteMessage(message.id).subscribe();
   }
 
   viewLargeImage(event: MouseEvent) {
     const target = event.target as HTMLElement;
 
     if (target.tagName === 'IMG' || target.tagName === 'I') {
-     const youtubeId = target.getAttribute('youtubeid');
+      const youtubeId = target.getAttribute('youtubeid');
       if (youtubeId) {
-        this.dialogService.open(YoutubePlayerComponent, { closeOnBackdropClick: true, context: {videoId: youtubeId } })
+        this.dialogService.open(YoutubePlayerComponent, { closeOnBackdropClick: true, context: { videoId: youtubeId } })
         return;
       }
       if (!this.v) {

@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatMessage, ChatService, ChatFile , Attachment} from "../../../services/chat.service";
+import { ChatMessage, ChatService, ChatFile, Attachment } from "../../../services/chat.service";
 import { HttpClient, HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -18,6 +18,7 @@ import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
 import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip, heroQuestionMarkCircle } from "@ng-icons/heroicons/outline";
 import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
+import { AdminService } from '../../../services/admin.service';
 
 @Component({
   selector: 'app-input-form',
@@ -58,7 +59,12 @@ export class InputFormComponent implements OnInit {
 
   @ViewChild('inputTextArea') inputTextArea!: ElementRef<HTMLTextAreaElement>;
 
-  constructor(private http: HttpClient, private chatService: ChatService, private toastrService: NbToastrService, protected dialogRef: NbDialogRef<InputFormComponent>) { }
+  constructor(
+    private adminService: AdminService,
+    private chatService: ChatService,
+    private toastrService: NbToastrService,
+    protected dialogRef: NbDialogRef<InputFormComponent>
+  ) { }
 
   ngOnInit() {
     if (this.message) {
@@ -92,7 +98,7 @@ export class InputFormComponent implements OnInit {
 
       attachment.uploading = true;
 
-      this.chatService.uploadFile(formData).subscribe({
+      this.adminService.uploadFile(formData).subscribe({
         next: (event) => {
           if (event.type === HttpEventType.UploadProgress) {
             attachment.uploadProgress = Math.round((event.loaded / (event.total || 1)) * 100);
@@ -162,7 +168,7 @@ export class InputFormComponent implements OnInit {
     if (!this.message) return false;
     this.message.text = this.input;
     this.message.deleted = false;
-    await firstValueFrom(this.chatService.editMessage(this.message));
+    await firstValueFrom(this.adminService.editMessage(this.message));
     return true;
   }
 
@@ -175,7 +181,7 @@ export class InputFormComponent implements OnInit {
       file: undefined,
     };
 
-    this.message = await firstValueFrom(this.chatService.addMessage(newMessage));
+    this.message = await firstValueFrom(this.adminService.addMessage(newMessage));
 
     if (!this.message) {
       throw new Error();
@@ -238,11 +244,11 @@ export class InputFormComponent implements OnInit {
         const before = this.input.substring(0, start);
         const after = this.input.substring(end);
         if (start > 0 && before.charAt(start - 1) !== '\n') {
-            prefix = '\n' + prefix;
+          prefix = '\n' + prefix;
         }
-         if (end < this.input.length && after.charAt(0) !== '\n') {
-             suffix = suffix + '\n';
-         }
+        if (end < this.input.length && after.charAt(0) !== '\n') {
+          suffix = suffix + '\n';
+        }
         break;
     }
 
@@ -253,42 +259,42 @@ export class InputFormComponent implements OnInit {
       newText = prefix + selectedText + suffix;
       this.input = this.input.substring(0, start) + newText + this.input.substring(end);
       // Keep the original selection highlighted
-       setTimeout(() => {
-           textArea.selectionStart = start;
-           textArea.selectionEnd = start + newText.length;
-           textArea.focus();
-       });
+      setTimeout(() => {
+        textArea.selectionStart = start;
+        textArea.selectionEnd = start + newText.length;
+        textArea.focus();
+      });
     } else {
       newText = prefix + placeholder + suffix;
       this.input = this.input.substring(0, start) + newText + this.input.substring(end);
-       // Set cursor position inside the markers or after for code block
-       setTimeout(() => {
-           if (format === 'code') {
-               cursorPos = start + prefix.length; // Cursor at the beginning of the placeholder inside code block
-           } else {
-                cursorPos = start + prefix.length; // Cursor at the beginning of the placeholder
-           }
-           textArea.selectionStart = cursorPos;
-           textArea.selectionEnd = cursorPos + placeholder.length;
-           textArea.focus();
-       });
+      // Set cursor position inside the markers or after for code block
+      setTimeout(() => {
+        if (format === 'code') {
+          cursorPos = start + prefix.length; // Cursor at the beginning of the placeholder inside code block
+        } else {
+          cursorPos = start + prefix.length; // Cursor at the beginning of the placeholder
+        }
+        textArea.selectionStart = cursorPos;
+        textArea.selectionEnd = cursorPos + placeholder.length;
+        textArea.focus();
+      });
     }
   }
 
   ngAfterViewInit() {
     this.checkScrollbar();
-    
+
     if (this.inputTextArea?.nativeElement) {
       this.inputTextArea.nativeElement.addEventListener('input', () => {
         setTimeout(() => this.checkScrollbar(), 0);
       });
-      
+
       window.addEventListener('resize', () => {
         setTimeout(() => this.checkScrollbar(), 0);
       });
     }
   }
-  
+
   ngOnDestroy() {
     if (this.inputTextArea?.nativeElement) {
       this.inputTextArea.nativeElement.removeEventListener('input', this.checkScrollbar);

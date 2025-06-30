@@ -4,6 +4,7 @@ import { NbCardModule, NbDialogRef, NbButtonModule, NbSpinnerModule, NbInputModu
 import { Attachment, ChatFile, ChatService } from '../../../services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
+import { AdminService } from '../../../services/admin.service';
 
 @Component({
   selector: 'app-channel-info-form',
@@ -23,6 +24,7 @@ export class ChannelInfoFormComponent implements OnInit {
   constructor(
     protected dialogRef: NbDialogRef<ChannelInfoFormComponent>,
     private chatService: ChatService,
+    private adminService: AdminService,
     private taostrService: NbToastrService,
     private toastrService: NbToastrService,
   ) { }
@@ -86,7 +88,7 @@ export class ChannelInfoFormComponent implements OnInit {
 
       attachment.uploading = true;
 
-      this.chatService.uploadFile(formData).subscribe({
+      this.adminService.uploadFile(formData).subscribe({
         next: (event) => {
           if (event.type === HttpEventType.UploadProgress) {
             attachment.uploadProgress = Math.round((event.loaded / (event.total || 1)) * 100);

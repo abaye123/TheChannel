@@ -46,9 +46,11 @@ func main() {
 		api.Get("/user-info", getUserInfo)
 
 		api.Route("/admin", func(protected chi.Router) {
+			// TODO: Change to support different privileges by passing a permission type to checkPrivilege
 			protected.Use(checkPrivilege)
 
 			protected.Post("/edit-channel-info", editChannelInfo)
+			protected.Get("/users-amount", getUsersAmount)
 			protected.Post("/new", addMessage)
 			protected.Post("/edit-message", updateMessage)
 			protected.Get("/delete-message/{id}", deleteMessage)

@@ -13,8 +13,8 @@
     }
 
     @if (userInfo) {
-    <nb-user [name]="userInfo!.username" shape="round" color="#cccccc" [nbContextMenu]="userMenu"
-        [nbContextMenuTag]="userMenuTag">
+    <nb-user [name]="userInfo.username" shape="round" color="#cccccc" [nbContextMenu]="userMenu"
+        [nbContextMenuTag]="userMenuTag" [picture]="userInfo.picture">
     </nb-user>
     }
 </div>

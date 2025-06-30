@@ -2,8 +2,10 @@ FROM node:20 as build
 
 WORKDIR /app
 COPY ./frontend .
-RUN npm install
-RUN npm run build
+RUN chmod +x ./generate-env.sh && \
+    ./generate-prod-env.sh \
+    && npm install \
+    && npm run build
 
 FROM golang:1.24 AS builder
 
