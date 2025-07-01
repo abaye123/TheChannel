@@ -24,9 +24,18 @@ var googleOAuthConfig = &oauth2.Config{
 	RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URI"),
 	Endpoint:     google.Endpoint,
 }
+var googleOAuthScopes = os.Getenv("GOOGLE_OAUTH_SCOPES")
+var googleOAuthUrl = os.Getenv("GOOGLE_OAUTH_URL")
 
 type Auth struct {
 	Code string `json:"code"`
+}
+
+type GoogleAuthValues struct {
+	GoogleOauthUrl    string `json:"googleOauthUrl"`
+	GoogleOauthScope  string `json:"googleOauthScope"`
+	GoogleClientId    string `json:"googleClientId"`
+	GoogleRedirectUri string `json:"googleRedirectUri"`
 }
 
 type Session struct {
@@ -38,6 +47,18 @@ type Session struct {
 
 type Response struct {
 	Success bool `json:"success"`
+}
+
+func getGoogleAuthValues(w http.ResponseWriter, r *http.Request) {
+	authValues := GoogleAuthValues{
+		GoogleOauthUrl:    googleOAuthUrl,
+		GoogleOauthScope:  googleOAuthScopes,
+		GoogleClientId:    googleOAuthConfig.ClientID,
+		GoogleRedirectUri: googleOAuthConfig.RedirectURL,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(authValues)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {

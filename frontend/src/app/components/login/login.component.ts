@@ -35,7 +35,7 @@ export class LoginComponent implements OnInit {
     } catch {
       this._route.queryParams.subscribe(params => {
         if (Object.keys(params).length > 0) {
-          if (params['code']) {
+          if (params['code'] && params['state'] === localStorage.getItem('google_oauth_state')) {
             this.code = params['code'];
             this._authService.login(this.code).then(() => {
               window.location.href = '/';

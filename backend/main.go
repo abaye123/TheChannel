@@ -31,6 +31,7 @@ func main() {
 	// Protected with api key
 	r.Post("/import/post", addNewPost)
 
+	r.Get("/auth/google", getGoogleAuthValues)
 	r.Post("/auth/login", login)
 	r.Post("/auth/logout", logout)
 

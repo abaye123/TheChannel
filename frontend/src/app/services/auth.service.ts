@@ -1,13 +1,19 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
-import { environment } from '../../environments/environment';
 
 export interface User {
   id: string;
   username: string;
   isAdmin: boolean;
   picture: string;
+}
+
+interface GoogleAuthValues {
+  googleOauthUrl: string;
+  googleOauthScope: string;
+  googleClientId: string;
+  googleRedirectUri: string;
 }
 
 export interface ResponseResult {
@@ -20,22 +26,28 @@ export interface ResponseResult {
 export class AuthService {
   public userInfo?: User;
 
-  state = crypto.randomUUID();
-  params = new URLSearchParams({
-    client_id: environment.googleClientId,
-    redirect_uri: environment.googleRedirectUri,
-    scope: environment.googleOauthScope,
-    state: this.state,
-    response_type: 'code',
-    access_type: 'offline',
-  });
-
   constructor(
     private _http: HttpClient,
   ) { }
 
   async loginWithGoogle() {
-    window.location.href = `${environment.googleOauthUrl}?${this.params.toString()}`;
+    try {
+      const googleAuthValues: GoogleAuthValues = await lastValueFrom(this._http.get<GoogleAuthValues>('/auth/google'));
+      const state = crypto.randomUUID()
+      const params = new URLSearchParams({
+        client_id: googleAuthValues.googleClientId,
+        redirect_uri: googleAuthValues.googleRedirectUri,
+        scope: googleAuthValues.googleOauthScope,
+        state: state,
+        response_type: 'code',
+        access_type: 'offline',
+      });
+
+      localStorage.setItem('google_oauth_state', state);
+      window.location.href = `${googleAuthValues.googleOauthUrl}?${params.toString()}`;
+    } catch (err: any) {
+      throw err;
+    }
   }
 
   async login(code: string) {
