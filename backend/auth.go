@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/boj/redistore"
 	"github.com/golang-jwt/jwt/v5"
@@ -24,8 +26,8 @@ var googleOAuthConfig = &oauth2.Config{
 	RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URI"),
 	Endpoint:     google.Endpoint,
 }
-var googleOAuthScopes = os.Getenv("GOOGLE_OAUTH_SCOPES")
-var googleOAuthUrl = os.Getenv("GOOGLE_OAUTH_URL")
+var googleOAuthScopes = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+var googleOAuthUrl = google.Endpoint.AuthURL
 
 type Auth struct {
 	Code string `json:"code"`
@@ -62,6 +64,8 @@ func getGoogleAuthValues(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var auth Auth
 
 	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
@@ -73,7 +77,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := googleOAuthConfig.Exchange(r.Context(), auth.Code)
+	token, err := googleOAuthConfig.Exchange(ctx, auth.Code)
 	if err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
 		return
