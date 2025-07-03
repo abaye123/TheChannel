@@ -59,7 +59,7 @@ func init() {
 	log.Println("Connection to DB successful!")
 }
 
-func GetMessageNextId(ctx context.Context) int {
+func getMessageNextId(ctx context.Context) int {
 	id, err := rdb.Incr(ctx, "message:next_id").Result()
 	if err != nil {
 		log.Fatalf("Failed to get id: %v\n", err)
@@ -68,7 +68,7 @@ func GetMessageNextId(ctx context.Context) int {
 	return int(id)
 }
 
-func SetMessage(ctx context.Context, m Message, isUpdate bool) error {
+func setMessage(ctx context.Context, m Message, isUpdate bool) error {
 	messageKey := fmt.Sprintf("messages:%d", m.ID)
 
 	// Set message in hash
@@ -150,7 +150,7 @@ var getMessageRange = redis.NewScript(`
 	return cjson.encode(messages)
 `)
 
-func GetMessageRange(ctx context.Context, start, stop int64, isAdmin bool) ([]Message, error) {
+func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin bool) ([]Message, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
 	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{strconv.FormatInt(stop, 10), strconv.FormatBool(isAdmin)}).Result()
 	if err != nil {
@@ -169,7 +169,7 @@ func GetMessageRange(ctx context.Context, start, stop int64, isAdmin bool) ([]Me
 	return messages, nil
 }
 
-func DeleteMessage(ctx context.Context, id string) error {
+func funcDeleteMessage(ctx context.Context, id string) error {
 	msgKey := fmt.Sprintf("messages:%s", id)
 	rdb.HSet(ctx, msgKey, "deleted", true)
 
@@ -191,8 +191,39 @@ func DeleteMessage(ctx context.Context, id string) error {
 	return nil
 }
 
-func AddViewsToMessages(ctx context.Context, messages []Message) {
+func addViewsToMessages(ctx context.Context, messages []Message) {
 	for _, m := range messages {
 		rdb.HIncrBy(ctx, fmt.Sprintf("messages:%d", m.ID), "views", 1)
 	}
+}
+
+// https://redis.io/docs/latest/operate/oss_and_stack/management/security/#string-escaping-and-nosql-injection
+func addSubscription(token string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := rdb.SAdd(ctx, "subscriptions", token).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getSubcriptionsList() ([]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	subscriptionsSet, err := rdb.SMembers(ctx, "subscriptions").Result()
+	if err != nil {
+		log.Printf("Failed to get subscriptions: %v\n", err)
+		return []string{}, err
+	}
+	return subscriptionsSet, nil
+}
+
+func getChannelDetails() (map[string]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return rdb.HGetAll(ctx, "channel:1").Result()
 }

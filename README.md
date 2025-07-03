@@ -108,6 +108,23 @@ WEBHOOK_VERIFY_TOKEN=your-secret-token  # Not required
 ### אבטחה  
 אם הגדרתם `WEBHOOK_VERIFY_TOKEN`, תוכלו להשתמש בו כדי לוודא שהבקשות מגיעות אכן מהמערכת שלכם. בדקו שהערך ב-`verifyToken` תואם לערך שהגדרתם.  
 
+## הפעלת קבלת התראות מהערוץ בכל עת  
+השתמשנו בשירות FCM של גוגל.  
+פרטים על יצירת חשבון והגדרתו ניתן למצוא במדריכים רבים במרחבי המרשתת, לדוגמא: [כאן](https://dev.to/this-is-angular/push-notifications-in-angular-19-with-firebase-cloud-messaging-3o3a) ו [כאן](https://youtu.be/iz5arafmatc).  
+בכדי להפעיל את השירות יש להגדיר את משתנה הסביבה:
+~~~
+"ON_NOTIFICATION": "1", 
+~~~
+שאר משתני הסביבה מפורטים בקובץ ENV.  
+בנוסף יש להוריד קובץ JSON שמכיל את ההגדרות הדרושות בכדי לשלוח בפועל התראות.  
+ההורדה מתבצעת מדף הפרויקט ב https://console.firebase.google.com/ תחת הלשונית:  
+```serviceaccounts >  Generate new private key```  
+לשנות את שמו ל:  
+```"thechannel-firebase-adminsdk.json"```  
+יש למקם את הקובץ בתיקייה הראשית של הפרויקט, בדומה לקובץ הדוגמא:  
+```"exemple-thechannel-firebase-adminsdk.json"```   
+במידה והכל הוגדר כנדרש, יוצג למשתמשים לחצן רישום לקבלת התראות בדפדפן.  
+
 ## תרומת קוד  
 מעוניינים לתרום לפרויקט?  
 כל תרומה חשובה ומתקבלת בברכה.  

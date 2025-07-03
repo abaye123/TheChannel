@@ -6,6 +6,13 @@
         <small class="text-muted">{{ channel?.description ?? '' }}</small>
     </div>
 
+    @if (notificationsService.initialized) {
+    <button nbButton shape="round" class="m-2" title="התראות" status="danger"
+        (click)="notificationsService.requestPermission()">
+        <nb-icon icon="bell"></nb-icon>
+    </button>
+    }
+
     @if (userInfo?.isAdmin) {
     <button nbButton shape="round" class="m-2" title="הודעה חדשה" status="primary" (click)="openMessageFormDialog()">
         <nb-icon icon="message-square"></nb-icon>

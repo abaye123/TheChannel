@@ -19,6 +19,7 @@ import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form
 import Viewer from 'viewerjs';
 import { UsersComponent } from '../../admin/users/users.component';
 import { Router } from '@angular/router';
+import { NotificationsService } from '../../../services/notifications.service';
 
 @Component({
   selector: 'app-channel-header',
@@ -71,6 +72,7 @@ export class ChannelHeaderComponent implements OnInit {
     private contextMenuService: NbMenuService,
     private toastrService: NbToastrService,
     private router: Router,
+    public notificationsService: NotificationsService
   ) {
   }
 

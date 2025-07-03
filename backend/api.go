@@ -32,14 +32,14 @@ func addNewPost(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	message.ID = GetMessageNextId(ctx)
+	message.ID = getMessageNextId(ctx)
 	message.Type = "md" //body.Type
 	message.Author = body.Author
 	message.Timestamp = body.Timestamp
 	message.Text = body.Text
 	message.Views = 0
 
-	if err = SetMessage(ctx, message, false); err != nil {
+	if err = setMessage(ctx, message, false); err != nil {
 		log.Printf("Failed to set new message: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
 		return

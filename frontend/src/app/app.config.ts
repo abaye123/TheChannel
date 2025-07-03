@@ -1,7 +1,6 @@
 import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withHashLocation } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-
 import { routes } from './app.routes';
 import {
   NbDialogModule,
@@ -22,7 +21,7 @@ import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip, he
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes), // withHashLocation()
     provideHttpClient(),
     provideAnimationsAsync(),
     provideMarkdown(MarkdownConfig),

@@ -40,6 +40,10 @@ func main() {
 		if requireAuthForAll {
 			api.Use(checkLogin)
 		}
+
+		api.Get("/channel/notifications-config", getNotificationsConfig)
+		api.Post("/channel/notifications-subscribe", subscribeNotifications)
+
 		api.Get("/channel/info", getChannelInfo)
 		api.Get("/messages", getMessages)
 		api.Get("/events", getEvents)

@@ -32,7 +32,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 		limit = 20
 	}
 
-	messages, err := GetMessageRange(ctx, int64(offset), int64(limit), user.IsAdmin)
+	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), user.IsAdmin)
 	if err != nil {
 		log.Printf("Failed to get messages: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
@@ -50,7 +50,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 
-	AddViewsToMessages(ctx, messages)
+	addViewsToMessages(ctx, messages)
 }
 
 func addMessage(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +71,7 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message.ID = GetMessageNextId(ctx)
+	message.ID = getMessageNextId(ctx)
 	message.Type = body.Type
 	message.Author = user.Username
 	message.Timestamp = time.Now()
@@ -79,13 +79,14 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 	message.File = body.File
 	message.Views = 0
 
-	if err = SetMessage(ctx, message, false); err != nil {
+	if err = setMessage(ctx, message, false); err != nil {
 		log.Printf("Failed to set new message: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
 		return
 	}
 
 	go SendWebhook(context.Background(), "create", message)
+	go pushFcmMessage(message)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(message)
@@ -107,7 +108,7 @@ func updateMessage(w http.ResponseWriter, r *http.Request) {
 
 	body.LastEdit = time.Now()
 
-	if err := SetMessage(ctx, body, true); err != nil {
+	if err := setMessage(ctx, body, true); err != nil {
 		response := Response{Success: false}
 		json.NewEncoder(w).Encode(response)
 		return
@@ -128,7 +129,7 @@ func deleteMessage(w http.ResponseWriter, r *http.Request) {
 	idInt, _ := strconv.Atoi(id)
 	message := Message{ID: idInt, Deleted: true}
 
-	if err := DeleteMessage(ctx, id); err != nil {
+	if err := funcDeleteMessage(ctx, id); err != nil {
 		response := Response{Success: false}
 		json.NewEncoder(w).Encode(response)
 		return
