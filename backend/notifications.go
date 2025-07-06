@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"slices"
 
 	"firebase.google.com/go/v4/messaging"
 	"github.com/appleboy/go-fcm"
@@ -111,20 +112,22 @@ func pushFcmMessage(m Message) {
 		return
 	}
 
-	message := &messaging.MulticastMessage{
-		Tokens: list,
-		Data: map[string]string{
-			"url":   projectDomain,
-			"title": channelName["name"],
-			"body":  m.Text,
-		},
+	data := map[string]string{
+		"url":   projectDomain,
+		"title": channelName["name"],
+		"body":  m.Text,
 	}
 
-	resp, err := client.SendMulticast(ctx, message)
-	if err != nil {
-		log.Println("Failed to send push notification:", err)
-		return
-	}
+	for chunk := range slices.Chunk(list, 500) {
+		message := &messaging.MulticastMessage{
+			Tokens: chunk,
+			Data:   data,
+		}
 
-	log.Println("Push notification sent successfully:", resp.SuccessCount)
+		_, err := client.SendMulticast(ctx, message)
+		if err != nil {
+			log.Println("Failed to send push notification:", err)
+			return
+		}
+	}
 }
