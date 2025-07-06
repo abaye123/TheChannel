@@ -88,6 +88,10 @@ func subscribeNotifications(w http.ResponseWriter, r *http.Request) {
 }
 
 func pushFcmMessage(m Message) {
+	if !onNotification {
+		return
+	}
+
 	ctx := context.Background()
 	list, err := getSubcriptionsList()
 	if err != nil {
