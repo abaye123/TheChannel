@@ -116,14 +116,30 @@ WEBHOOK_VERIFY_TOKEN=your-secret-token  # Not required
 "ON_NOTIFICATION": "1", 
 ~~~
 שאר משתני הסביבה מפורטים בקובץ ENV.  
+יש להחליף את המקטע:  
+~~~
+const firebaseConfig = {
+    apiKey: "${FCM_API_KEY}",
+    authDomain: "${FCM_AUTH_DOMAIN}",
+    projectId: "${FCM_PROJECT_ID}",
+    storageBucket: "${FCM_STORAGE_BUCKET}",
+    messagingSenderId: "${FCM_MESSAGING_SENDER_ID}",
+    appId: "${FCM_APP_ID}",
+    measurementId: "${FCM_MEASUREMENT_ID}"
+};
+~~~
+בתוך קובץ:  
+`TheChannel/frontend/public/firebase-messaging-sw.js`  
+במקטע `const firebaseConfig` הזמין תחת הלשונית `general` בתוך הקונסול של firebase.  
 בנוסף יש להוריד קובץ JSON שמכיל את ההגדרות הדרושות בכדי לשלוח בפועל התראות.  
 ההורדה מתבצעת מדף הפרויקט ב https://console.firebase.google.com/ תחת הלשונית:  
-```serviceaccounts >  Generate new private key```  
+`serviceaccounts >  Generate new private key`  
 לשנות את שמו ל:  
-```"thechannel-firebase-adminsdk.json"```  
+`"thechannel-firebase-adminsdk.json"`   
 יש למקם את הקובץ בתיקייה הראשית של הפרויקט, בדומה לקובץ הדוגמא:  
-```"exemple-thechannel-firebase-adminsdk.json"```   
+`"exemple-thechannel-firebase-adminsdk.json"`   
 במידה והכל הוגדר כנדרש, יוצג למשתמשים לחצן רישום לקבלת התראות בדפדפן.  
+
 
 ## תרומת קוד  
 מעוניינים לתרום לפרויקט?  

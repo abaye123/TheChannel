@@ -3,3 +3,8 @@ frontend/node_modules/
 package-lock.json
 backend/__debug*
 thechannel-firebase-adminsdk.json
+caddy_data/
+redis_data/
+caddy_config/
+data/kvrocks.sock
+.env

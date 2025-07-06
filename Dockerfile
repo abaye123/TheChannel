@@ -2,9 +2,7 @@ FROM node:20 as build
 
 WORKDIR /app
 COPY ./frontend .
-RUN chmod +x ./generate-firebase-messaging-sw.sh  \
-    && ./generate-firebase-messaging-sw.sh \
-    && npm install \
+RUN  npm install \
     && npm run build
 
 FROM golang:1.24 AS builder
