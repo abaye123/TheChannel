@@ -23,5 +23,9 @@
     <nb-user [name]="userInfo.username" shape="round" color="#cccccc" [nbContextMenu]="userMenu"
         [nbContextMenuTag]="userMenuTag" [picture]="userInfo.picture">
     </nb-user>
+    } @else {
+    <button nbButton shape="round" class="m-2" title="התחבר" [routerLink]="['/login']">
+        <nb-icon icon="log-in"></nb-icon>
+    </button>
     }
 </div>

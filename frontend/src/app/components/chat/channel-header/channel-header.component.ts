@@ -18,7 +18,7 @@ import { ChatService } from '../../../services/chat.service';
 import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form.component';
 import Viewer from 'viewerjs';
 import { UsersComponent } from '../../admin/users/users.component';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NotificationsService } from '../../../services/notifications.service';
 
 @Component({
@@ -28,7 +28,8 @@ import { NotificationsService } from '../../../services/notifications.service';
     NbButtonModule,
     NbIconModule,
     NbUserModule,
-    NbContextMenuModule
+    NbContextMenuModule,
+    RouterLink
   ],
   templateUrl: './channel-header.component.html',
   styleUrl: './channel-header.component.scss'

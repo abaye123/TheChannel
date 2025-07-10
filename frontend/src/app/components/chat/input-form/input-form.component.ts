@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatMessage, ChatService, ChatFile, Attachment } from "../../../services/chat.service";
-import { HttpClient, HttpEventType } from "@angular/common/http";
+import { ChatMessage, ChatFile, Attachment } from "../../../services/chat.service";
+import { HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
 import {
@@ -16,7 +16,6 @@ import {
 import { AngularEditorModule } from "@kolkov/angular-editor"; // Corrected import path
 import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
-import { heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip, heroQuestionMarkCircle } from "@ng-icons/heroicons/outline";
 import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
 import { AdminService } from '../../../services/admin.service';
 
@@ -61,7 +60,6 @@ export class InputFormComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private chatService: ChatService,
     private toastrService: NbToastrService,
     protected dialogRef: NbDialogRef<InputFormComponent>
   ) { }
