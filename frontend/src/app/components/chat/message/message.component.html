@@ -1,22 +1,33 @@
 <div *ngIf="message && message.text" class="d-flex flex-row align-content-center my-1 mx-4">
     <div class="caret"></div>
-    <div class="message-card" [ngStyle]="{'opacity': message.deleted ? 0.5 : 1}">
-        <div class="d-flex flex-column">
-            <div class="m-2">
-                <markdown [data]="message.text" [disableSanitizer]="true" (click)="viewLargeImage($event)">
-                </markdown>
-            </div>
-            <div *ngIf="isAdmin && !message.deleted" class="d-flex option-mask">
-                <nb-icon icon="arrow-ios-downward-outline" [nbContextMenu]="optionsMenu"
-                    [nbContextMenuTag]="message.id?.toString() ?? '0'"
-                    [nbContextMenuPlacement]="NbPosition.END_BOTTOM"></nb-icon>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mx-2 gap-2">
-                <small class="text-black-50">{{ message.timestamp | messageTime }}</small>
-                <div class="d-flex flex-row align-items-center text-black-50 gap-1" title="צפיות">
-                    <small>{{ message.views ?? 0 }}</small>
-                    <nb-icon icon="eye-outline"></nb-icon>
+    <div [ngbPopover]="emojiMenu" [triggers]="'manual'" [popoverContext]="{message}" [autoClose]="'outside'"
+        (mouseenter)="showEmojiMenu()" (mouseleave)="scheduleEmojiMenuClose()" #p="ngbPopover">
+        <div class="message-card" [ngStyle]="{'opacity': message.deleted ? 0.5 : 1}">
+            <div class="d-flex flex-column">
+                <div class="m-2">
+                    <markdown [data]="message.text" [disableSanitizer]="true" (click)="viewLargeImage($event)">
+                    </markdown>
                 </div>
+                <div *ngIf="isAdmin && !message.deleted" class="d-flex option-mask">
+                    <nb-icon icon="arrow-ios-downward-outline" [nbContextMenu]="optionsMenu"
+                        [nbContextMenuTag]="message.id?.toString() ?? '0'"
+                        [nbContextMenuPlacement]="NbPosition.END_BOTTOM"></nb-icon>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mx-2 gap-2">
+                    <small class="text-black-50">{{ message.timestamp | messageTime }}</small>
+                    <div class="d-flex flex-row align-items-center text-black-50 gap-1" title="צפיות">
+                        <small>{{ message.views ?? 0 }}</small>
+                        <nb-icon icon="eye-outline"></nb-icon>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div *ngIf="message.reactions" class="d-flex flex-wrap rounded emojis-box">
+            <div *ngFor="let reaction of message.reactions | keyvalue" class="px-1 py-1"
+                (click)="setReact(message.id, reaction.key)">
+                <span class="me-1">{{ reaction.key }}</span>
+                <small class="text-muted">{{ reaction.value }}</small>
             </div>
         </div>
     </div>
@@ -26,3 +37,11 @@
             (click)="editMessage(message)" status="danger"></nb-icon>
     </div>
 </div>
+
+<ng-template #emojiMenu let-message="message">
+    <div (mouseenter)="cancelEmojiMenuClose()" (mouseleave)="scheduleEmojiMenuClose()">
+        @for (react of reacts; track $index) {
+        <button nbButton ghost status="danger" (click)="setReact(message.id, react)">{{react}}</button>
+        }
+    </div>
+</ng-template>

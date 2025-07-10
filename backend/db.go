@@ -27,6 +27,7 @@ type Message struct {
 	File      FileResponse `json:"file" redis:"-"`
 	Deleted   bool         `json:"deleted" redis:"deleted"`
 	Views     int          `json:"views" redis:"views"`
+	Reactions Reactions    `json:"reactions" redis:"reactions"`
 }
 
 type User struct {
@@ -99,6 +100,52 @@ func setMessage(ctx context.Context, m Message, isUpdate bool) error {
 	return nil
 }
 
+func setReaction(ctx context.Context, messageId int, emoji string, userId string) error {
+	kay := fmt.Sprintf("message:%d:reactions", messageId)
+	userId = fmt.Sprintf("%v", userId)
+
+	react := map[string]string{
+		userId: emoji,
+	}
+
+	prevReact, err := rdb.HGet(ctx, kay, userId).Result()
+	if err != nil && err != redis.Nil {
+		return fmt.Errorf("failed to get previous reaction: %v", err)
+	}
+
+	if prevReact == emoji {
+		react = map[string]string{
+			userId: "",
+		}
+	}
+
+	if err := rdb.HSet(ctx, kay, react).Err(); err != nil {
+		return err
+	}
+
+	r, err := funcGetSumReactions(ctx, messageId)
+	if err != nil {
+		return err
+	}
+
+	if err := updateMessageReactions(ctx, messageId, r); err != nil {
+		return err
+	}
+
+	pushMessage := PushMessage{
+		Type: "reaction",
+		M: Message{
+			ID:        messageId,
+			Reactions: r,
+		},
+	}
+
+	pushMessageData, _ := json.Marshal(pushMessage)
+	rdb.Publish(ctx, "events", pushMessageData)
+
+	return nil
+}
+
 var getMessageRange = redis.NewScript(`
 	local time_set_key = KEYS[1]
 	local offset_key = KEYS[2]
@@ -133,6 +180,13 @@ var getMessageRange = redis.NewScript(`
 					message[key] = tonumber(value)
 				elseif key == 'deleted' then
 					message[key] = value == '1'
+				elseif key == 'reactions' then
+				    local success, parsedReactions = pcall(cjson.decode, value)
+					if success then
+						message[key] = parsedReactions
+					else
+						message[key] = {}
+					end
 				else
 					message[key] = value
 				end
@@ -167,6 +221,59 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin bool) (
 	}
 
 	return messages, nil
+}
+
+var sumMessageReactions = redis.NewScript(`
+  local reactions = redis.call('HVALS', KEYS[1])
+  local result = {}
+
+   for _, reaction in ipairs(reactions) do
+   if reaction ~= "" then
+    if result[reaction] then
+	  result[reaction] = result[reaction] + 1
+    else
+	  result[reaction] = 1
+   end
+    end
+  end 
+  return cjson.encode(result)
+`)
+
+func funcGetSumReactions(ctx context.Context, messageId int) (Reactions, error) {
+	res, err := sumMessageReactions.Run(ctx, rdb, []string{fmt.Sprintf("message:%d:reactions", messageId)}).Result()
+	if err != nil || res == nil || res == "{}" {
+		return nil, err
+	}
+
+	var reactions Reactions
+	if err := json.Unmarshal([]byte(res.(string)), &reactions); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal reactions: %v", err)
+	}
+
+	return reactions, nil
+}
+
+func updateMessageReactions(ctx context.Context, messageId int, reactions Reactions) error {
+	messageKey := fmt.Sprintf("messages:%d", messageId)
+
+	exists, err := rdb.Exists(ctx, messageKey).Result()
+	if err != nil {
+		return err
+	}
+	if exists == 0 {
+		return fmt.Errorf("message %d does not exist", messageId)
+	}
+
+	reactionsJSON, err := json.Marshal(reactions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal reactions: %v", err)
+	}
+
+	if err := rdb.HSet(ctx, messageKey, "reactions", reactionsJSON).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func funcDeleteMessage(ctx context.Context, id string) error {

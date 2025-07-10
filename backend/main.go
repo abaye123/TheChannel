@@ -41,6 +41,9 @@ func main() {
 			api.Use(checkLogin)
 		}
 
+		// enable only requireAuthForAll is true
+		api.Post("/reactions/set-reactions", setReactions)
+
 		api.Get("/channel/notifications-config", getNotificationsConfig)
 		api.Post("/channel/notifications-subscribe", subscribeNotifications)
 

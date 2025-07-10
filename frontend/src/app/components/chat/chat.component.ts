@@ -89,8 +89,15 @@ export class ChatComponent implements OnInit, OnDestroy {
             if (index !== -1) {
               this.messages[index] = message.message;
             } else {
-           //  const closestIndex = this.messages.reduce
+              // TOTO: Find the closest message to attach the retrieved message to
+              //  const closestIndex = this.messages.reduce
             }
+          });
+          break;
+        case 'reaction':
+          this.zone.run(() => {
+            const index = this.messages.findIndex(m => m.id === message.message.id);
+            if (index !== -1) this.messages[index].reactions = message.message.reactions;
           });
           break;
       }

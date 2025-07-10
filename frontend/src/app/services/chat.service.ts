@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
 import { ResponseResult } from './auth.service';
 
 export type MessageType = 'md' | 'text' | 'image' | 'video' | 'audio' | 'document' | 'other';
+export type Reactions = { [key: string]: number }
 export interface ChatMessage {
   id?: number;
   type?: MessageType;
@@ -16,8 +17,8 @@ export interface ChatMessage {
   deleted?: boolean;
   file?: ChatFile;
   views?: number;
+  reactions?: Reactions;
 }
-
 export interface ChatResponse {
   messages: ChatMessage[];
   hasMore: boolean;
@@ -60,6 +61,10 @@ export class ChatService {
         limit: limit.toString()
       }
     });
+  }
+
+  setReact(messageId: number, react: string) {
+    return firstValueFrom(this.http.post<ResponseResult>('/api/reactions/set-reactions', { messageId, emoji: react }));
   }
 
   sseListener(): EventSource {

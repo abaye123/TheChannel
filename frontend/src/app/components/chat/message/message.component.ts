@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ChatMessage } from "../../../services/chat.service";
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChatMessage, ChatService } from "../../../services/chat.service";
 import { NgIf, CommonModule } from "@angular/common";
 import {
   NbButtonModule,
@@ -16,6 +16,7 @@ import { MarkdownComponent } from "ngx-markdown";
 import Viewer from 'viewerjs';
 import { YoutubePlayerComponent } from '../youtube-player/youtube-player.component';
 import { AdminService } from '../../../services/admin.service';
+import { NgbPopover, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-message',
@@ -29,6 +30,7 @@ import { AdminService } from '../../../services/admin.service';
     NbContextMenuModule,
     MarkdownComponent,
     NbPopoverModule,
+    NgbPopoverModule,
   ],
   templateUrl: './message.component.html',
   styleUrl: './message.component.scss'
@@ -45,6 +47,8 @@ export class MessageComponent implements OnInit {
 
   @Input()
   isAdmin: boolean = false;
+
+  @ViewChild(NgbPopover) popover!: NgbPopover;
 
   optionsMenu = [ // TODO: hide when X time passed
     {
@@ -65,7 +69,15 @@ export class MessageComponent implements OnInit {
     private _adminService: AdminService,
     private menuService: NbMenuService,
     private dialogService: NbDialogService,
+    private _chatService: ChatService,
   ) { }
+
+  reacts: string[] = [
+    '👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🔥', '🎉', '🙏', '👀', '💯', '💔', '🤔', '🙌', '👏', '💡', ''
+  ]
+
+  private closeEmojiMenuTimeout: any;
+
 
   ngOnInit() {
     this.menuService.onItemClick().pipe(
@@ -113,6 +125,29 @@ export class MessageComponent implements OnInit {
         });
       }
       this.v.show();
+    }
+  }
+
+  setReact(id: number | undefined, react: string) {
+    if (id && react)
+      this._chatService.setReact(id, react);
+  }
+
+  showEmojiMenu() {
+    this.cancelEmojiMenuClose();
+    this.popover.open()
+  }
+
+  scheduleEmojiMenuClose() {
+    this.closeEmojiMenuTimeout = setTimeout(() => {
+      this.popover.close();
+    }, 200);
+  }
+
+  cancelEmojiMenuClose() {
+    if (this.closeEmojiMenuTimeout) {
+      clearTimeout(this.closeEmojiMenuTimeout);
+      this.closeEmojiMenuTimeout = undefined;
     }
   }
 }
