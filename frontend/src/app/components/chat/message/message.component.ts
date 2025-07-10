@@ -7,7 +7,8 @@ import {
   NbContextMenuModule, NbDialogService,
   NbIconModule, NbMenuService,
   NbPopoverModule,
-  NbPosition
+  NbPosition,
+  NbToastrService
 } from "@nebular/theme";
 import { MessageTimePipe } from "../../../pipes/message-time.pipe";
 import { filter } from "rxjs";
@@ -70,6 +71,7 @@ export class MessageComponent implements OnInit {
     private menuService: NbMenuService,
     private dialogService: NbDialogService,
     private _chatService: ChatService,
+    private toastrService: NbToastrService
   ) { }
 
   reacts: string[] = [
@@ -130,7 +132,7 @@ export class MessageComponent implements OnInit {
 
   setReact(id: number | undefined, react: string) {
     if (id && react)
-      this._chatService.setReact(id, react);
+      this._chatService.setReact(id, react).catch(() => this.toastrService.danger('', "יש להתחבר לחשבון בכדי להוסיף אימוג'ים"));
   }
 
   showEmojiMenu() {
@@ -141,7 +143,7 @@ export class MessageComponent implements OnInit {
   scheduleEmojiMenuClose() {
     this.closeEmojiMenuTimeout = setTimeout(() => {
       this.popover.close();
-    }, 200);
+    }, 150);
   }
 
   cancelEmojiMenuClose() {
