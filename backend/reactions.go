@@ -23,11 +23,6 @@ func isAllowedEmoji(emoji string) bool {
 }
 
 func setReactions(w http.ResponseWriter, r *http.Request) {
-	if !requireAuthForAll {
-		http.Error(w, "Not supported without registration", http.StatusBadRequest)
-		return
-	}
-
 	session, _ := store.Get(r, cookieName)
 	userId := session.Values["user"].(Session).ID
 

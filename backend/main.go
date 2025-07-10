@@ -35,14 +35,16 @@ func main() {
 	r.Post("/auth/login", login)
 	r.Post("/auth/logout", logout)
 
+	r.Group(func(r chi.Router) {
+		r.Use(checkLogin)
+		r.Post("/api/reactions/set-reactions", setReactions)
+	})
+
 	r.Route("/api", func(api chi.Router) {
 
 		if requireAuthForAll {
 			api.Use(checkLogin)
 		}
-
-		// enable only requireAuthForAll is true
-		api.Post("/reactions/set-reactions", setReactions)
 
 		api.Get("/channel/notifications-config", getNotificationsConfig)
 		api.Post("/channel/notifications-subscribe", subscribeNotifications)
