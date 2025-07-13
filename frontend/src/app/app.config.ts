@@ -8,6 +8,7 @@ import {
   NbIconModule,
   NbLayoutDirection,
   NbMenuModule,
+  NbSidebarModule,
   NbThemeModule,
   NbToastrModule
 } from "@nebular/theme";
@@ -27,13 +28,14 @@ export const appConfig: ApplicationConfig = {
     provideMarkdown(MarkdownConfig),
     provideIcons({ heroBold, heroItalic, heroUnderline, heroCodeBracket, heroPaperClip, heroQuestionMarkCircle }),
     importProvidersFrom(
-      NbThemeModule.forRoot(undefined, undefined, undefined, NbLayoutDirection.RTL),
+      NbThemeModule.forRoot({ name: 'custom' }, undefined, undefined, NbLayoutDirection.RTL),
       NbIconModule,
       NbEvaIconsModule,
       NbMenuModule.forRoot(),
       NbDialogModule.forRoot(),
       NbToastrModule.forRoot({ position: NbGlobalLogicalPosition.TOP_START }),
-      NgIconsModule
+      NgIconsModule,
+      NbSidebarModule.forRoot(),
     )
   ]
 };

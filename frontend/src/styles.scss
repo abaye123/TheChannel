@@ -1,29 +1,18 @@
+@use 'themes' as *;
+@use '@nebular/theme/styles/globals' as *;
+
+@include nb-install() {
+    @include nb-theme-global();
+}
+
 /* You can add global styles to this file, and also import other style files */
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css');
 
-html,
-body,
-markdown,
-small,
-textarea,
-button,
-h1,
-.nb-theme-default h4,
-.nb-theme-default nb-user .user-name,
-label,
-span,
-input,
-div,
-p,
-.nb-theme-default nb-card-body {
-    font-family: 'Assistant', sans-serif; //!important
-}
-
-.nb-theme-default nb-user .user-name {
+nb-user .user-name {
     color: white;
 }
 
-.nb-theme-default nb-layout-header {
+nb-layout-header.fixed {
     background-color: #444791;
 }
 
