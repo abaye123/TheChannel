@@ -17,7 +17,6 @@ import { filter } from "rxjs";
 import { ChatService } from '../../../services/chat.service';
 import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form.component';
 import Viewer from 'viewerjs';
-import { UsersComponent } from '../../admin/users/users.component';
 import { Router, RouterLink } from '@angular/router';
 import { NotificationsService } from '../../../services/notifications.service';
 
@@ -45,7 +44,7 @@ export class ChannelHeaderComponent implements OnInit {
         icon: 'edit-2-outline',
       },
       {
-        title: 'ניהול משתמשים',
+        title: 'ניהול ערוץ',
         icon: 'people-outline',
 
       }] : []),
@@ -59,6 +58,8 @@ export class ChannelHeaderComponent implements OnInit {
     return this._userInfo;
   }
   private _userInfo?: User;
+
+  @Input() adminPanel = false;
 
   @Output()
   userInfoChange: EventEmitter<User> = new EventEmitter<User>();
@@ -98,7 +99,7 @@ export class ChannelHeaderComponent implements OnInit {
             this.openChannelEditerDialog();
             break;
           case 'people-outline':
-            this.openUsersManagementDialog();
+            this.router.navigate(['/admin/dashboard']);
             break;
         }
       });
@@ -127,10 +128,6 @@ export class ChannelHeaderComponent implements OnInit {
 
   openChannelEditerDialog() {
     this.dialogService.open(ChannelInfoFormComponent, { closeOnBackdropClick: true, context: { channel: this.channel } });
-  }
-
-  openUsersManagementDialog() {
-    this.dialogService.open(UsersComponent, { closeOnBackdropClick: true });
   }
 
   private v!: Viewer;
