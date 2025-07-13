@@ -109,36 +109,6 @@ WEBHOOK_VERIFY_TOKEN=your-secret-token  # Not required
 אם הגדרתם `WEBHOOK_VERIFY_TOKEN`, תוכלו להשתמש בו כדי לוודא שהבקשות מגיעות אכן מהמערכת שלכם. בדקו שהערך ב-`verifyToken` תואם לערך שהגדרתם.  
 
 ## הפעלת קבלת התראות מהערוץ בכל עת  
-השתמשנו בשירות FCM של גוגל.  
-פרטים על יצירת חשבון והגדרתו ניתן למצוא במדריכים רבים במרחבי המרשתת, לדוגמא: [כאן](https://dev.to/this-is-angular/push-notifications-in-angular-19-with-firebase-cloud-messaging-3o3a) ו [כאן](https://youtu.be/iz5arafmatc).  
-בכדי להפעיל את השירות יש להגדיר את משתנה הסביבה:
-~~~
-"ON_NOTIFICATION": "1", 
-~~~
-שאר משתני הסביבה מפורטים בקובץ ENV.  
-יש להחליף את המקטע:  
-~~~
-const firebaseConfig = {
-    apiKey: "${FCM_API_KEY}",
-    authDomain: "${FCM_AUTH_DOMAIN}",
-    projectId: "${FCM_PROJECT_ID}",
-    storageBucket: "${FCM_STORAGE_BUCKET}",
-    messagingSenderId: "${FCM_MESSAGING_SENDER_ID}",
-    appId: "${FCM_APP_ID}",
-    measurementId: "${FCM_MEASUREMENT_ID}"
-};
-~~~
-בתוך קובץ:  
-`TheChannel/frontend/public/firebase-messaging-sw.js`  
-במקטע `const firebaseConfig` הזמין תחת הלשונית `general` בתוך הקונסול של firebase.  
-בנוסף יש להוריד קובץ JSON שמכיל את ההגדרות הדרושות בכדי לשלוח בפועל התראות.  
-ההורדה מתבצעת מדף הפרויקט ב https://console.firebase.google.com/ תחת הלשונית:  
-`serviceaccounts >  Generate new private key`  
-לשנות את שמו ל:  
-`"thechannel-firebase-adminsdk.json"`   
-יש למקם את הקובץ בתיקייה הראשית של הפרויקט, בדומה לקובץ הדוגמא:  
-`"exemple-thechannel-firebase-adminsdk.json"`   
-במידה והכל הוגדר כנדרש, יוצג למשתמשים לחצן רישום לקבלת התראות בדפדפן.  
 
 ## הוספת אימוג'ים להודעות
 מוגבל לרשימה מצומצמת של אימוגים, אותה ניתן להרחיב ידנית בקוד.  
