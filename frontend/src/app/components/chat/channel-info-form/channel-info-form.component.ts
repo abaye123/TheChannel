@@ -47,7 +47,6 @@ export class ChannelInfoFormComponent implements OnInit {
     this.isSending = true;
     this.chatService.editChannelInfo(this.name, this.description, this.logoUrl).subscribe({
       next: () => {
-        console.log("logURL", this.logoUrl);
         this.channel.name = this.name;
         this.channel.description = this.description;
         this.channel.logoUrl = this.logoUrl;
@@ -66,7 +65,6 @@ export class ChannelInfoFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
 
     if (input.files) {
-      console.log(input.files);
       this.attachment = { file: input.files[0] }
       const reader = new FileReader();
       reader.readAsDataURL(this.attachment.file);
@@ -97,7 +95,6 @@ export class ChannelInfoFormComponent implements OnInit {
             attachment.uploading = false;
             attachment.uploadProgress = 0;
             if (!uploadedFile) return;
-            console.log("uploadedFile", uploadedFile);
             this.logoUrl = uploadedFile.url;
           }
         },

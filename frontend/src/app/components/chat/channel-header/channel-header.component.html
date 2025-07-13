@@ -13,7 +13,7 @@
     </button>
     }
 
-    @if (userInfo?.isAdmin && !adminPanel) {
+    @if (userInfo?.isAdmin) {
     <button nbButton shape="round" class="m-2" title="הודעה חדשה" status="primary" (click)="openMessageFormDialog()">
         <nb-icon icon="message-square"></nb-icon>
     </button>
