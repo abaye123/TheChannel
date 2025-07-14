@@ -8,7 +8,7 @@ export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     {
         path: 'admin',
-        loadChildren: () => import('./components/admin/admin.routes').then(m => m.routes),
+        loadChildren: () => import('./components/admin/admin.routes').then(m => m.adminRoutes),
         canActivateChild: [AdminGuard]
     },
     { path: '', component: ChatComponent, pathMatch: 'full', canActivate: [AuthGuard] },

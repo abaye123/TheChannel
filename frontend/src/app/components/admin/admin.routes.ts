@@ -1,12 +1,16 @@
 import { Routes } from "@angular/router";
 import { AdminAreaComponent } from "./admin-area/admin-area.component";
+import { UsersComponent } from "./users/users.component";
 
-export const routes: Routes = [
+export const adminRoutes: Routes = [
     {
         path: '',
+        component: AdminAreaComponent,
         children: [
-            { path: 'dashboard', component: AdminAreaComponent },
+            { path: 'users', component: UsersComponent },
+            { path: 'dashboard', component: UsersComponent },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+            { path: '**', redirectTo: '' }
         ],
     }
 ]
