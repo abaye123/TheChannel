@@ -16,6 +16,7 @@ RUN go build -o the-channel .
 
 FROM debian:latest
 WORKDIR /app
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
 COPY --from=builder /app/the-channel . 
 COPY --from=build /app/dist/channel/browser /usr/share/ng
 COPY ./thechannel-firebase-adminsdk.json  .
