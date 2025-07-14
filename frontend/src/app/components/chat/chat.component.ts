@@ -58,6 +58,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.chatService.getEmojisList(true);
     this.eventSource = this.chatService.sseListener();
     this.eventSource.onmessage = (event) => {
       const message = JSON.parse(event.data);

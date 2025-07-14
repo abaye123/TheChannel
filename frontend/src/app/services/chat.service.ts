@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
-import { ResponseResult } from './auth.service';
+import { ResponseResult } from '../models/response-result.model';
 
 export type MessageType = 'md' | 'text' | 'image' | 'video' | 'audio' | 'document' | 'other';
 export type Reactions = { [key: string]: number }
@@ -43,6 +43,7 @@ export interface Attachment {
 })
 export class ChatService {
   private eventSource!: EventSource;
+  emojis: string[] = [];
 
   constructor(private http: HttpClient) { }
 
@@ -65,6 +66,12 @@ export class ChatService {
 
   setReact(messageId: number, react: string) {
     return firstValueFrom(this.http.post<ResponseResult>('/api/reactions/set-reactions', { messageId, emoji: react }));
+  }
+
+  async getEmojisList(reload: boolean = false): Promise<string[]> {
+    if (this.emojis?.length && !reload) return Promise.resolve(this.emojis);
+    this.emojis = await firstValueFrom(this.http.get<string[]>('/api/emojis/list'));
+    return this.emojis;
   }
 
   sseListener(): EventSource {

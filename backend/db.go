@@ -334,3 +334,38 @@ func getChannelDetails() (map[string]string, error) {
 	defer cancel()
 	return rdb.HGetAll(ctx, "channel:1").Result()
 }
+
+func dbSetEmojisList(ctx context.Context, emojis []string) error {
+	if len(emojis) == 0 {
+		return fmt.Errorf("emojis list cannot be empty")
+	}
+
+	emojisJSON, err := json.Marshal(emojis)
+	if err != nil {
+		return fmt.Errorf("failed to marshal emojis: %v", err)
+	}
+
+	if err := rdb.HSet(ctx, "emojis:1", "list", emojisJSON).Err(); err != nil {
+		return fmt.Errorf("failed to set emojis in db: %v", err)
+	}
+
+	return nil
+
+}
+
+func dbGetEmojisList(ctx context.Context) ([]string, error) {
+	emojisJSON, err := rdb.HGet(ctx, "emojis:1", "list").Result()
+	if err != nil {
+		if err == redis.Nil {
+			return emojis, nil
+		}
+		return nil, fmt.Errorf("failed to get emojis from db: %v", err)
+	}
+
+	var emojisList []string
+	if err := json.Unmarshal([]byte(emojisJSON), &emojisList); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal emojis: %v", err)
+	}
+
+	return emojisList, nil
+}

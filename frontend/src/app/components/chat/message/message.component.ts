@@ -74,12 +74,8 @@ export class MessageComponent implements OnInit {
     private toastrService: NbToastrService
   ) { }
 
-  reacts: string[] = [
-    '👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🔥', '🎉', '🙏', '👀', '💯', '💔', '🤔', '🙌', '👏', '💡', ''
-  ]
-
+  reacts: string[] = [];
   private closeEmojiMenuTimeout: any;
-
 
   ngOnInit() {
     this.menuService.onItemClick().pipe(
@@ -92,6 +88,10 @@ export class MessageComponent implements OnInit {
         item.click(this.message);
       }
     });
+
+    this._chatService.getEmojisList()
+      .then(emojis => this.reacts = emojis)
+      .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוגים'));
   }
 
   editMessage(message: ChatMessage) {

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { ResponseResult } from '../models/response-result.model';
 
 export interface User {
   id: string;
@@ -14,10 +15,6 @@ interface GoogleAuthValues {
   googleOauthScope: string;
   googleClientId: string;
   googleRedirectUri: string;
-}
-
-export interface ResponseResult {
-  success: boolean;
 }
 
 @Injectable({

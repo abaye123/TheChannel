@@ -1,5 +1,6 @@
 @use 'themes' as *;
 @use '@nebular/theme/styles/globals' as *;
+@use '@ctrl/ngx-emoji-mart/picker';
 
 @include nb-install() {
     @include nb-theme-global();

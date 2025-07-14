@@ -46,6 +46,7 @@ func main() {
 			api.Use(checkLogin)
 		}
 
+		api.Get("/emojis/list", getEmojisList)
 		api.Get("/channel/notifications-config", getNotificationsConfig)
 		api.Post("/channel/notifications-subscribe", subscribeNotifications)
 
@@ -65,6 +66,7 @@ func main() {
 			protected.Post("/edit-message", updateMessage)
 			protected.Get("/delete-message/{id}", deleteMessage)
 			protected.Post("/upload", uploadFile)
+			protected.Post("/set-emojis", setEmojis)
 		})
 	})
 

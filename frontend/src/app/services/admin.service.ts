@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { lastValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, lastValueFrom, Observable } from 'rxjs';
 import { ChatFile, ChatMessage } from './chat.service';
+import { ResponseResult } from '../models/response-result.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,5 +40,10 @@ export class AdminService {
       observe: 'events',
       responseType: 'json'
     });
+  }
+
+
+  setEmojis(emojis: string[] | undefined) {
+    return firstValueFrom(this.http.post<ResponseResult>('/api/admin/set-emojis', { emojis }));
   }
 }

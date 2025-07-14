@@ -72,10 +72,6 @@ export class AdminAreaComponent implements OnInit {
       title: "אימוג'ים",
       icon: 'smiling-face-outline',
       link: '/admin/emojis',
-      badge: {
-        text: 'בקרוב',
-        status: 'warning'
-      }
     },
     {
       title: 'ניהול פרסומת',
