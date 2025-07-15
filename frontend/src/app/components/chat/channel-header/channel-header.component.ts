@@ -68,7 +68,7 @@ export class ChannelHeaderComponent implements OnInit {
   userMenu: NbMenuItem[] = [];
 
   constructor(
-    private chatService: ChatService,
+    public chatService: ChatService,
     private _authService: AuthService,
     private dialogService: NbDialogService,
     private contextMenuService: NbMenuService,
@@ -78,15 +78,8 @@ export class ChannelHeaderComponent implements OnInit {
   ) {
   }
 
-  channel?: Channel;
-
   ngOnInit() {
-    this.chatService.getChannelInfo().subscribe(channel => {
-      this.channel = channel;
-      if (this.channel.logoUrl === "") {
-        this.channel.logoUrl = "/assets/favicon.ico";
-      }
-    });
+    this.chatService.updateChannelInfo();
 
     this.contextMenuService.onItemClick()
       .pipe(filter(({ tag }) => tag === this.userMenuTag))
@@ -127,7 +120,7 @@ export class ChannelHeaderComponent implements OnInit {
   }
 
   openChannelEditerDialog() {
-    this.dialogService.open(ChannelInfoFormComponent, { closeOnBackdropClick: true, context: { channel: this.channel } });
+    this.dialogService.open(ChannelInfoFormComponent, { closeOnBackdropClick: true, context: { channel: this.chatService.channelInfo } });
   }
 
   private v!: Viewer;

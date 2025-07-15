@@ -1,9 +1,9 @@
 <div class="d-flex flex-row align-items-center">
-    <img [src]="channel?.logoUrl" class="rounded-circle" (click)="viewLargeImage($event)">
+    <img [src]="chatService.channelInfo?.logoUrl" class="rounded-circle" (click)="viewLargeImage($event)">
     <div class="m-2"></div>
     <div class="d-flex flex-column flex-grow-1">
-        <h1 *ngIf="channel?.name" class="h5 mb-1 fw-bold">{{ channel?.name }}</h1>
-        <small class="text-muted">{{ channel?.description ?? '' }}</small>
+        <h1 *ngIf="chatService.channelInfo?.name" class="h5 mb-1 fw-bold">{{ chatService.channelInfo?.name }}</h1>
+        <small class="text-muted">{{ chatService.channelInfo?.description ?? '' }}</small>
     </div>
 
     @if (notificationsService.initialized && !adminPanel) {

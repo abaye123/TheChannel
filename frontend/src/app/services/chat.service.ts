@@ -43,12 +43,17 @@ export interface Attachment {
 })
 export class ChatService {
   private eventSource!: EventSource;
-  emojis: string[] = [];
+  private emojis: string[] = [];
+  public channelInfo?: Channel;
 
   constructor(private http: HttpClient) { }
 
-  getChannelInfo() {
-    return this.http.get<Channel>('/api/channel/info');
+  async updateChannelInfo() {
+    this.channelInfo = await firstValueFrom(this.http.get<Channel>('/api/channel/info'));
+    if (this.channelInfo.logoUrl === "") {
+      this.channelInfo.logoUrl = "/assets/favicon.ico";
+    }
+    return;
   }
 
   editChannelInfo(name: string, description: string, logoUrl: string): Observable<ResponseResult> {

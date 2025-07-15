@@ -52,6 +52,7 @@ export class ChannelInfoFormComponent implements OnInit {
         this.channel.logoUrl = this.logoUrl;
         this.isSending = false;
         this.taostrService.success("", "עריכת פרטי ערוץ בוצעה בהצלחה");
+        this.chatService.updateChannelInfo();
         this.dialogRef.close();
       },
       error: () => {
