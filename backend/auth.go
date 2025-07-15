@@ -20,24 +20,33 @@ var store = &redistore.RediStore{}
 var cookieName = "channel_session"
 var requireAuthForAll = os.Getenv("REQUIRE_AUTH") == "1"
 var adminUsers []string = strings.Split(os.Getenv("ADMIN_USERS"), ",")
-var googleOAuthConfig = &oauth2.Config{
-	ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-	ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-	RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URI"),
-	Endpoint:     google.Endpoint,
-}
-var googleOAuthScopes = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
-var googleOAuthUrl = google.Endpoint.AuthURL
+
+var (
+	googleOAuthScopes       = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+	googleOAuthUrl          = google.Endpoint.AuthURL
+	googleOAuthClientId     = os.Getenv("GOOGLE_CLIENT_ID")
+	googleOAuthClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
+)
+
+type Privilege string
+type Privileges map[Privilege]bool
+
+const (
+	Root      Privilege = "root"
+	Admin     Privilege = "admin"
+	Moderator Privilege = "moderator"
+	Viewer    Privilege = "viewer"
+)
 
 type Auth struct {
-	Code string `json:"code"`
+	Code  string `json:"code"`
+	Domin string `json:"domain"`
 }
 
 type GoogleAuthValues struct {
-	GoogleOauthUrl    string `json:"googleOauthUrl"`
-	GoogleOauthScope  string `json:"googleOauthScope"`
-	GoogleClientId    string `json:"googleClientId"`
-	GoogleRedirectUri string `json:"googleRedirectUri"`
+	GoogleOauthUrl   string `json:"googleOauthUrl"`
+	GoogleOauthScope string `json:"googleOauthScope"`
+	GoogleClientId   string `json:"googleClientId"`
 }
 
 type Session struct {
@@ -53,10 +62,9 @@ type Response struct {
 
 func getGoogleAuthValues(w http.ResponseWriter, r *http.Request) {
 	authValues := GoogleAuthValues{
-		GoogleOauthUrl:    googleOAuthUrl,
-		GoogleOauthScope:  googleOAuthScopes,
-		GoogleClientId:    googleOAuthConfig.ClientID,
-		GoogleRedirectUri: googleOAuthConfig.RedirectURL,
+		GoogleOauthUrl:   googleOAuthUrl,
+		GoogleOauthScope: googleOAuthScopes,
+		GoogleClientId:   googleOAuthClientId,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -75,6 +83,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 	if auth.Code == "" {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
+	}
+
+	var googleOAuthConfig = &oauth2.Config{
+		ClientID:     googleOAuthClientId,
+		ClientSecret: googleOAuthClientSecret,
+		RedirectURL:  auth.Domin + "/login",
+		Endpoint:     google.Endpoint,
 	}
 
 	token, err := googleOAuthConfig.Exchange(ctx, auth.Code)

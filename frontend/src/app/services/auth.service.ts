@@ -14,7 +14,6 @@ interface GoogleAuthValues {
   googleOauthUrl: string;
   googleOauthScope: string;
   googleClientId: string;
-  googleRedirectUri: string;
 }
 
 @Injectable({
@@ -33,7 +32,7 @@ export class AuthService {
       const state = crypto.randomUUID()
       const params = new URLSearchParams({
         client_id: googleAuthValues.googleClientId,
-        redirect_uri: googleAuthValues.googleRedirectUri,
+        redirect_uri: window.location.origin + '/login',
         scope: googleAuthValues.googleOauthScope,
         state: state,
         response_type: 'code',
@@ -49,7 +48,7 @@ export class AuthService {
 
   async login(code: string) {
     try {
-      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', { code }));
+      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', { code, domain: window.location.origin }));
       return res.success;
     } catch (err: any) {
       this.userInfo = undefined;
