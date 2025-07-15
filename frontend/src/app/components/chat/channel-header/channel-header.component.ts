@@ -112,7 +112,7 @@ export class ChannelHeaderComponent implements OnInit {
 
       const path = this.router.url;
       if (path !== '/') {
-        this.router.navigate(['/']);
+        window.location.href = '/';
       }
 
     } else {
