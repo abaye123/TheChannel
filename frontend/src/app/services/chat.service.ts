@@ -69,7 +69,7 @@ export class ChatService {
   }
 
   async getEmojisList(reload: boolean = false): Promise<string[]> {
-    if (this.emojis?.length && !reload) return Promise.resolve(this.emojis);
+    if (this.emojis && !reload) return Promise.resolve(this.emojis); // הסרתי את בדיקת האורך, משום שזה יוצר קריאות מיותרות לשרת כאשר לא מוגדר אימוגים
     this.emojis = await firstValueFrom(this.http.get<string[]>('/api/emojis/list'));
     return this.emojis;
   }

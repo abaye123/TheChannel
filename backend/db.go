@@ -345,7 +345,7 @@ func dbSetEmojisList(ctx context.Context, emojis []string) error {
 		return fmt.Errorf("failed to marshal emojis: %v", err)
 	}
 
-	if err := rdb.HSet(ctx, "emojis:1", "list", emojisJSON).Err(); err != nil {
+	if err := rdb.Set(ctx, "emojis:list", emojisJSON, 0).Err(); err != nil {
 		return fmt.Errorf("failed to set emojis in db: %v", err)
 	}
 
@@ -354,7 +354,7 @@ func dbSetEmojisList(ctx context.Context, emojis []string) error {
 }
 
 func dbGetEmojisList(ctx context.Context) ([]string, error) {
-	emojisJSON, err := rdb.HGet(ctx, "emojis:1", "list").Result()
+	emojisJSON, err := rdb.Get(ctx, "emojis:list").Result()
 	if err != nil {
 		if err == redis.Nil {
 			return emojis, nil
