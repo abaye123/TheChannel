@@ -110,6 +110,11 @@ export class ChannelHeaderComponent implements OnInit {
         }
       }
 
+      const path = this.router.url;
+      if (path !== '/') {
+        this.router.navigate(['/']);
+      }
+
     } else {
       this.toastrService.danger("", "שגיאה בהתנתקות");
     }

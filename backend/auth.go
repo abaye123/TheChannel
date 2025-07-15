@@ -107,6 +107,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := store.Get(r, cookieName)
 	session.Values["user"] = user
+	session.Options.MaxAge = 60 * 60 * 24 * 30 // 30 days
 	if err := session.Save(r, w); err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
 		return
