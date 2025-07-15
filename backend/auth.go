@@ -39,8 +39,7 @@ const (
 )
 
 type Auth struct {
-	Code  string `json:"code"`
-	Domin string `json:"domain"`
+	Code string `json:"code"`
 }
 
 type GoogleAuthValues struct {
@@ -85,10 +84,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	origin := r.Header.Get("Origin")
 	var googleOAuthConfig = &oauth2.Config{
 		ClientID:     googleOAuthClientId,
 		ClientSecret: googleOAuthClientSecret,
-		RedirectURL:  auth.Domin + "/login",
+		RedirectURL:  origin + "/login",
 		Endpoint:     google.Endpoint,
 	}
 

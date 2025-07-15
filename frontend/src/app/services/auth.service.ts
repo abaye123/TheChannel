@@ -48,7 +48,7 @@ export class AuthService {
 
   async login(code: string) {
     try {
-      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', { code, domain: window.location.origin }));
+      let res = await firstValueFrom(this._http.post<ResponseResult>('/auth/login', { code }));
       return res.success;
     } catch (err: any) {
       this.userInfo = undefined;
