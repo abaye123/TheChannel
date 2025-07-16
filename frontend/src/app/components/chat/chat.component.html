@@ -15,7 +15,7 @@
         </nb-list-item>
 
         <nb-list-item *ngFor="let message of messages">
-            <app-message [isAdmin]="userInfo?.isAdmin == true" [message]="message"></app-message>
+            <app-message [isAdmin]="userInfo?.privileges?.['admin'] == true" [message]="message"></app-message>
         </nb-list-item>
 
         <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">

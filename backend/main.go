@@ -13,6 +13,16 @@ import (
 
 var rootStaticFolder = os.Getenv("ROOT_STATIC_FOLDER")
 
+func protectedWithPrivilege(Privilege Privilege, handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !checkPrivilege(r, Privilege) {
+			http.Error(w, "User not authorized or not privilege", http.StatusUnauthorized)
+			return
+		}
+		handler(w, r)
+	}
+}
+
 func main() {
 	gob.Register(Session{})
 
@@ -57,16 +67,16 @@ func main() {
 		api.Get("/user-info", getUserInfo)
 
 		api.Route("/admin", func(protected chi.Router) {
-			// TODO: Change to support different privileges by passing a permission type to checkPrivilege
-			protected.Use(checkPrivilege)
+			// ⚠️ WARNING: Routes are NOT protected by default!
+			// Use `protectedRoutes(requiredPrivilege, HandlerFunc)` to enforce access control per route.
 
-			protected.Post("/edit-channel-info", editChannelInfo)
-			protected.Get("/users-amount", getUsersAmount)
-			protected.Post("/new", addMessage)
-			protected.Post("/edit-message", updateMessage)
-			protected.Get("/delete-message/{id}", deleteMessage)
-			protected.Post("/upload", uploadFile)
-			protected.Post("/set-emojis", setEmojis)
+			protected.Post("/edit-channel-info", protectedWithPrivilege(Admin, editChannelInfo))
+			protected.Get("/users-amount", protectedWithPrivilege(Admin, getUsersAmount))
+			protected.Post("/new", protectedWithPrivilege(Admin, addMessage))
+			protected.Post("/edit-message", protectedWithPrivilege(Admin, updateMessage))
+			protected.Get("/delete-message/{id}", protectedWithPrivilege(Admin, deleteMessage))
+			protected.Post("/upload", protectedWithPrivilege(Admin, uploadFile))
+			protected.Post("/set-emojis", protectedWithPrivilege(Admin, setEmojis))
 		})
 	})
 

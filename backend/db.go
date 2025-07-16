@@ -31,10 +31,11 @@ type Message struct {
 }
 
 type User struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"-"`
-	IsAdmin  bool   `json:"isAdmin"`
+	ID         string
+	Username   string
+	Email      string
+	PublicName string
+	Privileges Privileges
 }
 
 type PushMessage struct {
@@ -368,4 +369,33 @@ func dbGetEmojisList(ctx context.Context) ([]string, error) {
 	}
 
 	return emojisList, nil
+}
+
+func dbSetUsersList(ctx context.Context, usersList []User) error {
+	jsonUsersList, err := json.Marshal(usersList)
+	if err != nil {
+		return err
+	}
+	if err := rdb.Set(ctx, "users:list", jsonUsersList, 0).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func dbGetUsersList(ctx context.Context) ([]User, error) {
+	u, err := rdb.Get(ctx, "users:list").Result()
+	if err != nil {
+		if err == redis.Nil {
+			return []User{}, nil
+		}
+		return nil, err
+	}
+	var usersList []User
+	err = json.Unmarshal([]byte(u), &usersList)
+	if err != nil {
+		return nil, err
+	}
+
+	return usersList, nil
 }

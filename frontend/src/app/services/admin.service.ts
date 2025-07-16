@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { firstValueFrom, lastValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { ChatFile, ChatMessage } from './chat.service';
 import { ResponseResult } from '../models/response-result.model';
 
@@ -15,7 +15,7 @@ export class AdminService {
 
   async getUsersAmount(): Promise<number> {
     try {
-      const response = await lastValueFrom(this.http.get<{ amount: number }>('/api/admin/users-amount'));
+      const response = await firstValueFrom(this.http.get<{ amount: number }>('/api/admin/users-amount'));
       return response.amount;
     } catch (error) {
       throw error;

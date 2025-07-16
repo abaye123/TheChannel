@@ -8,7 +8,7 @@ export const AdminGuard: CanActivateChildFn = async (childRoute, state) => {
 
   try {
     let userInfo = await authService.loadUserInfo();
-    if (userInfo && userInfo.isAdmin) return true;
+    if (userInfo?.privileges?.['admin']) return true;
 
   } catch {
     navigate.navigate(['']);

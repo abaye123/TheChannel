@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"slices"
-	"strings"
 	"time"
 
 	"github.com/boj/redistore"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -19,23 +18,11 @@ var secretKey string = os.Getenv("SECRET_KEY")
 var store = &redistore.RediStore{}
 var cookieName = "channel_session"
 var requireAuthForAll = os.Getenv("REQUIRE_AUTH") == "1"
-var adminUsers []string = strings.Split(os.Getenv("ADMIN_USERS"), ",")
-
 var (
 	googleOAuthScopes       = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
 	googleOAuthUrl          = google.Endpoint.AuthURL
 	googleOAuthClientId     = os.Getenv("GOOGLE_CLIENT_ID")
 	googleOAuthClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
-)
-
-type Privilege string
-type Privileges map[Privilege]bool
-
-const (
-	Root      Privilege = "root"
-	Admin     Privilege = "admin"
-	Moderator Privilege = "moderator"
-	Viewer    Privilege = "viewer"
 )
 
 type Auth struct {
@@ -49,10 +36,10 @@ type GoogleAuthValues struct {
 }
 
 type Session struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	IsAdmin  bool   `json:"isAdmin"`
-	Picture  string `json:"picture,omitempty"`
+	ID         string     `json:"id"`
+	Username   string     `json:"username"`
+	Picture    string     `json:"picture,omitempty"`
+	Privileges Privileges `json:"privileges,omitempty"`
 }
 
 type Response struct {
@@ -112,16 +99,20 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	go registeringEmail(claims["email"].(string))
 
-	id, _ := claims.GetSubject() // sub is the user ID in Google
-	user := Session{
-		ID:       id,
-		Username: claims["name"].(string),
-		IsAdmin:  isAdmin(claims["email"].(string)),
-		Picture:  claims["picture"].(string),
+	u, err := getUser(ctx, claims)
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+	userSession := Session{
+		ID:         u.ID,
+		Username:   u.PublicName,
+		Picture:    claims["picture"].(string),
+		Privileges: u.Privileges,
 	}
 
 	session, _ := store.Get(r, cookieName)
-	session.Values["user"] = user
+	session.Values["user"] = userSession
 	session.Options.MaxAge = 60 * 60 * 24 * 30 // 30 days
 	if err := session.Save(r, w); err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
@@ -134,9 +125,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func isAdmin(s string) bool {
-	return slices.Contains(adminUsers, s)
-}
+// func isRootUser(s string) bool {
+// 	return slices.Contains(adminUsers, s)
+// }
 
 func logout(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, cookieName)
@@ -168,19 +159,15 @@ func checkLogin(next http.Handler) http.Handler {
 	})
 }
 
-// TODO: Change to support different privileges by passing a permission type to checkPrivilege
-func checkPrivilege(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, _ := store.Get(r, cookieName)
+func checkPrivilege(r *http.Request, privilege Privilege) bool {
+	session, _ := store.Get(r, cookieName)
 
-		s, _ := session.Values["user"].(Session)
-		if !s.IsAdmin {
-			http.Error(w, "User not privilege", http.StatusUnauthorized)
-			return
-		}
+	s, ok := session.Values["user"].(Session)
+	if !ok {
+		return false
+	}
 
-		next.ServeHTTP(w, r)
-	})
+	return s.Privileges[privilege]
 }
 
 func getUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -193,4 +180,48 @@ func getUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userInfo)
+}
+
+func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
+	var user User
+
+	email := claims["email"].(string)
+	id, _ := claims.GetSubject() // Google user ID
+
+	if v, ok := privilegesUsers.Load(email); ok {
+		user = v.(User)
+		if user.ID != id && id != "" {
+			user.ID = id
+		}
+		if user.Username == "" {
+			user.Username = claims["name"].(string)
+		}
+		if user.Email == "" {
+			user.Email = email
+		}
+		if user.PublicName == "" {
+			user.PublicName = claims["name"].(string)
+		}
+		privilegesUsers.Store(email, user)
+		users, err := dbGetUsersList(ctx)
+		if err != nil && err != redis.Nil {
+			return nil, err
+		}
+		for i, u := range users {
+			if u.Email == email {
+				users[i] = user
+			}
+		}
+		if err := dbSetUsersList(ctx, users); err != nil {
+			return nil, err
+		}
+	} else {
+		user = User{
+			ID:       id,
+			Username: claims["name"].(string),
+			Email:    claims["email"].(string),
+		}
+	}
+
+	return &user, nil
 }

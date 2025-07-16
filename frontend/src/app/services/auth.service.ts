@@ -1,13 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { ResponseResult } from '../models/response-result.model';
 
 export interface User {
   id: string;
   username: string;
-  isAdmin: boolean;
   picture: string;
+  privileges: Record<string, boolean>;
 }
 
 interface GoogleAuthValues {
@@ -28,7 +28,7 @@ export class AuthService {
 
   async loginWithGoogle() {
     try {
-      const googleAuthValues: GoogleAuthValues = await lastValueFrom(this._http.get<GoogleAuthValues>('/auth/google'));
+      const googleAuthValues: GoogleAuthValues = await firstValueFrom(this._http.get<GoogleAuthValues>('/auth/google'));
       const state = crypto.randomUUID()
       const params = new URLSearchParams({
         client_id: googleAuthValues.googleClientId,
@@ -66,7 +66,7 @@ export class AuthService {
 
   async loadUserInfo() {
     try {
-      this.userInfo = this.userInfo || await lastValueFrom(this._http.get<User>('/api/user-info'))
+      this.userInfo = this.userInfo || await firstValueFrom(this._http.get<User>('/api/user-info'))
     } catch (err: any) {
       this.userInfo = undefined;
       throw err;

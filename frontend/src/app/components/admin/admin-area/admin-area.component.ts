@@ -42,6 +42,11 @@ export class AdminAreaComponent implements OnInit {
       target: '_blank'
     },
     {
+      title: 'הגדרות ערוץ',
+      icon: 'settings-2-outline',
+      link: '/admin/settings',
+    },
+    {
       title: 'ניהול משתמשים',
       icon: 'people-outline',
       link: '/admin/users',

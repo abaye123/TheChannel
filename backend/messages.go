@@ -13,9 +13,6 @@ import (
 )
 
 func getMessages(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, cookieName)
-	user, _ := session.Values["user"].(Session)
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -32,7 +29,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 		limit = 20
 	}
 
-	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), user.IsAdmin)
+	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), checkPrivilege(r, Moderator))
 	if err != nil {
 		log.Printf("Failed to get messages: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
