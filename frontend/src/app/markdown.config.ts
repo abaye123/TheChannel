@@ -37,7 +37,7 @@ const customEmbedExtension = {
       const { type, url, id } = token['meta'];
       switch (type) {
         case 'video':
-          return `<div><video controls width="300" height="300"><source src="${url}" type="video/mp4"></video></div>`;
+          return `<div style="max-width: 100%; height: auto;"><video controls style="width: 100%; height: auto;"><source src="${url}" type="video/mp4"></video></div>`;
         case 'audio':
           return `<div><audio src="${url}" controls></audio></div>`;
         case 'image':
