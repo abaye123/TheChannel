@@ -19,6 +19,7 @@ import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form
 import Viewer from 'viewerjs';
 import { Router, RouterLink } from '@angular/router';
 import { NotificationsService } from '../../../services/notifications.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-channel-header',
@@ -74,12 +75,14 @@ export class ChannelHeaderComponent implements OnInit {
     private contextMenuService: NbMenuService,
     private toastrService: NbToastrService,
     private router: Router,
-    public notificationsService: NotificationsService
+    public notificationsService: NotificationsService,
+    private titleService: Title,
   ) {
   }
 
   ngOnInit() {
-    this.chatService.updateChannelInfo();
+    this.chatService.updateChannelInfo()
+      .then(() => this.titleService.setTitle(this.chatService.channelInfo?.name || 'TheChannel'));
 
     this.contextMenuService.onItemClick()
       .pipe(filter(({ tag }) => tag === this.userMenuTag))
