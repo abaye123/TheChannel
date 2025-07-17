@@ -186,6 +186,7 @@ func generatedRandomID(len int) string {
 	return hex.EncodeToString(b)
 }
 
+// TODO: Image size limitation
 func getFavicon(w http.ResponseWriter, r *http.Request) {
 	c, err := getChannelDetails()
 	if err != nil {
