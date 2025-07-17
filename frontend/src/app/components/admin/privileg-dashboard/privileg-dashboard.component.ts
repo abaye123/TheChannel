@@ -42,10 +42,7 @@ export class PrivilegDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.adminService.getPrivilegeUsersList()
-      .then(list => {
-        this.privilegeUsersList = list;
-        console.log('privilegeUsersList', this.privilegeUsersList[0].privileges);
-      })
+      .then(list => this.privilegeUsersList = list)
   }
 
   saveChanges() {

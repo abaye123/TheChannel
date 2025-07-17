@@ -45,6 +45,8 @@ func main() {
 	r.Get("/auth/google", getGoogleAuthValues)
 	r.Post("/auth/login", login)
 	r.Post("/auth/logout", logout)
+	r.Get("/assets/favicon.ico", getFavicon)
+	r.Get("/favicon.ico", getFavicon)
 
 	r.Group(func(r chi.Router) {
 		r.Use(checkLogin)

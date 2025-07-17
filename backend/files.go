@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 
@@ -183,4 +184,41 @@ func generatedRandomID(len int) string {
 	}
 
 	return hex.EncodeToString(b)
+}
+
+func getFavicon(w http.ResponseWriter, r *http.Request) {
+	c, err := getChannelDetails()
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	logoUrl := c["logoUrl"]
+	if logoUrl == "" {
+		logoUrl = "assets/favicon.ico"
+	}
+	fileId := path.Base(logoUrl)
+
+	metadataFilePath := filepath.Join(rootUploadPath, fileId[:2], fileId[2:4], fileId+".yaml")
+	metadataFile, err := os.ReadFile(metadataFilePath)
+	if err != nil {
+		http.ServeFile(w, r, "assets/favicon.ico")
+		return
+	}
+
+	var metaData map[string]any
+	if err := yaml.Unmarshal(metadataFile, &metaData); err != nil {
+		http.ServeFile(w, r, "assets/favicon.ico")
+		return
+	}
+
+	if delete := metaData["delete"].(bool); delete {
+		http.ServeFile(w, r, "assets/favicon.ico")
+		return
+	}
+
+	fileHash := metaData["hash"].(string)
+	filePath := filepath.Join(rootUploadPath, fileHash[:2], fileHash[2:4], fileHash)
+
+	http.ServeFile(w, r, filePath)
 }
