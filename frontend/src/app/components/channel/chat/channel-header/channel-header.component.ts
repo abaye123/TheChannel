@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgIf } from "@angular/common";
-import { AuthService, User } from "../../../services/auth.service";
 import {
   NbButtonModule,
   NbContextMenuModule,
@@ -12,14 +11,14 @@ import {
   NbUserModule
 } from "@nebular/theme";
 import { InputFormComponent } from "../input-form/input-form.component";
-import { Channel } from "../../../models/channel.model";
 import { filter } from "rxjs";
-import { ChatService } from '../../../services/chat.service';
 import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form.component';
 import Viewer from 'viewerjs';
 import { Router, RouterLink } from '@angular/router';
-import { NotificationsService } from '../../../services/notifications.service';
 import { Title } from '@angular/platform-browser';
+import { AuthService, User } from '../../../../services/auth.service';
+import { ChatService } from '../../../../services/chat.service';
+import { NotificationsService } from '../../../../services/notifications.service';
 
 @Component({
   selector: 'app-channel-header',
@@ -115,7 +114,7 @@ export class ChannelHeaderComponent implements OnInit {
 
       const path = this.router.url;
       if (path !== '/') {
-        window.location.href = '/';
+        this.router.navigate(['/']);
       }
 
     } else {

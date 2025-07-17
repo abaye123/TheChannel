@@ -1,6 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatMessage, ChatFile, Attachment } from "../../../services/chat.service";
 import { HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { firstValueFrom } from "rxjs";
@@ -17,7 +16,8 @@ import { AngularEditorModule } from "@kolkov/angular-editor"; // Corrected impor
 import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
 import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
-import { AdminService } from '../../../services/admin.service';
+import { Attachment, ChatFile, ChatMessage } from '../../../../services/chat.service';
+import { AdminService } from '../../../../services/admin.service';
 
 @Component({
   selector: 'app-input-form',

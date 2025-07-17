@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, NgZone, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ChatService, ChatMessage } from '../../services/chat.service';
-import { AuthService, User } from '../../services/auth.service';
 import {
   NbBadgeModule,
   NbButtonModule,
@@ -12,9 +10,10 @@ import {
   NbLayoutModule,
   NbListModule
 } from "@nebular/theme";
-import { ChannelHeaderComponent } from "./channel-header/channel-header.component";
 import { MessageComponent } from "./message/message.component";
 import { firstValueFrom } from 'rxjs';
+import { ChatMessage, ChatService } from '../../../services/chat.service';
+import { AuthService, User } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-chat',
@@ -24,7 +23,6 @@ import { firstValueFrom } from 'rxjs';
     FormsModule,
     NbLayoutModule,
     NbChatModule,
-    ChannelHeaderComponent,
     NbCardModule,
     NbIconModule,
     NbButtonModule,
@@ -70,7 +68,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           });
           break;
         case 'delete-message':
-          if (this.userInfo?.privileges?.['admin']) {
+          if (this.userInfo?.privileges?.['writer']) {
             this.zone.run(() => {
               const index = this.messages.findIndex(m => m.id === message.message.id);
               if (index !== -1) {

@@ -8,8 +8,8 @@ import { NotificationsService } from './services/notifications.service';
   imports: [
     RouterOutlet,
     NbLayoutModule,
-    NbCardModule
-  ],
+    NbCardModule,
+],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

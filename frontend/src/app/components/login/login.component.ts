@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -20,7 +20,8 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private _authService: AuthService,
-    private _route: ActivatedRoute
+    private _route: ActivatedRoute,
+    private router: Router
   ) { }
 
   async ngOnInit() {
@@ -29,7 +30,7 @@ export class LoginComponent implements OnInit {
     try {
       await this._authService.loadUserInfo();
       if (this._authService.userInfo) {
-        window.location.href = '/';
+        this.router.navigate(['/']);
         return;
       }
     } catch {
@@ -38,7 +39,7 @@ export class LoginComponent implements OnInit {
           if (params['code'] && params['state'] === localStorage.getItem('google_oauth_state')) {
             this.code = params['code'];
             this._authService.login(this.code).then(() => {
-              window.location.href = '/';
+              this.router.navigate(['/']);
             }).catch(() => {
               this.code = '';
               this.status = 'failed';

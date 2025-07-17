@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Channel } from '../../../models/channel.model';
 import { NbCardModule, NbDialogRef, NbButtonModule, NbSpinnerModule, NbInputModule, NbToastrService, NbPopoverModule } from '@nebular/theme';
-import { Attachment, ChatFile, ChatService } from '../../../services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
-import { AdminService } from '../../../services/admin.service';
+import { Channel } from '../../../../models/channel.model';
+import { AdminService } from '../../../../services/admin.service';
+import { ChatService, Attachment, ChatFile } from '../../../../services/chat.service';
+
 
 @Component({
   selector: 'app-channel-info-form',

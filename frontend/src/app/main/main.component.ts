@@ -1,45 +1,31 @@
 import { Component, OnInit } from '@angular/core';
-import { ChannelHeaderComponent } from "../../chat/channel-header/channel-header.component";
-import { AuthService, User } from '../../../services/auth.service';
-import {
-  NbLayoutModule,
-  NbSidebarModule,
-  NbIconModule,
-  NbSidebarService,
-  NbButtonModule,
-  NbMenuModule,
-  NbMenuItem
-} from "@nebular/theme";
+import { NbLayoutModule, NbSidebarModule, NbMenuModule, NbMenuItem } from "@nebular/theme";
 import { RouterOutlet } from "@angular/router";
+import { AuthService, User } from '../services/auth.service';
+import { CommonModule } from '@angular/common';
+import { ChannelHeaderComponent } from '../components/channel/chat/channel-header/channel-header.component';
 
 @Component({
-  selector: 'app-admin-area',
+  selector: 'app-main',
   imports: [
-    ChannelHeaderComponent,
     NbLayoutModule,
+    RouterOutlet,
     NbSidebarModule,
-    NbIconModule,
-    NbButtonModule,
     NbMenuModule,
-    RouterOutlet
+    CommonModule,
+    ChannelHeaderComponent
   ],
-  templateUrl: './admin-area.component.html',
-  styleUrl: './admin-area.component.scss'
+  templateUrl: './main.component.html',
+  styleUrl: './main.component.scss'
 })
-export class AdminAreaComponent implements OnInit {
-  constructor(
-    private authService: AuthService,
-    public sidebarService: NbSidebarService,
-  ) { }
+export class MainComponent implements OnInit {
 
-  userInfo: User | undefined;
-
+  userInfo?: User;
   navigationMenu: NbMenuItem[] = [
     {
       title: 'מעבר לערוץ',
       icon: 'arrow-back-outline',
-      url: '/',
-      target: '_blank'
+      link: '/',
     },
     {
       title: 'הגדרות ערוץ',
@@ -89,11 +75,12 @@ export class AdminAreaComponent implements OnInit {
     },
   ]
 
+  constructor(
+    private _authService: AuthService,
+  ) { }
+
   ngOnInit(): void {
-    this.authService.loadUserInfo()
-      .then(user =>
-        this.userInfo = user
-      );
+    this._authService.loadUserInfo().then(res => this.userInfo = res);
   }
 
 }

@@ -1,5 +1,4 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { ChatMessage, ChatService } from "../../../services/chat.service";
 import { NgIf, CommonModule } from "@angular/common";
 import {
   NbButtonModule,
@@ -10,14 +9,15 @@ import {
   NbPosition,
   NbToastrService
 } from "@nebular/theme";
-import { MessageTimePipe } from "../../../pipes/message-time.pipe";
 import { filter } from "rxjs";
 import { InputFormComponent } from "../input-form/input-form.component";
 import { MarkdownComponent } from "ngx-markdown";
 import Viewer from 'viewerjs';
 import { YoutubePlayerComponent } from '../youtube-player/youtube-player.component';
-import { AdminService } from '../../../services/admin.service';
 import { NgbPopover, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
+import { MessageTimePipe } from '../../../../pipes/message-time.pipe';
+import { ChatMessage, ChatService } from '../../../../services/chat.service';
+import { AdminService } from '../../../../services/admin.service';
 
 @Component({
   selector: 'app-message',
