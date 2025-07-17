@@ -61,21 +61,24 @@ export class PrivilegDashboardComponent implements OnInit {
   saveNewUser() {
     if (!this.newUser.email) return;
     this.privilegeUsersList.push(this.newUser);
+    this.newUser = this.nullUser;
     this.addingNewUser = false;
   }
 
   resetNewUser() {
-    this.newUser = {
-      username: '',
-      publicName: '',
-      email: '',
-      privileges: {
-        admin: false,
-        moderator: false,
-        writer: false
-      }
-    };
+    this.newUser = this.nullUser;
     this.addingNewUser = false;
   }
+
+  nullUser: PrivilegeUser = {
+    username: '',
+    publicName: '',
+    email: '',
+    privileges: {
+      admin: false,
+      moderator: false,
+      writer: false
+    }
+  };
 
 }
