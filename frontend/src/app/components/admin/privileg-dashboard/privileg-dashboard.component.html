@@ -33,7 +33,7 @@
                     <div>
                         <span>הרשאות:</span>
                         <div class="d-flex flex-column">
-                            <nb-checkbox [(ngModel)]="newUser.privileges['admin']" disabled>מנהל ראשי</nb-checkbox>
+                            <nb-checkbox [(ngModel)]="newUser.privileges['admin']">מנהל ראשי</nb-checkbox>
                             <nb-checkbox [(ngModel)]="newUser.privileges['moderator']">מנהל</nb-checkbox>
                             <nb-checkbox [(ngModel)]="newUser.privileges['writer']">כותב</nb-checkbox>
                         </div>
@@ -82,7 +82,7 @@
                             הרשאות:
                         </span>
                         <div class="d-flex flex-column">
-                            <nb-checkbox disabled [(ngModel)]="item.privileges['admin']">
+                            <nb-checkbox [(ngModel)]="item.privileges['admin']">
                                 מנהל ראשי
                             </nb-checkbox>
                             <nb-checkbox [(ngModel)]="item.privileges['moderator']">
