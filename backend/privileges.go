@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -22,10 +24,11 @@ const (
 	Writer    Privilege = "writer"    // can write posts
 )
 
-func init() {
+func initializePrivilegeUsers() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	privilegesUsers.Clear()
 	users, err := dbGetUsersList(ctx)
 	if err != nil && err != redis.Nil {
 		panic("Failed to get users list from database: " + err.Error())
@@ -63,4 +66,44 @@ func (p Privileges) MarshalBinary() ([]byte, error) {
 
 func (p *Privileges) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, p)
+}
+
+func getPrivilegeUsersList(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	users, err := dbGetUsersList(ctx)
+	if err != nil {
+		http.Error(w, "Failed to get users list", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func setPrivilegeUsers(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var req struct {
+		List []User `json:"list"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+	log.Println("Setting privileges for users:", req.List)
+
+	if err := dbSetUsersList(ctx, req.List); err != nil {
+		http.Error(w, "Failed to set users list", http.StatusInternalServerError)
+		return
+	}
+
+	initializePrivilegeUsers()
+
+	response := Response{Success: true}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

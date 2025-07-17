@@ -31,11 +31,11 @@ type Message struct {
 }
 
 type User struct {
-	ID         string
-	Username   string
-	Email      string
-	PublicName string
-	Privileges Privileges
+	ID         string     `json:"id"`
+	Username   string     `json:"username"`
+	Email      string     `json:"email"`
+	PublicName string     `json:"publicName"`
+	Privileges Privileges `json:"privileges"`
 }
 
 type PushMessage struct {

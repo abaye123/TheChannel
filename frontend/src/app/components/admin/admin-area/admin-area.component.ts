@@ -45,6 +45,15 @@ export class AdminAreaComponent implements OnInit {
       title: 'הגדרות ערוץ',
       icon: 'settings-2-outline',
       link: '/admin/settings',
+      badge: {
+        text: 'בקרוב',
+        status: 'warning'
+      }
+    },
+    {
+      title: 'ניהול הרשאות',
+      icon: 'shield-outline',
+      link: '/admin/permissions',
     },
     {
       title: 'ניהול משתמשים',
@@ -59,15 +68,6 @@ export class AdminAreaComponent implements OnInit {
       title: 'הגדרת התראות',
       icon: 'bell-outline',
       link: '/admin/notifications',
-      badge: {
-        text: 'בקרוב',
-        status: 'warning'
-      }
-    },
-    {
-      title: 'ניהול הרשאות',
-      icon: 'shield-outline',
-      link: '/admin/permissions',
       badge: {
         text: 'בקרוב',
         status: 'warning'

@@ -40,7 +40,7 @@ export class ChannelHeaderComponent implements OnInit {
   set userInfo(user: User | undefined) {
     this._userInfo = user;
     this.userMenu = [
-      ...(user?.privileges?.['admin'] ? [{
+      ...((user?.privileges?.['admin'] || user?.privileges?.['moderator']) ? [{
         title: 'ערוך פרטי ערוץ',
         icon: 'edit-2-outline',
       },

@@ -4,6 +4,14 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { ChatFile, ChatMessage } from './chat.service';
 import { ResponseResult } from '../models/response-result.model';
 
+export interface PrivilegeUser {
+  id?: string;
+  username: string;
+  email: string;
+  publicName: string;
+  privileges: Record<string, boolean>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -42,6 +50,13 @@ export class AdminService {
     });
   }
 
+  getPrivilegeUsersList(): Promise<PrivilegeUser[]> {
+    return firstValueFrom(this.http.get<PrivilegeUser[]>('/api/admin/privilegs-users/get-list'));
+  }
+
+  setPrivilegeUsers(privilegeUsers: PrivilegeUser[]): Promise<ResponseResult> {
+    return firstValueFrom(this.http.post<ResponseResult>('/api/admin/privilegs-users/set', { list: privilegeUsers }));
+  }
 
   setEmojis(emojis: string[] | undefined) {
     return firstValueFrom(this.http.post<ResponseResult>('/api/admin/set-emojis', { emojis }));

@@ -25,6 +25,7 @@ func protectedWithPrivilege(Privilege Privilege, handler http.HandlerFunc) http.
 
 func main() {
 	gob.Register(Session{})
+	initializePrivilegeUsers()
 
 	var err error
 	store, err = redistore.NewRediStore(10, redisType, redisAddr, "", redisPass, []byte(secretKey))
@@ -70,13 +71,16 @@ func main() {
 			// ⚠️ WARNING: Routes are NOT protected by default!
 			// Use `protectedRoutes(requiredPrivilege, HandlerFunc)` to enforce access control per route.
 
-			protected.Post("/edit-channel-info", protectedWithPrivilege(Admin, editChannelInfo))
-			protected.Get("/users-amount", protectedWithPrivilege(Admin, getUsersAmount))
-			protected.Post("/new", protectedWithPrivilege(Admin, addMessage))
-			protected.Post("/edit-message", protectedWithPrivilege(Admin, updateMessage))
-			protected.Get("/delete-message/{id}", protectedWithPrivilege(Admin, deleteMessage))
-			protected.Post("/upload", protectedWithPrivilege(Admin, uploadFile))
-			protected.Post("/set-emojis", protectedWithPrivilege(Admin, setEmojis))
+			protected.Post("/new", protectedWithPrivilege(Writer, addMessage))
+			protected.Post("/edit-message", protectedWithPrivilege(Writer, updateMessage))
+			protected.Get("/delete-message/{id}", protectedWithPrivilege(Writer, deleteMessage))
+			protected.Post("/upload", protectedWithPrivilege(Writer, uploadFile))
+			protected.Post("/edit-channel-info", protectedWithPrivilege(Moderator, editChannelInfo))
+			protected.Get("/users-amount", protectedWithPrivilege(Moderator, getUsersAmount))
+			protected.Post("/set-emojis", protectedWithPrivilege(Moderator, setEmojis))
+
+			protected.Get("/privilegs-users/get-list", protectedWithPrivilege(Admin, getPrivilegeUsersList))
+			protected.Post("/privilegs-users/set", protectedWithPrivilege(Admin, setPrivilegeUsers))
 		})
 	})
 
