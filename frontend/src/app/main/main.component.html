@@ -1,5 +1,9 @@
 <nb-layout>
     <nb-layout-header fixed>
+        <button *ngIf="userInfo?.privileges?.['admin'] || userInfo?.privileges?.['moderator']" nbButton ghost
+            size="giant" (click)="sidebarService.toggle(true)">
+            <nb-icon icon="menu"></nb-icon>
+        </button>
         <app-channel-header [(userInfo)]="userInfo" style="flex: auto;"></app-channel-header>
     </nb-layout-header>
 

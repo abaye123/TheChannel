@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NbLayoutModule, NbSidebarModule, NbMenuModule, NbMenuItem } from "@nebular/theme";
+import { NbLayoutModule, NbSidebarModule, NbMenuModule, NbMenuItem, NbIconModule, NbSidebarService, NbButtonModule } from "@nebular/theme";
 import { RouterOutlet } from "@angular/router";
 import { AuthService, User } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,9 @@ import { ChannelHeaderComponent } from '../components/channel/chat/channel-heade
     NbSidebarModule,
     NbMenuModule,
     CommonModule,
-    ChannelHeaderComponent
+    ChannelHeaderComponent,
+    NbIconModule,
+    NbButtonModule
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
@@ -77,6 +79,7 @@ export class MainComponent implements OnInit {
 
   constructor(
     private _authService: AuthService,
+    public sidebarService: NbSidebarService,
   ) { }
 
   ngOnInit(): void {
