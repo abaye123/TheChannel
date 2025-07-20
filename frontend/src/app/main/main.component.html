@@ -7,8 +7,8 @@
         <app-channel-header [(userInfo)]="userInfo" style="flex: auto;"></app-channel-header>
     </nb-layout-header>
 
-    <nb-sidebar *ngIf="userInfo?.privileges?.['admin'] || userInfo?.privileges?.['moderator']" fixed right
-        [state]="'compacted'">
+    <nb-sidebar *ngIf="userInfo?.privileges?.['admin'] || userInfo?.privileges?.['moderator']" responsive right
+        [state]="'expanded'">
         <nb-menu [items]="navigationMenu"></nb-menu>
     </nb-sidebar>
 
