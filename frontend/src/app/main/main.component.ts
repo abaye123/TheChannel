@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { NbLayoutModule, NbSidebarModule, NbMenuModule, NbMenuItem, NbIconModule, NbSidebarService, NbButtonModule } from "@nebular/theme";
-import { RouterOutlet } from "@angular/router";
+import { NbLayoutModule, NbSidebarModule, NbMenuModule, NbMenuItem, NbIconModule, NbSidebarService, NbButtonModule, NbUserModule, NbContextMenuModule, NbMenuService, NbToastrService } from "@nebular/theme";
+import { Router, RouterOutlet } from "@angular/router";
 import { AuthService, User } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { ChannelHeaderComponent } from '../components/channel/chat/channel-header/channel-header.component';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-main',
@@ -15,14 +16,16 @@ import { ChannelHeaderComponent } from '../components/channel/chat/channel-heade
     CommonModule,
     ChannelHeaderComponent,
     NbIconModule,
-    NbButtonModule
+    NbButtonModule,
+    NbUserModule,
+    NbContextMenuModule
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
 export class MainComponent implements OnInit {
 
-  userInfo?: User;
+  userInfo!: User;
   navigationMenu: NbMenuItem[] = [
     {
       title: 'מעבר לערוץ',
@@ -77,13 +80,65 @@ export class MainComponent implements OnInit {
     },
   ]
 
+  userMenuTag: string = 'user-menu';
+  userMenu: NbMenuItem[] = [
+    // {
+    //   title: 'ערוך פרטי ערוץ',
+    //   icon: 'edit-2-outline',
+    // },
+    // {
+    //   title: 'ניהול ערוץ',
+    //   icon: 'people-outline',
+    //   link: '/admin/dashboard',
+    // },
+    {
+      title: 'התנתק',
+      icon: 'log-out',
+    }
+  ];
+
+
   constructor(
     private _authService: AuthService,
     public sidebarService: NbSidebarService,
+    private menuService: NbMenuService,
+    private router: Router,
+    private toastrService: NbToastrService,
   ) { }
 
   ngOnInit(): void {
     this._authService.loadUserInfo().then(res => this.userInfo = res);
+    this.menuService.onItemClick()
+      .pipe(filter(({ tag }) => tag === this.userMenuTag))
+      .subscribe(item => {
+        switch (item.item.icon) {
+          case 'log-out':
+            this.logout();
+            break;
+        }
+      }
+      )
+  }
+
+  async logout() {
+    if (await this._authService.logout()) {
+      this.userInfo = null!;
+      try {
+        await this._authService.loadUserInfo();
+      } catch (err: any) {
+        if (err.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      }
+
+      const path = this.router.url;
+      if (path !== '/') {
+        this.router.navigate(['/']);
+      }
+
+    } else {
+      this.toastrService.danger("", "שגיאה בהתנתקות");
+    }
   }
 
 }

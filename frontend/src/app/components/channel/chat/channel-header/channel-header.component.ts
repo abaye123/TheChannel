@@ -46,7 +46,7 @@ export class ChannelHeaderComponent implements OnInit {
       {
         title: 'ניהול ערוץ',
         icon: 'people-outline',
-
+        link: '/admin/dashboard',
       }] : []),
       {
         title: 'התנתק',
@@ -92,9 +92,6 @@ export class ChannelHeaderComponent implements OnInit {
             break;
           case 'edit-2-outline':
             this.openChannelEditerDialog();
-            break;
-          case 'people-outline':
-            this.router.navigate(['/admin/dashboard']);
             break;
         }
       });

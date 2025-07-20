@@ -21,3 +21,15 @@ markdown {
     font-weight: 500;
     // font-size: 110%;
 }
+
+@media (max-width: 1000px) {
+    .sm-s-none {
+        display: none !important;
+    }
+}
+
+@media (min-width: 900px) {
+    .lg-s-none {
+        display: none !important;
+    }
+}

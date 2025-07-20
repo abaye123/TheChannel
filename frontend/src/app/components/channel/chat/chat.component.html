@@ -28,6 +28,7 @@
         <nb-badge *ngIf="hasNewMessages" [dotMode]="true" status="danger"></nb-badge>
     </div>
 
+    @if (userInfo) {
     <app-input-form></app-input-form>
-
+    }
 </nb-card>
