@@ -132,7 +132,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async loadMessages() {
-    console.log('Loading messages...');
     if (this.isLoading || !this.hasMoreMessages) return;
 
     try {
