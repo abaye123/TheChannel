@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, Optional, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
@@ -61,7 +61,7 @@ export class InputFormComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private toastrService: NbToastrService,
-    protected dialogRef: NbDialogRef<InputFormComponent>
+    @Optional() protected dialogRef: NbDialogRef<InputFormComponent>
   ) { }
 
   ngOnInit() {
@@ -154,7 +154,7 @@ export class InputFormComponent implements OnInit {
       }
 
       this.toastrService.success("", "הודעה פורסמה בהצלחה");
-      this.dialogRef.close(this.message);
+      this.closeDialog();
     } catch (error) {
       this.toastrService.danger("", "שגיאה בפרסום הודעה");
     } finally {
@@ -188,8 +188,11 @@ export class InputFormComponent implements OnInit {
     return true;
   }
 
-  closeDialog() {
-    this.dialogRef.close();
+  async closeDialog() {
+    this.input = '';
+    this.attachments = [];
+    this.message = undefined;
+    this.dialogRef?.close();
   }
 
   removeAttachment(attachment: Attachment) {

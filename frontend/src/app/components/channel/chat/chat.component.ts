@@ -14,6 +14,7 @@ import { MessageComponent } from "./message/message.component";
 import { firstValueFrom } from 'rxjs';
 import { ChatMessage, ChatService } from '../../../services/chat.service';
 import { AuthService, User } from '../../../services/auth.service';
+import { InputFormComponent } from "./input-form/input-form.component";
 
 @Component({
   selector: 'app-chat',
@@ -29,7 +30,8 @@ import { AuthService, User } from '../../../services/auth.service';
     NbListModule,
     NbBadgeModule,
     MessageComponent,
-  ],
+    InputFormComponent
+],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
