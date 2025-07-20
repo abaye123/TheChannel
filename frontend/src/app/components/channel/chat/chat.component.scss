@@ -6,15 +6,13 @@ nb-list-item {
   overflow-x: auto;
 }
 
-.scroll-arrow {
-  z-index: 999 !important;
-}
-
 nb-list-item:first-child {
   border-top: 0 !important;
 }
 
-.list-ms {
-  height: 80vh;
-  overflow-y: scroll;
+.scroll-to-bottom-btn {
+  position: fixed;
+  bottom: 40px;
+  left: 30px;
+  z-index: 1000;
 }

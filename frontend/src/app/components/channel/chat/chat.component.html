@@ -1,34 +1,31 @@
-<nb-card class="" accent="info">
-    <!-- <nb-card-header></nb-card-header> -->
-    <nb-card-body>
-        <nb-list class="flex-column-reverse list-ms" #messagesList nbInfiniteList (scroll)="onListScroll()" [threshold]="200"
-            [throttleTime]="1500" (topThreshold)="loadMessages()">
+<nb-card accent="primary" nbInfiniteList (scroll)="onListScroll()" [threshold]="200" [throttleTime]="1500"
+    (topThreshold)="loadMessages()" [listenWindowScroll]="true">
+    <nb-list class="flex-column-reverse">
 
-            <!-- Scroll to bottom -->
-            <nb-list-item *ngIf="showScrollToBottom" class="position-absolute align-self-end m-4 scroll-arrow">
-                <button nbButton status="primary" shape="round" class="shadow" (click)="scrollToBottom()">
-                    <nb-icon icon="arrow-downward-outline"></nb-icon>
-                </button>
-                <nb-badge *ngIf="hasNewMessages" [dotMode]="true" status="danger"></nb-badge>
-            </nb-list-item>
+        <nb-list-item *ngFor="let message of messages">
+            <app-message [isAdmin]="userInfo?.privileges?.['writer'] == true" [message]="message"></app-message>
+        </nb-list-item>
 
-            <nb-list-item *ngFor="let message of messages">
-                <app-message [isAdmin]="userInfo?.privileges?.['writer'] == true" [message]="message"></app-message>
-            </nb-list-item>
+        <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">
+            <div *ngIf="!isLoading" class="align-self-center flex-grow-1">
+                <span>אין הודעות</span>
+            </div>
+        </nb-list-item>
 
-            <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">
-                <div *ngIf="!isLoading" class="align-self-center flex-grow-1">
-                    <span>אין הודעות</span>
-                </div>
-            </nb-list-item>
+        <!-- Loading indicator -->
+        <nb-list-item *ngIf="isLoading" class="flex-fill align-self-center">
+            <div class="align-self-center flex-grow-1">
+                <div class="spinner-border text-primary"></div>
+            </div>
+        </nb-list-item>
+    </nb-list>
 
-            <!-- Loading indicator -->
-            <nb-list-item *ngIf="isLoading" class="flex-fill align-self-center">
-                <div class="align-self-center flex-grow-1">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-            </nb-list-item>
-        </nb-list>
-    </nb-card-body>
-    <!-- <nb-card-footer></nb-card-footer> -->
+    <!-- Scroll to bottom -->
+    <div class="scroll-to-bottom-btn" *ngIf="showScrollToBottom">
+        <button nbButton status="primary" shape="round" class="shadow" (click)="scrollToBottom()">
+            <nb-icon icon="arrow-downward-outline"></nb-icon>
+        </button>
+        <nb-badge *ngIf="hasNewMessages" [dotMode]="true" status="danger"></nb-badge>
+    </div>
+
 </nb-card>

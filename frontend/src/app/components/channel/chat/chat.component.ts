@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, NgZone, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, NgZone, OnDestroy, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NbBadgeModule,
@@ -36,10 +36,6 @@ import { AuthService, User } from '../../../services/auth.service';
 
 export class ChatComponent implements OnInit, OnDestroy {
   private eventSource!: EventSource;
-
-  @ViewChild('messagesList', { static: false, read: ElementRef })
-  messagesList?: ElementRef;
-
   messages: ChatMessage[] = [];
   userInfo?: User;
   isLoading: boolean = false;
@@ -54,6 +50,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     private _authService: AuthService,
     private zone: NgZone,
   ) { }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    this.onListScroll();
+  }
 
   ngOnInit() {
     this.chatService.getEmojisList(true);
@@ -109,24 +110,29 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
+
+
   ngOnDestroy() {
     this.chatService.sseClose();
   }
 
   onListScroll() {
-    let position = this.messagesList?.nativeElement.scrollTop * -1;
-    this.showScrollToBottom = position > 200;
-    if (position < 10) {
+    const distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+    this.showScrollToBottom = distanceFromBottom > 100;
+    if (distanceFromBottom < 10) {
       this.hasNewMessages = false;
     }
   }
 
   scrollToBottom() {
-    this.messagesList?.nativeElement.scrollTo({ behavior: 'smooth', top: 0 });
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 200);
     this.hasNewMessages = false;
   }
 
   async loadMessages() {
+    console.log('Loading messages...');
     if (this.isLoading || !this.hasMoreMessages) return;
 
     try {
