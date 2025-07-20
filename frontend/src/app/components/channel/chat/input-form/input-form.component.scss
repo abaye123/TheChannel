@@ -10,6 +10,7 @@ div button {
     padding: 0.25rem;
     margin-bottom: 0.5rem;
     max-width: 100%;
+    flex-wrap: wrap;
 }
 
 .toolbar-button {
@@ -40,5 +41,5 @@ div button {
 .input-area {
     height: 15svh;
     width: 100%;
-    max-width: 100%; 
+    max-width: 100%;
 }
