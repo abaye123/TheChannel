@@ -399,3 +399,33 @@ func dbGetUsersList(ctx context.Context) ([]User, error) {
 
 	return usersList, nil
 }
+
+func dbSetSettings(ctx context.Context, settings *Settings) error {
+	jsonSettings, err := json.Marshal(settings)
+	if err != nil {
+		return fmt.Errorf("failed to marshal settings: %v", err)
+	}
+
+	if err := rdb.Set(ctx, "settings:list", jsonSettings, 0).Err(); err != nil {
+		return fmt.Errorf("failed to set settings in db: %v", err)
+	}
+
+	return nil
+}
+
+func dbGetSettings(ctx context.Context) (Settings, error) {
+	settingsJSON, err := rdb.Get(ctx, "settings:list").Result()
+	if err != nil {
+		if err == redis.Nil {
+			return Settings{}, nil
+		}
+		return nil, fmt.Errorf("failed to get settings from db: %v", err)
+	}
+
+	var settings Settings
+	if err := json.Unmarshal([]byte(settingsJSON), &settings); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal settings: %v", err)
+	}
+
+	return settings, nil
+}

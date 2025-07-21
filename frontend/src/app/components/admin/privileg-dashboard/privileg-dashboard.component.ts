@@ -47,7 +47,8 @@ export class PrivilegDashboardComponent implements OnInit {
 
   saveChanges() {
     this.adminService.setPrivilegeUsers(this.privilegeUsersList)
-      .then(() => this.tostService.success('', 'השינוים נשמרו בהצלחה!'));
+      .then(() => this.tostService.success('', 'השינוים נשמרו בהצלחה!'))
+      .catch(() => this.tostService.danger('', 'שגיאה בשמירת השינוים'));
   }
 
   deleteUser(index: number) {
@@ -77,5 +78,4 @@ export class PrivilegDashboardComponent implements OnInit {
       writer: false
     }
   };
-
 }

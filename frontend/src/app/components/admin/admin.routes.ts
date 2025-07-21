@@ -23,7 +23,7 @@ export const adminRoutes: Routes = [
     },
     {
         path: 'settings', component: SettingsComponent,
-        data: { requiredPrivilege: 'moderator' },
+        data: { requiredPrivilege: 'admin' },
         canActivate: [AdminGuard]
     },
     {

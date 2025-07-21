@@ -59,6 +59,7 @@ func main() {
 			api.Use(checkLogin)
 		}
 
+		api.Get("/ads/settings", getAdsSettings)
 		api.Get("/emojis/list", getEmojisList)
 		api.Get("/channel/notifications-config", getNotificationsConfig)
 		api.Post("/channel/notifications-subscribe", subscribeNotifications)
@@ -83,6 +84,8 @@ func main() {
 
 			protected.Get("/privilegs-users/get-list", protectedWithPrivilege(Admin, getPrivilegeUsersList))
 			protected.Post("/privilegs-users/set", protectedWithPrivilege(Admin, setPrivilegeUsers))
+			protected.Get("/settings/get", protectedWithPrivilege(Admin, getSettings))
+			protected.Post("/settings/set", protectedWithPrivilege(Admin, setSettings))
 		})
 	})
 
