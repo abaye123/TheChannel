@@ -7,10 +7,8 @@
         <app-channel-header [(userInfo)]="userInfo" style="flex: auto;"></app-channel-header>
     </nb-layout-header>
 
-    <nb-sidebar *ngIf="userInfo?.privileges?.['admin'] || userInfo?.privileges?.['moderator']" responsive right
+    <nb-sidebar #sidebar *ngIf="userInfo?.privileges?.['admin'] || userInfo?.privileges?.['moderator']" responsive right
         [state]="'expanded'">
-        <nb-user [name]="userInfo.username" [picture]="userInfo.picture" class="lg-s-none"
-            [nbContextMenu]="userMenu" [nbContextMenuTag]="userMenuTag"></nb-user>
         <nb-menu [items]="navigationMenu"></nb-menu>
     </nb-sidebar>
 

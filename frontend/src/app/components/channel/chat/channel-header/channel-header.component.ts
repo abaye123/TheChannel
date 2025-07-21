@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { NgIf } from "@angular/common";
 import {
   NbButtonModule,
@@ -66,6 +66,7 @@ export class ChannelHeaderComponent implements OnInit {
 
   userMenuTag = 'user-menu';
   userMenu: NbMenuItem[] = [];
+  isSmallScreen = false;
 
   constructor(
     public chatService: ChatService,
@@ -77,6 +78,11 @@ export class ChannelHeaderComponent implements OnInit {
     public notificationsService: NotificationsService,
     private titleService: Title,
   ) {
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.updateScreenSize();
   }
 
   ngOnInit() {
@@ -95,6 +101,8 @@ export class ChannelHeaderComponent implements OnInit {
             break;
         }
       });
+
+    this.updateScreenSize();
   }
 
   async logout() {
@@ -142,5 +150,9 @@ export class ChannelHeaderComponent implements OnInit {
       }
       this.v.show();
     }
+  }
+
+  updateScreenSize() {
+    this.isSmallScreen = window.innerWidth < 768;
   }
 }

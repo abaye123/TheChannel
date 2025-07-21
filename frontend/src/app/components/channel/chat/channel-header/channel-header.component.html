@@ -14,7 +14,7 @@
     }
 
     @if (userInfo?.privileges?.['writer']) {
-    <button nbButton shape="round" class="m-2 sm-s-none" title="הודעה חדשה" status="primary"
+    <button nbButton shape="round" class="m-2 d-none d-md-block" title="הודעה חדשה" status="primary"
         (click)="openMessageFormDialog()">
         <nb-icon icon="message-square"></nb-icon>
     </button>
@@ -22,11 +22,8 @@
 
     @if (userInfo) {
     <nb-user [name]="userInfo.username" shape="round" color="#cccccc" [nbContextMenu]="userMenu"
-        [nbContextMenuTag]="userMenuTag" [picture]="userInfo.picture" class="sm-s-none">
+        [nbContextMenuTag]="userMenuTag" [picture]="userInfo.picture" [onlyPicture]="isSmallScreen">
     </nb-user>
-    <button nbButton shape="round" class="m-2 lg-s-none" title="התנתק" status="danger" (click)="logout()">
-        <nb-icon icon="log-out"></nb-icon>
-    </button>
     } @else {
     <button nbButton shape="round" class="m-2" title="התחבר" [routerLink]="['/login']">
         <nb-icon icon="log-in"></nb-icon>
