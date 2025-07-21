@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -51,7 +50,6 @@ func (s *Settings) ToConfig() *SettingConfig {
 		case "ad-iframe-src":
 			config.AdSrc = setting.GetString()
 		case "ad-iframe-width":
-			log.Println("Setting ad-iframe-width to", setting)
 			config.AdWidth = setting.GetInt()
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
