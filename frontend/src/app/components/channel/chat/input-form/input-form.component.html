@@ -57,7 +57,7 @@
                 </nb-card>
                 } @else {
                 <textarea #inputTextArea nbInput fullWidth shape="rectangle" placeholder="הקלד/י הודעה..."
-                    style="height: 100%" maxlength="2048" [disabled]="showMarkdownPreview || isSending"
+                    style="height: 100%" maxlength="8192" [disabled]="showMarkdownPreview || isSending"
                     [(ngModel)]="input" (input)="checkScrollbar()"></textarea>
                 }
 

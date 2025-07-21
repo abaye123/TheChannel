@@ -44,7 +44,7 @@ import { AdminService } from '../../../../services/admin.service';
 })
 export class InputFormComponent implements OnInit {
 
-  protected readonly maxMessageLength: number = 2048;
+  protected readonly maxMessageLength: number = 8192;
 
   message?: ChatMessage;
 
