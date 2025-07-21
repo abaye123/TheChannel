@@ -1,17 +1,9 @@
-@media (max-width: 1025px) {
-    .ads {
-        display: none;
-    }
-
-    .chat {
-        max-width: 100%;
-    }
+.chat {
+    width: 70%;
 }
 
-@media (min-width: 1025px) {
-    .chat {
-        max-width: 70%;
-    }
+.chat.full-width {
+    width: 100%;
 }
 
 .ads {
@@ -20,4 +12,15 @@
     left: 20px;
     width: 23%;
     z-index: 1000;
+}
+
+@media (max-width: 1025px) {
+    .ads {
+        display: none;
+    }
+
+    .chat,
+    .chat.full-width {
+        width: 100%;
+    }
 }

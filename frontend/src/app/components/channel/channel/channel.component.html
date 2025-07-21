@@ -1,4 +1,4 @@
 <div class="d-flex flex-row gap-2">
-    <app-chat class="chat"></app-chat>
-    <app-advertising class="ads"></app-advertising>
+    <app-chat class="chat" [ngClass]="{'full-width': !advertisingEnabled}"></app-chat>
+    <app-advertising class="ads" *ngIf="advertisingEnabled"></app-advertising>
 </div>
