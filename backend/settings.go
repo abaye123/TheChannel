@@ -18,7 +18,7 @@ type ReplaceRegex struct {
 
 type SettingConfig struct {
 	AdSrc            string
-	AdWidth          int
+	AdWidth          int64
 	RequireAuth      bool
 	RegexReplace     []*ReplaceRegex
 	WebhookURL       string
@@ -105,8 +105,8 @@ func (s *Setting) GetString() string {
 	return str
 }
 
-func (s *Setting) GetInt() int {
-	i, _ := dyno.GetInt(s.Value)
+func (s *Setting) GetInt() int64 {
+	i, _ := dyno.GetInteger(s.Value)
 	return i
 }
 

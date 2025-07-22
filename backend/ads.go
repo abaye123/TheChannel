@@ -7,7 +7,7 @@ import (
 
 type AdsSettings struct {
 	Src   string `json:"src"`
-	Width int    `json:"width"`
+	Width int64  `json:"width"`
 }
 
 func getAdsSettings(w http.ResponseWriter, r *http.Request) {
