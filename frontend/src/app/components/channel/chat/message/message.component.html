@@ -15,8 +15,9 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center mx-2 gap-2">
                     <small class="text-black-50">{{ message.timestamp | messageTime }}</small>
-                    <div class="d-flex flex-row align-items-center text-black-50 gap-1" title="צפיות">
-                        <small>{{ message.views ?? 0 }}</small>
+                    <div class="d-flex flex-row align-items-center text-black-50 gap-1" title="צפיות"
+                        *ngIf="message.views">
+                        <small>{{ message.views }}</small>
                         <nb-icon icon="eye-outline"></nb-icon>
                     </div>
                 </div>

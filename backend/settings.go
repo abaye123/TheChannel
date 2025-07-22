@@ -25,6 +25,7 @@ type SettingConfig struct {
 	VerifyToken      string
 	ApiSecretKey     string
 	RootStaticFolder string
+	CountViews       bool
 }
 
 type Setting struct {
@@ -76,6 +77,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "api_secret_key":
 			config.ApiSecretKey = setting.GetString()
+
+		case "count_views":
+			config.CountViews = setting.GetBool()
 
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
