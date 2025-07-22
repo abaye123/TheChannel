@@ -11,6 +11,8 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
+var rootStaticFolder = os.Getenv("ROOT_STATIC_FOLDER")
+
 func protectedWithPrivilege(Privilege Privilege, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !checkPrivilege(r, Privilege) {
@@ -86,11 +88,18 @@ func main() {
 		})
 	})
 
-	if settingConfig.RootStaticFolder != "" {
-		r.Handle("/", http.FileServer(http.Dir(settingConfig.RootStaticFolder)))
-		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(settingConfig.RootStaticFolder))))
+	// if settingConfig.RootStaticFolder != "" {
+	// 	r.Handle("/", http.FileServer(http.Dir(settingConfig.RootStaticFolder)))
+	// 	r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(settingConfig.RootStaticFolder))))
+	// 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+	// 		http.ServeFile(w, r, settingConfig.RootStaticFolder+"/index.html")
+	// 	})
+	// }
+	if rootStaticFolder != "" {
+		r.Handle("/", http.FileServer(http.Dir("/usr/share/ng")))
+		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("/usr/share/ng"))))
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, settingConfig.RootStaticFolder+"/index.html")
+			http.ServeFile(w, r, "/usr/share/ng/index.html")
 		})
 	}
 
