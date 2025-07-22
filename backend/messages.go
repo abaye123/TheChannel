@@ -75,6 +75,8 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 	message.Text = body.Text
 	message.File = body.File
 	message.Views = 0
+	message.ReplyTo = body.ReplyTo
+	message.IsThread = body.IsThread
 
 	if err = setMessage(ctx, message, false); err != nil {
 		log.Printf("Failed to set new message: %v\n", err)
