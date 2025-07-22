@@ -12,6 +12,11 @@ export interface PrivilegeUser {
   privileges: Record<string, boolean>;
 }
 
+export interface Setting {
+  key: string
+  value: string
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -60,5 +65,13 @@ export class AdminService {
 
   setEmojis(emojis: string[] | undefined) {
     return firstValueFrom(this.http.post<ResponseResult>('/api/admin/set-emojis', { emojis }));
+  }
+
+  getSettings(): Promise<Setting[]> {
+    return firstValueFrom(this.http.get<Setting[]>('/api/admin/settings/get'));
+  }
+
+  setSettings(settings: Setting[]): Promise<ResponseResult> {
+    return firstValueFrom(this.http.post<ResponseResult>('/api/admin/settings/set', settings));
   }
 }

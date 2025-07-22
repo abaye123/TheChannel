@@ -1,8 +1,8 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
-import { ChatComponent } from "../chat/chat.component";
-import { AdvertisingComponent } from "../advertising/advertising.component";
+import { ChatComponent } from "./chat/chat.component";
+import { AdvertisingComponent } from "./advertising/advertising.component";
 import { CommonModule } from '@angular/common';
-import { Ad, AdsService } from '../../../services/ads.service';
+import { Ad, AdsService } from '../../services/ads.service';
 @Component({
   selector: 'app-channel',
   imports: [
@@ -35,7 +35,7 @@ export class ChannelComponent implements OnInit {
       .then(ad => {
         this.ads = ad
         this.advertisingWidth = ad.width;
-      });
+      }).then(() => this.updateChatWidth());
     setTimeout(() => {
       this.updateChatWidth();
     }, 200);

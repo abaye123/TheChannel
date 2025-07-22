@@ -17,7 +17,6 @@ import (
 var secretKey string = os.Getenv("SECRET_KEY")
 var store = &redistore.RediStore{}
 var cookieName = "channel_session"
-var requireAuthForAll = os.Getenv("REQUIRE_AUTH") == "1"
 var (
 	googleOAuthScopes       = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
 	googleOAuthUrl          = google.Endpoint.AuthURL

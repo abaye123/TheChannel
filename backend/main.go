@@ -55,10 +55,11 @@ func main() {
 
 	r.Route("/api", func(api chi.Router) {
 
-		if requireAuthForAll {
+		if settingConfig.RequireAuth {
 			api.Use(checkLogin)
 		}
 
+		api.Get("/ads/settings", getAdsSettings)
 		api.Get("/emojis/list", getEmojisList)
 		api.Get("/channel/notifications-config", getNotificationsConfig)
 		api.Post("/channel/notifications-subscribe", subscribeNotifications)
@@ -70,8 +71,7 @@ func main() {
 		api.Get("/user-info", getUserInfo)
 
 		api.Route("/admin", func(protected chi.Router) {
-			// ⚠️ WARNING: Routes are NOT protected by default!
-			// Use `protectedRoutes(requiredPrivilege, HandlerFunc)` to enforce access control per route.
+			// ⚠️ WARNING: Route not check privilege use protectedWithPrivilege to check privilege.
 
 			protected.Post("/new", protectedWithPrivilege(Writer, addMessage))
 			protected.Post("/edit-message", protectedWithPrivilege(Writer, updateMessage))
@@ -83,14 +83,16 @@ func main() {
 
 			protected.Get("/privilegs-users/get-list", protectedWithPrivilege(Admin, getPrivilegeUsersList))
 			protected.Post("/privilegs-users/set", protectedWithPrivilege(Admin, setPrivilegeUsers))
+			protected.Get("/settings/get", protectedWithPrivilege(Admin, getSettings))
+			protected.Post("/settings/set", protectedWithPrivilege(Admin, setSettings))
 		})
 	})
 
-	if rootStaticFolder != "" {
-		r.Handle("/", http.FileServer(http.Dir("/usr/share/ng")))
-		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("/usr/share/ng"))))
+	if settingConfig.RootStaticFolder != "" {
+		r.Handle("/", http.FileServer(http.Dir(settingConfig.RootStaticFolder)))
+		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(settingConfig.RootStaticFolder))))
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "/usr/share/ng/index.html")
+			http.ServeFile(w, r, settingConfig.RootStaticFolder+"/index.html")
 		})
 	}
 

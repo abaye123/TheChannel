@@ -5,15 +5,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
-var apiSecretKey = os.Getenv("API_SECRET_KEY")
-
 func addNewPost(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("X-API-Key")
-	if key != apiSecretKey {
+	if key != settingConfig.ApiSecretKey {
 		http.Error(w, "error", http.StatusBadRequest)
 		return
 	}
@@ -38,6 +35,8 @@ func addNewPost(w http.ResponseWriter, r *http.Request) {
 	message.Timestamp = body.Timestamp
 	message.Text = body.Text
 	message.Views = 0
+	message.ReplyTo = body.ReplyTo
+	message.IsThread = body.IsThread
 
 	if err = setMessage(ctx, message, false); err != nil {
 		log.Printf("Failed to set new message: %v\n", err)

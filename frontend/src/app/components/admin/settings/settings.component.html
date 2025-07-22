@@ -1,1 +1,30 @@
-<p>settings works!</p>
+<nb-card>
+    <nb-card-header>
+        הגדרות ערוץ
+    </nb-card-header>
+
+    <nb-card-body>
+        <div *ngFor="let setting of settings; let i = index" class="d-flex gap-2 mb-2">
+            <input nbInput fieldSize="small" type="text" [(ngModel)]="setting.key" placeholder="הגדרה">
+            <input nbInput fullWidth  fieldSize="small" type="text" [(ngModel)]="setting.value" placeholder="ערך">
+
+            <button nbButton status="danger" size="small" (click)="removeSetting(i)">
+                <nb-icon icon="close"></nb-icon>
+                מחק
+            </button>
+        </div>
+        <div>
+            <button nbButton size="small" status="primary" (click)="settings.push({ key: '', value: '' })">
+                <nb-icon icon="plus"></nb-icon>
+                הוסף הגדרה
+            </button>
+
+        </div>
+    </nb-card-body>
+
+    <nb-card-footer>
+        <button nbButton status="primary" (click)="saveSettings()">
+            שמור
+        </button>
+    </nb-card-footer>
+</nb-card>

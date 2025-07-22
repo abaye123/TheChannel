@@ -28,6 +28,8 @@ type Message struct {
 	Deleted   bool         `json:"deleted" redis:"deleted"`
 	Views     int          `json:"views" redis:"views"`
 	Reactions Reactions    `json:"reactions" redis:"reactions"`
+    ReplyTo   *int         `json:"replyTo,omitempty" redis:"reply_to"`
+    IsThread  bool         `json:"isThread" redis:"is_thread"`
 }
 
 type User struct {
@@ -153,6 +155,7 @@ var getMessageRange = redis.NewScript(`
 
 	local required_length = tonumber(ARGV[1])
 	local isAdmin = ARGV[2] == 'true'
+	local countViews = ARGV[3] == 'true'
 
 	local start_index = redis.call('ZREVRANK', time_set_key, offset_key) or 0
 	if start_index > 0 then
@@ -177,8 +180,14 @@ var getMessageRange = redis.NewScript(`
 				local key = message_data[j]
 				local value = message_data[j+1]
 	
-				if key == 'id' or key == 'views' then
+				if key == 'id' then
 					message[key] = tonumber(value)
+                elseif key == 'views' then
+					if countViews then
+						message[key] = tonumber(value)
+					else
+						message[key] = 0	
+					end
 				elseif key == 'deleted' then
 					message[key] = value == '1'
 				elseif key == 'reactions' then
@@ -205,9 +214,9 @@ var getMessageRange = redis.NewScript(`
 	return cjson.encode(messages)
 `)
 
-func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin bool) ([]Message, error) {
+func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews bool) ([]Message, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
-	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{strconv.FormatInt(stop, 10), strconv.FormatBool(isAdmin)}).Result()
+	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{strconv.FormatInt(stop, 10), strconv.FormatBool(isAdmin), strconv.FormatBool(countViews)}).Result()
 	if err != nil {
 		return []Message{}, err
 	}
@@ -300,6 +309,9 @@ func funcDeleteMessage(ctx context.Context, id string) error {
 }
 
 func addViewsToMessages(ctx context.Context, messages []Message) {
+	if !settingConfig.CountViews {
+		return
+	}
 	for _, m := range messages {
 		rdb.HIncrBy(ctx, fmt.Sprintf("messages:%d", m.ID), "views", 1)
 	}
@@ -398,4 +410,34 @@ func dbGetUsersList(ctx context.Context) ([]User, error) {
 	}
 
 	return usersList, nil
+}
+
+func dbSetSettings(ctx context.Context, settings *Settings) error {
+	jsonSettings, err := json.Marshal(settings)
+	if err != nil {
+		return fmt.Errorf("failed to marshal settings: %v", err)
+	}
+
+	if err := rdb.Set(ctx, "settings:list", jsonSettings, 0).Err(); err != nil {
+		return fmt.Errorf("failed to set settings in db: %v", err)
+	}
+
+	return nil
+}
+
+func dbGetSettings(ctx context.Context) (Settings, error) {
+	settingsJSON, err := rdb.Get(ctx, "settings:list").Result()
+	if err != nil {
+		if err == redis.Nil {
+			return Settings{}, nil
+		}
+		return nil, fmt.Errorf("failed to get settings from db: %v", err)
+	}
+
+	var settings Settings
+	if err := json.Unmarshal([]byte(settingsJSON), &settings); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal settings: %v", err)
+	}
+
+	return settings, nil
 }

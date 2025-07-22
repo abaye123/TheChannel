@@ -43,10 +43,6 @@ export class MainComponent implements OnInit {
       title: 'הגדרות ערוץ',
       icon: 'settings-2-outline',
       link: '/admin/settings',
-      badge: {
-        text: 'בקרוב',
-        status: 'warning'
-      }
     },
     {
       title: 'ניהול הרשאות',
@@ -54,32 +50,9 @@ export class MainComponent implements OnInit {
       link: '/admin/permissions',
     },
     {
-      title: 'ניהול משתמשים',
-      icon: 'people-outline',
-      link: '/admin/users',
-      badge: {
-        text: 'בקרוב',
-        status: 'warning'
-      }
-    },
-    {
-      title: 'הגדרת התראות',
-      icon: 'bell-outline',
-      link: '/admin/notifications',
-      badge: {
-        text: 'בקרוב',
-        status: 'warning'
-      }
-    },
-    {
       title: "אימוג'ים",
       icon: 'smiling-face-outline',
       link: '/admin/emojis',
-    },
-    {
-      title: 'ניהול פרסומת',
-      icon: 'pie-chart-outline',
-      link: '/admin/ads',
     },
   ]
 
