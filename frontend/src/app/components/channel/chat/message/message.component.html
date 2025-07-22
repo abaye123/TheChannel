@@ -5,7 +5,8 @@
     <div class="d-flex">
         <div class="caret"></div>
         <div [ngbPopover]="emojiMenu" [triggers]="'manual'" [popoverContext]="{message}" [autoClose]="'outside'"
-            (mouseenter)="showEmojiMenu()" (mouseleave)="scheduleEmojiMenuClose()" #p="ngbPopover">
+            [placement]="getPopoverPlacement()" [popoverClass]="'emoji-picker-popover'" (mouseenter)="showEmojiMenu()"
+            (mouseleave)="scheduleEmojiMenuClose()" #p="ngbPopover">
             <div class="message-card" [ngStyle]="{'opacity': message.deleted ? 0.5 : 1}">
                 <div class="d-flex flex-column">
                     <div class="m-2">
@@ -17,7 +18,8 @@
                             [nbContextMenuTag]="message.id?.toString() ?? '0'"
                             [nbContextMenuPlacement]="NbPosition.END_BOTTOM"></nb-icon>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mx-2 gap-2">
+
+                    <div class="d-flex justify-content-between align-items-center mx-2 gap-2 mb-1">
                         <small class="text-black-50">{{ message.timestamp | messageTime }}</small>
                         <div class="d-flex flex-row align-items-center text-black-50 gap-1" title="צפיות"
                             *ngIf="message.views">
@@ -26,13 +28,14 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
-            <div *ngIf="message.reactions" class="d-flex flex-wrap rounded emojis-box">
-                <div *ngFor="let reaction of message.reactions | keyvalue" class="px-1 py-1"
-                    (click)="setReact(message.id, reaction.key)">
-                    <span class="me-1">{{ reaction.key }}</span>
-                    <small class="text-muted">{{ reaction.value }}</small>
+                    <div *ngIf="message.reactions && hasReactions(message.reactions)" class="emojis-section">
+                        <div *ngFor="let reaction of message.reactions | keyvalue" class="emoji-reaction"
+                            (click)="setReact(message.id, reaction.key)"
+                            [title]="reaction.value + ' אנשים הגיבו עם ' + reaction.key">
+                            <span class="emoji">{{ reaction.key }}</span>
+                            <span class="count">{{ reaction.value }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,9 +48,12 @@
 </div>
 
 <ng-template #emojiMenu let-message="message">
-    <div (mouseenter)="cancelEmojiMenuClose()" (mouseleave)="scheduleEmojiMenuClose()">
-        @for (react of reacts; track $index) {
-        <button nbButton ghost status="danger" (click)="setReact(message.id, react)">{{react}}</button>
-        }
+    <div class="emoji-picker-menu" (mouseenter)="cancelEmojiMenuClose()" (mouseleave)="scheduleEmojiMenuClose()">
+        <div class="emoji-grid">
+            <button *ngFor="let react of reacts; track $index" class="emoji-option"
+                (click)="setReact(message.id, react)" [title]="'הגב עם ' + react">
+                {{ react }}
+            </button>
+        </div>
     </div>
 </ng-template>

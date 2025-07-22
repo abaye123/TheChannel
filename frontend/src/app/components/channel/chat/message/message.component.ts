@@ -152,4 +152,23 @@ export class MessageComponent implements OnInit {
       this.closeEmojiMenuTimeout = undefined;
     }
   }
+
+  hasReactions(reactions: any): boolean {
+    return reactions && Object.keys(reactions).length > 0;
+  }
+
+  getPopoverPlacement(): string {
+    const element = document.querySelector(`[data-message-id="${this.message?.id}"]`) as HTMLElement;
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < 150 && spaceAbove > 150) {
+        return 'top';
+      }
+    }
+
+    return 'bottom';
+  }
 }

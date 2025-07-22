@@ -59,7 +59,109 @@ nb-icon {
   }
 }
 
-.emojis-box {
-  background-color: #f0f2f8;
-  cursor: pointer;
+.emojis-section {
+  border-top: 1px solid rgba(102, 111, 255, 0.15);
+  padding: 6px 8px 4px 8px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 10px 10px;
+
+  .emoji-reaction {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(102, 111, 255, 0.25);
+    border-radius: 12px;
+    padding: 6px 6px;
+    margin: 1px 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 14px;
+    line-height: 1;
+
+    &:hover {
+      background: rgba(102, 111, 255, 0.15);
+      border-color: rgba(102, 111, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .emoji {
+      font-size: 16px;
+    }
+
+    .count {
+      color: #555;
+      font-weight: 500;
+      font-size: 11px;
+      min-width: 12px;
+      text-align: center;
+    }
+  }
+}
+
+::ng-deep {
+  .emoji-picker-popover {
+    .popover {
+      max-width: none !important;
+      border: none !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .popover-body {
+      padding: 6px !important;
+      background: #ffffff !important;
+      border: 1px solid #ddd !important;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .popover-arrow::before {
+      border-top-color: #ddd !important;
+    }
+
+    .popover-arrow::after {
+      border-top-color: #ffffff !important;
+    }
+  }
+}
+
+.emoji-picker-menu {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  max-width: 200px;
+
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+
+    .emoji-option {
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      padding: 4px;
+      transition: background-color 0.1s ease;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+
+      &:active {
+        background: #e0e0e0;
+      }
+    }
+  }
+}
+
+.message-card[style*="opacity: 0.5"] .emojis-section {
+  opacity: 0.6;
+  pointer-events: none;
 }
