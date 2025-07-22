@@ -4,6 +4,9 @@
     <div class="d-flex flex-column flex-grow-1">
         <h1 *ngIf="chatService.channelInfo?.name" class="h5 mb-1 fw-bold">{{ chatService.channelInfo?.name }}</h1>
         <small class="text-muted">{{ chatService.channelInfo?.description ?? '' }}</small>
+        <small class="text-muted" *ngIf="chatService.channelInfo?.views">
+            {{ chatService.channelInfo?.views }} רשומים לערוץ זה
+        </small>
     </div>
 
     @if (notificationsService.initialized && !adminPanel) {

@@ -4,4 +4,5 @@ export interface Channel {
   description: string;
   created_at: string;
   logoUrl: string;
+  views: number;
 }

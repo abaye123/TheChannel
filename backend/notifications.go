@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"time"
 
 	"firebase.google.com/go/v4/messaging"
 	"github.com/appleboy/go-fcm"
@@ -92,7 +93,9 @@ func pushFcmMessage(m Message) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	list, err := getSubcriptionsList()
 	if err != nil {
 		return
@@ -102,7 +105,7 @@ func pushFcmMessage(m Message) {
 		return
 	}
 
-	channelName, err := getChannelDetails()
+	channelName, err := getChannelDetails(ctx)
 	if err != nil {
 		return
 	}

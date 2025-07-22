@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -13,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/h2non/filetype"
@@ -188,7 +190,10 @@ func generatedRandomID(len int) string {
 
 // TODO: Image size limitation
 func getFavicon(w http.ResponseWriter, r *http.Request) {
-	c, err := getChannelDetails()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	c, err := getChannelDetails(ctx)
 	if err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
 		return

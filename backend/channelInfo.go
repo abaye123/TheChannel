@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/icza/dyno"
 )
 
 type Channel struct {
@@ -14,12 +16,22 @@ type Channel struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	LogoUrl     string    `json:"logoUrl"`
-	Views       int       `json:"views"`
+	Views       int64     `json:"views"`
 }
 
 func getChannelInfo(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	c, err := getChannelDetails()
+	amount, err := dbGetUsersAmount(ctx)
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	amount, _ = dyno.GetInteger(amount)
+
+	c, err := getChannelDetails(ctx)
 	if err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
 		return
@@ -30,7 +42,7 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.Name = c["name"]
 	channel.Description = c["description"]
 	channel.CreatedAt, _ = time.Parse(time.RFC3339, c["created_at"])
-	channel.Views, _ = strconv.Atoi(c["views"])
+	channel.Views = amount //strconv.Atoi(c["views"])
 	channel.LogoUrl = c["logoUrl"]
 
 	w.Header().Set("Content-Type", "application/json")
@@ -73,7 +85,7 @@ func getUsersAmount(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	amount, err := rdb.SCard(ctx, "registered_emails").Result()
+	amount, err := dbGetUsersAmount(ctx)
 	if err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
 		return

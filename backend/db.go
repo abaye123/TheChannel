@@ -340,9 +340,7 @@ func getSubcriptionsList() ([]string, error) {
 	return subscriptionsSet, nil
 }
 
-func getChannelDetails() (map[string]string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func getChannelDetails(ctx context.Context) (map[string]string, error) {
 	return rdb.HGetAll(ctx, "channel:1").Result()
 }
 
@@ -438,4 +436,12 @@ func dbGetSettings(ctx context.Context) (Settings, error) {
 	}
 
 	return settings, nil
+}
+
+func dbGetUsersAmount(ctx context.Context) (int64, error) {
+	amount, err := rdb.SCard(ctx, "registered_emails").Result()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get users amount: %v", err)
+	}
+	return amount, nil
 }
