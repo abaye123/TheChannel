@@ -88,18 +88,11 @@ func main() {
 		})
 	})
 
-	// if settingConfig.RootStaticFolder != "" {
-	// 	r.Handle("/", http.FileServer(http.Dir(settingConfig.RootStaticFolder)))
-	// 	r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(settingConfig.RootStaticFolder))))
-	// 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-	// 		http.ServeFile(w, r, settingConfig.RootStaticFolder+"/index.html")
-	// 	})
-	// }
-	if rootStaticFolder != "" {
-		r.Handle("/", http.FileServer(http.Dir("/usr/share/ng")))
-		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("/usr/share/ng"))))
+	if settingConfig.RootStaticFolder != "" {
+		r.Handle("/", http.FileServer(http.Dir(settingConfig.RootStaticFolder)))
+		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(settingConfig.RootStaticFolder))))
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "/usr/share/ng/index.html")
+			http.ServeFile(w, r, settingConfig.RootStaticFolder+"/index.html")
 		})
 	}
 

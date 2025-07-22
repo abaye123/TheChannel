@@ -51,6 +51,12 @@ func init() {
 func (s *Settings) ToConfig() *SettingConfig {
 	config := &SettingConfig{}
 
+	if rootStaticFolder != "" {
+		config.RootStaticFolder = rootStaticFolder
+	} else {
+		config.RootStaticFolder = "/usr/share/ng"
+	}
+
 	for _, setting := range *s {
 		switch setting.Key {
 		case "ad-iframe-src":
@@ -70,12 +76,6 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "api_secret_key":
 			config.ApiSecretKey = setting.GetString()
-
-		case "root_static_folder":
-			if s := setting.GetString(); s != "" {
-				config.RootStaticFolder = "/usr/share/ng"
-			}
-			config.RootStaticFolder = setting.GetString()
 
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
