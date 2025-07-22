@@ -70,14 +70,14 @@ nb-icon {
     background: rgba(255, 255, 255, 0.8);
     border: 1px solid rgba(102, 111, 255, 0.25);
     border-radius: 12px;
-    padding: 2px 6px;
+    padding: 6px 6px;
     margin: 1px 2px;
     display: inline-flex;
     align-items: center;
     gap: 3px;
     cursor: pointer;
     transition: all 0.15s ease;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1;
 
     &:hover {
@@ -87,7 +87,7 @@ nb-icon {
     }
 
     .emoji {
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .count {
