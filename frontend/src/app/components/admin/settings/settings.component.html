@@ -6,7 +6,7 @@
     <nb-card-body>
         <div *ngFor="let setting of settings; let i = index" class="d-flex gap-2 mb-2">
             <input nbInput fieldSize="small" type="text" [(ngModel)]="setting.key" placeholder="הגדרה">
-            <input nbInput fieldSize="small" type="text" [(ngModel)]="setting.value" placeholder="ערך">
+            <input nbInput fullWidth  fieldSize="small" type="text" [(ngModel)]="setting.value" placeholder="ערך">
 
             <button nbButton status="danger" size="small" (click)="removeSetting(i)">
                 <nb-icon icon="close"></nb-icon>
