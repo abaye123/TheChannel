@@ -5,15 +5,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
-var apiSecretKey = os.Getenv("API_SECRET_KEY")
-
 func addNewPost(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("X-API-Key")
-	if key != apiSecretKey {
+	if key != settingConfig.ApiSecretKey {
 		http.Error(w, "error", http.StatusBadRequest)
 		return
 	}

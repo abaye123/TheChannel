@@ -11,8 +11,6 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-var rootStaticFolder = os.Getenv("ROOT_STATIC_FOLDER")
-
 func protectedWithPrivilege(Privilege Privilege, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !checkPrivilege(r, Privilege) {
@@ -55,7 +53,7 @@ func main() {
 
 	r.Route("/api", func(api chi.Router) {
 
-		if requireAuthForAll {
+		if settingConfig.RequireAuth {
 			api.Use(checkLogin)
 		}
 
@@ -71,8 +69,7 @@ func main() {
 		api.Get("/user-info", getUserInfo)
 
 		api.Route("/admin", func(protected chi.Router) {
-			// ⚠️ WARNING: Routes are NOT protected by default!
-			// Use `protectedRoutes(requiredPrivilege, HandlerFunc)` to enforce access control per route.
+			// ⚠️ WARNING: Route not check privilege use protectedWithPrivilege to check privilege.
 
 			protected.Post("/new", protectedWithPrivilege(Writer, addMessage))
 			protected.Post("/edit-message", protectedWithPrivilege(Writer, updateMessage))
@@ -89,11 +86,11 @@ func main() {
 		})
 	})
 
-	if rootStaticFolder != "" {
-		r.Handle("/", http.FileServer(http.Dir("/usr/share/ng")))
-		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("/usr/share/ng"))))
+	if settingConfig.RootStaticFolder != "" {
+		r.Handle("/", http.FileServer(http.Dir(settingConfig.RootStaticFolder)))
+		r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir(settingConfig.RootStaticFolder))))
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "/usr/share/ng/index.html")
+			http.ServeFile(w, r, settingConfig.RootStaticFolder+"/index.html")
 		})
 	}
 

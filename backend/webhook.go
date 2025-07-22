@@ -7,12 +7,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
-var webhookURL string = os.Getenv("WEBHOOK_URL")
-var verifyToken string = os.Getenv("WEBHOOK_VERIFY_TOKEN")
+// var webhookURL string = os.Getenv("WEBHOOK_URL")
+// var verifyToken string = os.Getenv("WEBHOOK_VERIFY_TOKEN")
 
 type WebhookPayload struct {
 	Action      string    `json:"action"`
@@ -22,7 +21,7 @@ type WebhookPayload struct {
 }
 
 func SendWebhook(ctx context.Context, action string, message Message) {
-	if webhookURL == "" {
+	if settingConfig.WebhookURL == "" {
 		return
 	}
 
@@ -30,7 +29,7 @@ func SendWebhook(ctx context.Context, action string, message Message) {
 		Action:      action,
 		Message:     message,
 		Timestamp:   time.Now(),
-		VerifyToken: verifyToken,
+		VerifyToken: settingConfig.VerifyToken,
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -42,7 +41,7 @@ func SendWebhook(ctx context.Context, action string, message Message) {
 	httpCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(httpCtx, "POST", webhookURL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(httpCtx, "POST", settingConfig.WebhookURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("Error creating webhook request: %v\n", err)
 		return
@@ -66,6 +65,6 @@ func SendWebhook(ctx context.Context, action string, message Message) {
 	}
 	defer resp.Body.Close()
 
-	log.Printf("Sent webhook for action '%s' on message %d. Response code: %d\n", 
+	log.Printf("Sent webhook for action '%s' on message %d. Response code: %d\n",
 		action, message.ID, resp.StatusCode)
 }

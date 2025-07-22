@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icza/dyno"
 )
 
 type ReplaceRegex struct {
@@ -16,9 +17,14 @@ type ReplaceRegex struct {
 }
 
 type SettingConfig struct {
-	AdSrc        string
-	AdWidth      int
-	RegexReplace []*ReplaceRegex
+	AdSrc            string
+	AdWidth          int
+	RequireAuth      bool
+	RegexReplace     []*ReplaceRegex
+	WebhookURL       string
+	VerifyToken      string
+	ApiSecretKey     string
+	RootStaticFolder string
 }
 
 type Setting struct {
@@ -49,8 +55,28 @@ func (s *Settings) ToConfig() *SettingConfig {
 		switch setting.Key {
 		case "ad-iframe-src":
 			config.AdSrc = setting.GetString()
+
 		case "ad-iframe-width":
 			config.AdWidth = setting.GetInt()
+
+		case "require_auth":
+			config.RequireAuth = setting.GetBool()
+
+		case "webhook_url":
+			config.WebhookURL = setting.GetString()
+
+		case "webhook_verify_token":
+			config.VerifyToken = setting.GetString()
+
+		case "api_secret_key":
+			config.ApiSecretKey = setting.GetString()
+
+		case "root_static_folder":
+			if s := setting.GetString(); s != "" {
+				config.RootStaticFolder = "/usr/share/ng"
+			}
+			config.RootStaticFolder = setting.GetString()
+
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
 				parts := strings.Split(r, "#")
@@ -70,29 +96,18 @@ func (s *Settings) ToConfig() *SettingConfig {
 }
 
 func (s *Setting) GetBool() bool {
-	if boolValue, ok := s.Value.(bool); ok {
-		return boolValue
-	}
-	return false
+	b, _ := dyno.GetBoolean(s.Value)
+	return b
 }
 
 func (s *Setting) GetString() string {
-	if strValue, ok := s.Value.(string); ok {
-		return strValue
-	}
-	return ""
+	str, _ := dyno.GetString(s.Value)
+	return str
 }
 
 func (s *Setting) GetInt() int {
-	if intValue, ok := s.Value.(int); ok {
-		return intValue
-	}
-	i, err := strconv.Atoi(s.Value.(string))
-	if err == nil {
-		return i
-	}
-
-	return 0
+	i, _ := dyno.GetInt(s.Value)
+	return i
 }
 
 func setSettings(w http.ResponseWriter, r *http.Request) {
