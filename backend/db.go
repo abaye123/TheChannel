@@ -155,6 +155,7 @@ var getMessageRange = redis.NewScript(`
 
 	local required_length = tonumber(ARGV[1])
 	local isAdmin = ARGV[2] == 'true'
+	local countViews = ARGV[3] == 'true'
 
 	local start_index = redis.call('ZREVRANK', time_set_key, offset_key) or 0
 	if start_index > 0 then
@@ -179,8 +180,14 @@ var getMessageRange = redis.NewScript(`
 				local key = message_data[j]
 				local value = message_data[j+1]
 	
-				if key == 'id' or key == 'views' then
+				if key == 'id' then
 					message[key] = tonumber(value)
+                elseif key == 'views' then
+					if countViews then
+						message[key] = tonumber(value)
+					else
+						message[key] = 0	
+					end
 				elseif key == 'deleted' then
 					message[key] = value == '1'
 				elseif key == 'reactions' then
@@ -207,9 +214,9 @@ var getMessageRange = redis.NewScript(`
 	return cjson.encode(messages)
 `)
 
-func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin bool) ([]Message, error) {
+func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews bool) ([]Message, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
-	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{strconv.FormatInt(stop, 10), strconv.FormatBool(isAdmin)}).Result()
+	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{strconv.FormatInt(stop, 10), strconv.FormatBool(isAdmin), strconv.FormatBool(countViews)}).Result()
 	if err != nil {
 		return []Message{}, err
 	}
@@ -302,6 +309,9 @@ func funcDeleteMessage(ctx context.Context, id string) error {
 }
 
 func addViewsToMessages(ctx context.Context, messages []Message) {
+	if !settingConfig.CountViews {
+		return
+	}
 	for _, m := range messages {
 		rdb.HIncrBy(ctx, fmt.Sprintf("messages:%d", m.ID), "views", 1)
 	}
