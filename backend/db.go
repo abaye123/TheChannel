@@ -28,8 +28,8 @@ type Message struct {
 	Deleted   bool         `json:"deleted" redis:"deleted"`
 	Views     int          `json:"views" redis:"views"`
 	Reactions Reactions    `json:"reactions" redis:"reactions"`
-    ReplyTo   *int         `json:"replyTo,omitempty" redis:"reply_to"`
-    IsThread  bool         `json:"isThread" redis:"is_thread"`
+	ReplyTo   int          `json:"replyTo,omitempty" redis:"reply_to"`
+	IsThread  bool         `json:"isThread" redis:"is_thread"`
 }
 
 type User struct {
