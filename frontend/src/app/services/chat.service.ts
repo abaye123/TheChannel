@@ -13,7 +13,7 @@ export interface ChatMessage {
   timestamp?: Date;
   userId?: number | null;
   author?: string;
-  lastEdit?: boolean;
+  last_edit?: Date;
   deleted?: boolean;
   file?: ChatFile;
   views?: number;

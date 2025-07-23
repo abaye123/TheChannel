@@ -100,7 +100,7 @@ POST https://example.com/api/import/post
   "text": "message content",
   "author": "username",
   "timestamp": "2025-04-10T18:30:00Z",
-  "lastEdit": "2025-04-10T18:35:00Z",
+  "last_edit": "2025-04-10T18:35:00Z",
   "deleted": false,
   "views": 5
   },

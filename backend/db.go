@@ -23,7 +23,7 @@ type Message struct {
 	Text      string       `json:"text" redis:"text"`
 	Author    string       `json:"author" redis:"author"`
 	Timestamp time.Time    `json:"timestamp" redis:"timestamp"`
-	LastEdit  time.Time    `json:"lastEdit" redis:"last_edit"`
+	LastEdit  time.Time    `json:"last_edit" redis:"last_edit"`
 	File      FileResponse `json:"file" redis:"-"`
 	Deleted   bool         `json:"deleted" redis:"deleted"`
 	Views     int          `json:"views" redis:"views"`

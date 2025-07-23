@@ -76,7 +76,7 @@ export class ChatComponent implements OnInit, OnDestroy {
               const index = this.messages.findIndex(m => m.id === message.message.id);
               if (index !== -1) {
                 this.messages[index].deleted = true;
-                this.messages[index].lastEdit = message.message.lastEdit;
+                this.messages[index].last_edit = message.message.last_edit;
               }
             })
             break;
