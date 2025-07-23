@@ -190,6 +190,12 @@ var getMessageRange = redis.NewScript(`
 					end
 				elseif key == 'deleted' then
 					message[key] = value == '1'
+				elseif key == 'author' then
+				    if isAdmin then
+				        message[key] = value
+				    else
+				        message[key] = "Anonymous"
+				    end
 				elseif key == 'reactions' then
 				    local success, parsedReactions = pcall(cjson.decode, value)
 					if success then
