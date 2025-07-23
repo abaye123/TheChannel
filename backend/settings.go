@@ -17,15 +17,16 @@ type ReplaceRegex struct {
 }
 
 type SettingConfig struct {
-	AdSrc            string
-	AdWidth          int64
-	RequireAuth      bool
-	RegexReplace     []*ReplaceRegex
-	WebhookURL       string
-	VerifyToken      string
-	ApiSecretKey     string
-	RootStaticFolder string
-	CountViews       bool
+	AdSrc                   string
+	AdWidth                 int64
+	RequireAuth             bool
+	RequireAuthForViewFiles bool
+	RegexReplace            []*ReplaceRegex
+	WebhookURL              string
+	VerifyToken             string
+	ApiSecretKey            string
+	RootStaticFolder        string
+	CountViews              bool
 }
 
 type Setting struct {
@@ -68,6 +69,8 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "require_auth":
 			config.RequireAuth = setting.GetBool()
+		case "require_auth_for_view_files":
+			config.RequireAuthForViewFiles = setting.GetBool()
 
 		case "webhook_url":
 			config.WebhookURL = setting.GetString()

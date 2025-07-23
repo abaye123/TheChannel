@@ -5,4 +5,5 @@ export interface Channel {
   created_at: string;
   logoUrl: string;
   views: number;
+  require_auth_for_view_files: boolean;
 }

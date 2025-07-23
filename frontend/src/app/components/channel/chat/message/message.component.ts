@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { NgIf, CommonModule } from "@angular/common";
 import {
   NbButtonModule,
@@ -18,6 +18,7 @@ import { NgbPopover, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { MessageTimePipe } from '../../../../pipes/message-time.pipe';
 import { ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-message',
@@ -37,7 +38,7 @@ import { AdminService } from '../../../../services/admin.service';
   styleUrl: './message.component.scss'
 })
 
-export class MessageComponent implements OnInit {
+export class MessageComponent implements OnInit, AfterViewInit {
 
   private v!: Viewer;
 
@@ -50,6 +51,7 @@ export class MessageComponent implements OnInit {
   userPrivilege: Record<string, boolean> | undefined = {};
 
   @ViewChild(NgbPopover) popover!: NgbPopover;
+  @ViewChild('media') mediaContainer!: ElementRef;
 
   optionsMenu = [ // TODO: hide when X time passed
     {
@@ -71,7 +73,8 @@ export class MessageComponent implements OnInit {
     private menuService: NbMenuService,
     private dialogService: NbDialogService,
     private _chatService: ChatService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private _authService: AuthService
   ) { }
 
   reacts: string[] = [];
@@ -92,6 +95,49 @@ export class MessageComponent implements OnInit {
     this._chatService.getEmojisList()
       .then(emojis => this.reacts = emojis)
       .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוגים'));
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const media = this.mediaContainer?.nativeElement.querySelectorAll('img, video');
+      media?.forEach((item: HTMLMediaElement) => {
+        if (this._chatService.channelInfo?.require_auth_for_view_files && !this._authService.userInfo) {
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'relative';
+          wrapper.style.display = 'inline-block';
+          wrapper.style.width = item.offsetWidth + 'px';
+          wrapper.style.height = item.offsetHeight + 'px';
+
+          const overlay = document.createElement('div');
+          overlay.style.position = 'absolute';
+          overlay.style.top = '0';
+          overlay.style.left = '0';
+          overlay.style.width = '100%';
+          overlay.style.height = '100%';
+          overlay.style.background = 'rgba(0,0,0,0.5)';
+          overlay.style.backdropFilter = 'blur(4px)';
+          overlay.style.display = 'flex';
+          overlay.style.alignItems = 'center';
+          overlay.style.justifyContent = 'center';
+          overlay.style.color = 'white';
+          overlay.style.fontSize = '14px';
+          overlay.style.cursor = 'pointer';
+          overlay.innerHTML = '<div style="text-align: center;">יש להתחבר כדי לצפות בקבצים <br>לחצו כאן להתחברות</div>';
+
+
+          overlay.addEventListener('click', () => {
+            window.location.href = '/login';
+          });
+
+          const parent = item.parentElement;
+          if (parent) {
+            parent.replaceChild(wrapper, item);
+            wrapper.appendChild(item);
+            wrapper.appendChild(overlay);
+          }
+        }
+      });
+    }, 1000);
   }
 
   editMessage(message: ChatMessage) {

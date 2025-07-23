@@ -11,12 +11,13 @@ import (
 )
 
 type Channel struct {
-	Id          int       `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	LogoUrl     string    `json:"logoUrl"`
-	Views       int64     `json:"views"`
+	Id                      int       `json:"id"`
+	Name                    string    `json:"name"`
+	Description             string    `json:"description"`
+	CreatedAt               time.Time `json:"created_at"`
+	LogoUrl                 string    `json:"logoUrl"`
+	Views                   int64     `json:"views"`
+	RequireAuthForViewFiles bool      `json:"require_auth_for_view_files"`
 }
 
 func getChannelInfo(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +45,7 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.CreatedAt, _ = time.Parse(time.RFC3339, c["created_at"])
 	channel.Views = amount //strconv.Atoi(c["views"])
 	channel.LogoUrl = c["logoUrl"]
+	channel.RequireAuthForViewFiles = settingConfig.RequireAuthForViewFiles
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(channel)
