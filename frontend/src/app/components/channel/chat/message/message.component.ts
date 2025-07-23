@@ -171,4 +171,11 @@ export class MessageComponent implements OnInit {
 
     return 'bottom';
   }
+
+  isEdited(message: ChatMessage): boolean {
+    if (!message.last_edit) return false;
+    const date = new Date(message.last_edit).getFullYear();
+    if (isNaN(date)) return false;
+    return date !== 1;
+  }
 }

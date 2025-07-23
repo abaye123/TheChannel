@@ -1,8 +1,10 @@
 <div *ngIf="message && message.text" class="d-flex flex-column align-content-center my-1 mx-4">
     <div class="d-flex">
-        <strong *ngIf="isAdmin" class="text-black-50">{{message.author}}</strong><small class="text-black-50 me-1">{{
+        <strong *ngIf="isAdmin" class="text-black-50">{{message.author + ' ·'}}</strong><small
+            class="text-black-50 me-1">{{
             message.timestamp
-            | messageTime }}</small>
+            | messageTime }}</small><small class="text-black-50 me-1" *ngIf="isEdited(message)"><strong>·</strong>
+            נערכה {{ message.last_edit | messageTime }}</small>
     </div>
     <div class="d-flex">
         <div class="caret"></div>
@@ -52,8 +54,8 @@
 <ng-template #emojiMenu let-message="message">
     <div class="emoji-picker-menu" (mouseenter)="cancelEmojiMenuClose()" (mouseleave)="scheduleEmojiMenuClose()">
         <div class="emoji-grid">
-            <button *ngFor="let react of reacts; track $index" class="emoji-option"
-                (click)="setReact(message.id, react)" [title]="'הגב עם ' + react">
+            <button *ngFor="let react of reacts" class="emoji-option" (click)="setReact(message.id, react)"
+                [title]="'הגב עם ' + react">
                 {{ react }}
             </button>
         </div>
