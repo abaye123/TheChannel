@@ -68,6 +68,11 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, regex := range settingConfig.RegexReplace {
+		t := regex.Pattern.ReplaceAllString(body.Text, regex.Replace)
+		body.Text = t
+	}
+
 	message.ID = getMessageNextId(ctx)
 	message.Type = body.Type
 	message.Author = user.PublicName
