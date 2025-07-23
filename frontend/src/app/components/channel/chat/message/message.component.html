@@ -17,7 +17,7 @@
                         <markdown [data]="message.text" [disableSanitizer]="true" (click)="viewLargeImage($event)">
                         </markdown>
                     </div>
-                    <div *ngIf="!message.deleted" class="d-flex option-mask">
+                    <div *ngIf="userPrivilege?.['writer'] && !message.deleted" class="d-flex option-mask">
                         <nb-icon icon="arrow-ios-downward-outline" [nbContextMenu]="optionsMenu"
                             [nbContextMenuTag]="message.id?.toString() ?? '0'"
                             [nbContextMenuPlacement]="NbPosition.END_BOTTOM"></nb-icon>
