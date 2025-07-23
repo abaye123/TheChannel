@@ -1,6 +1,6 @@
 <div *ngIf="message && message.text" class="d-flex flex-column align-content-center my-1 mx-4">
     <div class="d-flex">
-        <strong *ngIf="isAdmin" class="text-black-50">{{message.author + ' ·'}}</strong><small
+        <strong *ngIf="userPrivilege?.['admin']" class="text-black-50">{{message.author + ' ·'}}</strong><small
             class="text-black-50 me-1">{{
             message.timestamp
             | messageTime }}</small><small class="text-black-50 me-1" *ngIf="isEdited(message)"><strong>·</strong>
@@ -17,7 +17,7 @@
                         <markdown [data]="message.text" [disableSanitizer]="true" (click)="viewLargeImage($event)">
                         </markdown>
                     </div>
-                    <div *ngIf="isAdmin && !message.deleted" class="d-flex option-mask">
+                    <div *ngIf="!message.deleted" class="d-flex option-mask">
                         <nb-icon icon="arrow-ios-downward-outline" [nbContextMenu]="optionsMenu"
                             [nbContextMenuTag]="message.id?.toString() ?? '0'"
                             [nbContextMenuPlacement]="NbPosition.END_BOTTOM"></nb-icon>

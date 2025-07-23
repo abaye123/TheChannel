@@ -47,7 +47,7 @@ export class MessageComponent implements OnInit {
   message: ChatMessage | undefined;
 
   @Input()
-  isAdmin: boolean = false;
+  userPrivilege: Record<string, boolean> | undefined = {};
 
   @ViewChild(NgbPopover) popover!: NgbPopover;
 
