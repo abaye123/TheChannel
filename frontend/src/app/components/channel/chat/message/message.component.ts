@@ -19,6 +19,7 @@ import { MessageTimePipe } from '../../../../pipes/message-time.pipe';
 import { ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
 import { AuthService } from '../../../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-message',
@@ -74,7 +75,8 @@ export class MessageComponent implements OnInit, AfterViewInit {
     private dialogService: NbDialogService,
     private _chatService: ChatService,
     private toastrService: NbToastrService,
-    private _authService: AuthService
+    private _authService: AuthService,
+    private router: Router
   ) { }
 
   reacts: string[] = [];
@@ -122,11 +124,11 @@ export class MessageComponent implements OnInit, AfterViewInit {
           overlay.style.color = 'white';
           overlay.style.fontSize = '14px';
           overlay.style.cursor = 'pointer';
+          overlay.style.zIndex = '1';
           overlay.innerHTML = '<div style="text-align: center;">יש להתחבר כדי לצפות בקבצים <br>לחצו כאן להתחברות</div>';
-
-
+          
           overlay.addEventListener('click', () => {
-            window.location.href = '/login';
+            this.router.navigate(['/login']);
           });
 
           const parent = item.parentElement;
