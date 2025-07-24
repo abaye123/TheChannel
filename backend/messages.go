@@ -176,7 +176,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) {
 			return
 
 		case <-heartbeat.C:
-			_, err := fmt.Fprintf(w, "data: heartbeat\n\n")
+			_, err := fmt.Fprintf(w, "data: {\"type\": \"heartbeat\"}\n\n")
 			if err != nil {
 				return
 			}
