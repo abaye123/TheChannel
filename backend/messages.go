@@ -146,28 +146,51 @@ func deleteMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
 
 	clientCtx := r.Context()
+	heartbeat := time.NewTicker(25 * time.Second)
+	defer heartbeat.Stop()
 
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+	flusher.Flush()
 
-	pubsub := rdb.Subscribe(ctx, "events")
+	pubsub := rdb.Subscribe(r.Context(), "events")
 	defer pubsub.Close()
+
+	if _, err := pubsub.Receive(clientCtx); err != nil {
+		http.Error(w, "Failed to subscribe to events", http.StatusInternalServerError)
+		return
+	}
 
 	for {
 		select {
 		case <-clientCtx.Done():
 			return
+
+		case <-heartbeat.C:
+			_, err := fmt.Fprintf(w, "data: heartbeat\n\n")
+			if err != nil {
+				return
+			}
+			flusher.Flush()
+
 		case msg, ok := <-pubsub.Channel():
 			if !ok {
 				return
 			}
-			fmt.Fprintf(w, "data: %s\n\n", msg.Payload)
-			w.(http.Flusher).Flush()
+			_, err := fmt.Fprintf(w, "data: %s\n\n", msg.Payload)
+			if err != nil {
+				return
+			}
+			flusher.Flush()
 		}
 	}
 }
