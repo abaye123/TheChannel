@@ -28,6 +28,7 @@ type SettingConfig struct {
 	RootStaticFolder          string
 	CountViews                bool
 	AutoGrantWriterPrivilege  bool
+	ShowAuthorToAuthenticated bool
 }
 
 type Setting struct {
@@ -87,6 +88,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "auto_grant_writer_privilege":
 			config.AutoGrantWriterPrivilege = setting.GetBool()
+
+		case "show_author_to_authenticated":
+			config.ShowAuthorToAuthenticated = setting.GetBool()
 
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
