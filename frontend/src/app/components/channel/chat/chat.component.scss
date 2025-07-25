@@ -6,6 +6,10 @@ nb-list-item {
   overflow-x: auto;
 }
 
+.loading-indicator {
+  overflow: hidden;
+}
+
 nb-list-item:first-child {
   border-top: 0 !important;
 }

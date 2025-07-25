@@ -11,7 +11,9 @@ export class MessageTimePipe implements PipeTransform {
 
   transform(value: any | string, ...args: unknown[]): any {
     let m = moment(value);
-    let daysDiff = m.diff(moment(), 'days');
+    const today = moment().startOf('day');
+    const messageDay = m.clone().startOf('day');
+    const daysDiff = messageDay.diff(today, 'days');
     switch (true) {
       case daysDiff > 0: // Future
         return m.calendar();
