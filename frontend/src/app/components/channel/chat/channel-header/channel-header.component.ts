@@ -161,7 +161,7 @@ export class ChannelHeaderComponent implements OnInit {
   async toggleSound() {
     if (this.soundService.isEnabled()) {
       this.soundService.disableSound();
-      this.toastrService.info("", "צלילי התראה בוטלו");
+      this.toastrService.success("", "צלילי התראה הושתקו");
     } else {
       this.soundService.enableSound();
 
