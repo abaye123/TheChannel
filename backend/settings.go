@@ -17,6 +17,7 @@ type ReplaceRegex struct {
 }
 
 type SettingConfig struct {
+<<<<<<< HEAD
 	AdSrc                     string
 	AdWidth                   int64
 	RequireAuth               bool
@@ -27,8 +28,19 @@ type SettingConfig struct {
 	ApiSecretKey              string
 	RootStaticFolder          string
 	CountViews                bool
-	AutoGrantWriterPrivilege  bool
 	ShowAuthorToAuthenticated bool
+=======
+	AdSrc                   string
+	AdWidth                 int64
+	RequireAuth             bool
+	RequireAuthForViewFiles bool
+	RegexReplace            []*ReplaceRegex
+	WebhookURL              string
+	VerifyToken             string
+	ApiSecretKey            string
+	RootStaticFolder        string
+	CountViews              bool
+>>>>>>> parent of cba3be5 (feat: Add option for new user to be created with writer permission)
 }
 
 type Setting struct {
@@ -86,12 +98,12 @@ func (s *Settings) ToConfig() *SettingConfig {
 		case "count_views":
 			config.CountViews = setting.GetBool()
 
-		case "auto_grant_writer_privilege":
-			config.AutoGrantWriterPrivilege = setting.GetBool()
-
+<<<<<<< HEAD
 		case "show_author_to_authenticated":
 			config.ShowAuthorToAuthenticated = setting.GetBool()
 
+=======
+>>>>>>> parent of cba3be5 (feat: Add option for new user to be created with writer permission)
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
 				parts := strings.Split(r, "#")
