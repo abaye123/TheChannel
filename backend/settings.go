@@ -28,6 +28,7 @@ type SettingConfig struct {
 	RootStaticFolder          string
 	CountViews                bool
 	ShowAuthorToAuthenticated bool
+	GoogleAnalyticsID         string
 }
 
 type Setting struct {
@@ -87,6 +88,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "show_author_to_authenticated":
 			config.ShowAuthorToAuthenticated = setting.GetBool()
+
+		case "google_analytics_id":
+			config.GoogleAnalyticsID = setting.GetString()
 			
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
