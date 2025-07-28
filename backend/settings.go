@@ -29,6 +29,7 @@ type SettingConfig struct {
 	CountViews                bool
 	ShowAuthorToAuthenticated bool
 	GoogleAnalyticsID         string
+	HideEditTime              bool
 }
 
 type Setting struct {
@@ -89,6 +90,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "show_author_to_authenticated":
 			config.ShowAuthorToAuthenticated = setting.GetBool()
+
+		case "hide_edit_time":
+			config.HideEditTime = setting.GetBool()
 
 		case "google_analytics_id":
 			config.GoogleAnalyticsID = setting.GetString()

@@ -3,7 +3,7 @@
         <strong *ngIf="(userPrivilege?.['admin'] || userInfo) && message.author !== 'Anonymous'"
             class="text-black-50">{{message.author + ' ·'}}</strong>
         <small class="text-black-50 me-1">{{ message.timestamp | messageTime }}</small>
-        <small class="text-black-50 me-1" *ngIf="isEdited(message)">
+        <small class="text-black-50 me-1" *ngIf="message.last_edit && isEdited(message)">
             <strong>·</strong> נערכה {{ message.last_edit | messageTime }}
         </small>
     </div>

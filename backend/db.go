@@ -159,6 +159,7 @@ var getMessageRange = redis.NewScript(`
 	local countViews = ARGV[3] == 'true'
 	local isAuthenticated = ARGV[4] == 'true'
 	local showAuthorToAuthenticated = ARGV[5] == 'true'
+	local hideEditTime = ARGV[6] == 'true'
 
 	local start_index = redis.call('ZREVRANK', time_set_key, offset_key) or 0
 	if start_index > 0 then
@@ -193,6 +194,12 @@ var getMessageRange = redis.NewScript(`
 					end
 				elseif key == 'deleted' then
 					message[key] = value == '1'
+				elseif key == 'last_edit' then
+					if hideEditTime then
+						message[key] = ""
+					else
+						message[key] = value
+					end
 				elseif key == 'author' then
 				    if isAdmin then
 				        message[key] = value
@@ -233,6 +240,7 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 		strconv.FormatBool(countViews),
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
+		strconv.FormatBool(settingConfig.HideEditTime),
 	}).Result()
 	if err != nil {
 		return []Message{}, err

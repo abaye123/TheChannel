@@ -225,8 +225,14 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   isEdited(message: ChatMessage): boolean {
     if (!message.last_edit) return false;
+    
+    if (typeof message.last_edit === 'string' && message.last_edit.trim() === '') {
+      return false;
+    }
+    
     const date = new Date(message.last_edit).getFullYear();
     if (isNaN(date)) return false;
+    
     return date !== 1;
   }
 }
