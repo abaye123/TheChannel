@@ -38,6 +38,7 @@ type User struct {
 	Email      string     `json:"email"`
 	PublicName string     `json:"publicName"`
 	Privileges Privileges `json:"privileges"`
+	Blocked    bool       `json:"blocked"`
 }
 
 type PushMessage struct {
