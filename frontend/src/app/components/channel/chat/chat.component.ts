@@ -78,6 +78,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   private async initializeMessageListener() {
     this.eventSource = this.chatService.sseListener();
     this.eventSource.onmessage = (event) => {
+
+      this.lastHeartbeat = Date.now();
+
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'new-message':
@@ -126,7 +129,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           });
           break;
         case 'heartbeat':
-          this.lastHeartbeat = Date.now();
+          // this.lastHeartbeat = Date.now();
           break;
       }
     };
@@ -134,14 +137,14 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.chatService.sseClose();
-        clearInterval(this.subLastHeartbeat);
+    clearInterval(this.subLastHeartbeat);
   }
 
   async keepAliveSSE() {
     clearInterval(this.subLastHeartbeat);
-    this.subLastHeartbeat = interval(3000)
+    this.subLastHeartbeat = interval(15000)
       .subscribe(() => {
-        if (Date.now() - this.lastHeartbeat > 28000) {
+        if (Date.now() - this.lastHeartbeat > 45000) {
           this.lastHeartbeat = Date.now();
           this.initializeMessageListener();
         };
