@@ -57,7 +57,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
   @ViewChild(NgbPopover) popover!: NgbPopover;
   @ViewChild('media') mediaContainer!: ElementRef;
 
-  optionsMenu = [ 
+  optionsMenu = [
     {
       title: 'עריכה',
       icon: 'edit',
@@ -129,7 +129,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
           overlay.style.cursor = 'pointer';
           overlay.style.zIndex = '1';
           overlay.innerHTML = '<div style="text-align: center;">יש להתחבר כדי לצפות בקבצים <br>לחצו כאן להתחברות</div>';
-          
+
           overlay.addEventListener('click', () => {
             this.router.navigate(['/login']);
           });
@@ -225,14 +225,14 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   isEdited(message: ChatMessage): boolean {
     if (!message.last_edit) return false;
-    
-    if (typeof message.last_edit === 'string' && message.last_edit.trim() === '') {
+
+    if (typeof message.last_edit === 'string' && (message.last_edit as string).trim() === '') {
       return false;
     }
-    
+
     const date = new Date(message.last_edit).getFullYear();
     if (isNaN(date)) return false;
-    
+
     return date !== 1;
   }
 }
