@@ -65,44 +65,45 @@ func main() {
 		r.Post("/api/reactions/set-reactions", setReactions)
 	})
 
-	r.Route("/api", func(api chi.Router) {
+	r.Group(func(r chi.Router) {
+		r.Use(ifRequireAuth)
+		r.Get("/firebase-messaging-sw.js", getFirebaseMessagingSW)
+		r.Route("/api", func(api chi.Router) {
+			api.Get("/ads/settings", getAdsSettings)
+			api.Get("/emojis/list", getEmojisList)
+			api.Get("/channel/notifications-config", getNotificationsConfig)
+			api.Post("/channel/notifications-subscribe", subscribeNotifications)
 
-		api.Use(ifRequireAuth)
+			api.Get("/channel/info", getChannelInfo)
+			api.Get("/messages", getMessages)
+			api.Get("/events", getEvents)
+			api.Get("/files/{fileid}", serveFile)
+			api.Get("/user-info", getUserInfo)
 
-		api.Get("/ads/settings", getAdsSettings)
-		api.Get("/emojis/list", getEmojisList)
-		api.Get("/channel/notifications-config", getNotificationsConfig)
-		api.Post("/channel/notifications-subscribe", subscribeNotifications)
+			api.Route("/admin", func(protected chi.Router) {
+				// ⚠️ WARNING: Route not check privilege use protectedWithPrivilege to check privilege.
 
-		api.Get("/channel/info", getChannelInfo)
-		api.Get("/messages", getMessages)
-		api.Get("/events", getEvents)
-		api.Get("/files/{fileid}", serveFile)
-		api.Get("/user-info", getUserInfo)
+				protected.Post("/new", protectedWithPrivilege(Writer, addMessage))
+				protected.Post("/edit-message", protectedWithPrivilege(Writer, updateMessage))
+				protected.Get("/delete-message/{id}", protectedWithPrivilege(Writer, deleteMessage))
+				protected.Post("/upload", protectedWithPrivilege(Writer, uploadFile))
+				protected.Post("/edit-channel-info", protectedWithPrivilege(Moderator, editChannelInfo))
+				protected.Get("/users-amount", protectedWithPrivilege(Moderator, getUsersAmount))
+				protected.Post("/set-emojis", protectedWithPrivilege(Moderator, setEmojis))
 
-		api.Route("/admin", func(protected chi.Router) {
-			// ⚠️ WARNING: Route not check privilege use protectedWithPrivilege to check privilege.
+				protected.Get("/privilegs-users/get-list", protectedWithPrivilege(Admin, getPrivilegeUsersList))
+				protected.Post("/privilegs-users/set", protectedWithPrivilege(Admin, setPrivilegeUsers))
+				protected.Get("/settings/get", protectedWithPrivilege(Admin, getSettings))
+				protected.Post("/settings/set", protectedWithPrivilege(Admin, setSettings))
 
-			protected.Post("/new", protectedWithPrivilege(Writer, addMessage))
-			protected.Post("/edit-message", protectedWithPrivilege(Writer, updateMessage))
-			protected.Get("/delete-message/{id}", protectedWithPrivilege(Writer, deleteMessage))
-			protected.Post("/upload", protectedWithPrivilege(Writer, uploadFile))
-			protected.Post("/edit-channel-info", protectedWithPrivilege(Moderator, editChannelInfo))
-			protected.Get("/users-amount", protectedWithPrivilege(Moderator, getUsersAmount))
-			protected.Post("/set-emojis", protectedWithPrivilege(Moderator, setEmojis))
+				protected.Post("/block-user", protectedWithPrivilege(Admin, blockUser))
+				protected.Post("/unblock-user", protectedWithPrivilege(Admin, unblockUser))
+				protected.Get("/blocked-users/get-list", protectedWithPrivilege(Admin, getBlockedUsers))
+				protected.Get("/user-block-status", protectedWithPrivilege(Admin, getUserBlockStatus))
 
-			protected.Get("/privilegs-users/get-list", protectedWithPrivilege(Admin, getPrivilegeUsersList))
-			protected.Post("/privilegs-users/set", protectedWithPrivilege(Admin, setPrivilegeUsers))
-			protected.Get("/settings/get", protectedWithPrivilege(Admin, getSettings))
-			protected.Post("/settings/set", protectedWithPrivilege(Admin, setSettings))
-
-			protected.Post("/block-user", protectedWithPrivilege(Admin, blockUser))
-			protected.Post("/unblock-user", protectedWithPrivilege(Admin, unblockUser))
-			protected.Get("/blocked-users/get-list", protectedWithPrivilege(Admin, getBlockedUsers))
-			protected.Get("/user-block-status", protectedWithPrivilege(Admin, getUserBlockStatus))
-
-			 // temporary
-			protected.Get("/users/get-list", protectedWithPrivilege(Admin, getAllUsers))
+			 	// temporary
+				protected.Get("/users/get-list", protectedWithPrivilege(Admin, getAllUsers))
+			})
 		})
 	})
 
