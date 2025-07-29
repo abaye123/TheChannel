@@ -51,7 +51,8 @@ func main() {
 	r.Use(middleware.Logger)
 
 	// Protected with api key
-	r.Post("/import/post", addNewPost)
+	// r.Post("/import/post", addNewPost)
+	r.Post("/api/import/post", addNewPost)
 
 	r.Get("/auth/google", getGoogleAuthValues)
 	r.Post("/auth/login", login)
