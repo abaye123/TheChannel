@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,6 +74,8 @@ func (s *Settings) ToConfig() *SettingConfig {
 	} else {
 		config.RootStaticFolder = "/usr/share/ng"
 	}
+
+	config.MaxFileSize = 50
 
 	for _, setting := range *s {
 		switch setting.Key {
@@ -152,12 +156,33 @@ func (s *Settings) ToConfig() *SettingConfig {
 			config.ProjectDomain = setting.GetString()
 
 		case "max_file_size":
-			size := setting.GetInt()
-			if size <= 0 {
-				size = 100
+			requestedSize := setting.GetInt()
+			// Check if there's an environment variable limit
+			if envMaxSize := os.Getenv("MAX_FILE_SIZE"); envMaxSize != "" {
+				if envLimit, err := strconv.ParseInt(envMaxSize, 10, 64); err == nil {
+					// If the requested size is higher than the env limit, use the env limit
+					if requestedSize > envLimit {
+						config.MaxFileSize = envLimit
+					} else {
+						config.MaxFileSize = requestedSize
+					}
+				} else {
+					config.MaxFileSize = requestedSize
+				}
+			} else {
+				config.MaxFileSize = requestedSize
 			}
-			config.MaxFileSize = size
 
+		}
+	}
+
+	// Also check the default value against environment limit
+	if envMaxSize := os.Getenv("MAX_FILE_SIZE"); envMaxSize != "" {
+		if envLimit, err := strconv.ParseInt(envMaxSize, 10, 64); err == nil {
+			// If the current MaxFileSize (default 50) is higher than env limit, use env limit
+			if config.MaxFileSize > envLimit {
+				config.MaxFileSize = envLimit
+			}
 		}
 	}
 
