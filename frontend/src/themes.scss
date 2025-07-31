@@ -2,8 +2,7 @@
 @use '@nebular/theme/styles/theming' as *;
 @use '@nebular/theme/styles/themes/default';
 
-$nb-themes: nb-register-theme((font-family-primary: 'Assistant, sans-serif',
-            font-family-secondary: 'Assistant, sans-serif',
-        ),
-        custom,
-        default);
+$nb-themes: nb-register-theme((
+    font-family-primary: 'Heebo, sans-serif',
+    font-family-secondary: 'Heebo, sans-serif',
+), custom, default);
