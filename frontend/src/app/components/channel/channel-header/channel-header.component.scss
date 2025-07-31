@@ -3,3 +3,54 @@
     width: 60px;
     cursor: pointer;
 }
+
+.chatfree-spacer {
+    flex: 1;
+    min-width: 33.33vw;
+}
+
+.chatfree-branding {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    margin-left: 2rem;
+    margin-right: 2rem;
+}
+
+.chatfree-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.chatfree-logo {
+    height: 45px;
+    width: auto;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        filter: hue-rotate(15deg) brightness(1.1) saturate(1.2);
+        transform: scale(1.05);
+    }
+}
+
+@media (max-width: 1124px) {
+    .chatfree-spacer,
+    .chatfree-branding {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1124px) {
+    .chatfree-spacer,
+    .chatfree-branding {
+        display: none !important;
+    }
+}
