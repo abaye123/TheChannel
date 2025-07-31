@@ -12,6 +12,10 @@
             <small class="text-black-50" *ngIf="isEdited(message)">
                 נערכה {{ message.last_edit | messageTime }}
             </small>
+            <small class="text-black-50" *ngIf="message.views && message.views > 0">
+                <nb-icon icon="eye-outline"></nb-icon>
+                {{ message.views }}
+            </small>
             <div *ngIf="message.deleted">
                 <nb-icon icon="alert-circle" nbPopover="לחצו כאן לשחזור ההודעה" nbPopoverTrigger="hover"
                     (click)="editMessage(message)" status="danger"></nb-icon>
