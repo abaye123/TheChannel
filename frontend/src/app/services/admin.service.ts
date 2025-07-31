@@ -3,9 +3,6 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { ChatFile, ChatMessage } from './chat.service';
 import { ResponseResult } from '../models/response-result.model';
-import Viewer from "viewerjs";
-import { AdminPanelComponent } from "../components/admin/admin-panel.component";
-import { NbDialogService } from "@nebular/theme";
 
 export interface PrivilegeUser {
   id?: string;
@@ -37,7 +34,6 @@ export class AdminService {
 
   constructor(
     private http: HttpClient,
-    private dialogService: NbDialogService
   ) { }
 
   async getUsersAmount(): Promise<number> {
@@ -142,9 +138,5 @@ export class AdminService {
 
   setSettings(settings: Setting[]): Promise<ResponseResult> {
     return firstValueFrom(this.http.post<ResponseResult>('/api/admin/settings/set', settings));
-  }
-  
-  openAdminPanel() {
-    this.dialogService.open(AdminPanelComponent, { closeOnBackdropClick: true });
   }
 }
