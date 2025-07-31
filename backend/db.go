@@ -196,11 +196,9 @@ var getMessageRange = redis.NewScript(`
 				elseif key == 'deleted' then
 					message[key] = value == '1'
 				elseif key == 'last_edit' then
-					if hideEditTime then
-						message[key] = ""
-					else
-						message[key] = value
-					end
+    				if not hideEditTime then
+        				message[key] = value
+    				end
 				elseif key == 'author' then
 				    if isAdmin then
 				        message[key] = value
