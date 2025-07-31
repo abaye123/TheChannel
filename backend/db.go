@@ -210,7 +210,9 @@ var getMessageRange = redis.NewScript(`
 				elseif key == 'authorId' then
 					if isAdmin then
 					   message[key] = value
-                    else
+                    elseif showAuthorToAuthenticated and isAuthenticated then
+				        message[key] = value
+				    else
                        message[key] = "Anonymous"
                     end
 				elseif key == 'reactions' then
