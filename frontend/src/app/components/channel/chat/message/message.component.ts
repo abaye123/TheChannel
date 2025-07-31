@@ -2,12 +2,12 @@ import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '
 import { NgIf, CommonModule } from "@angular/common";
 import {
   NbButtonModule,
-  NbCardModule,
+  NbCardModule, NbChatModule,
   NbContextMenuModule, NbDialogService,
   NbIconModule, NbMenuService,
   NbPopoverModule,
   NbPosition,
-  NbToastrService
+  NbToastrService, NbUserModule
 } from "@nebular/theme";
 import { filter } from "rxjs";
 import { MarkdownComponent } from "ngx-markdown";
@@ -33,6 +33,8 @@ import { Router } from '@angular/router';
     MarkdownComponent,
     NbPopoverModule,
     NgbPopoverModule,
+    NbChatModule,
+    NbUserModule,
   ],
   templateUrl: './message.component.html',
   styleUrl: './message.component.scss'
@@ -75,7 +77,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
     private _adminService: AdminService,
     private menuService: NbMenuService,
     private dialogService: NbDialogService,
-    private _chatService: ChatService,
+    protected chatService: ChatService,
     private toastrService: NbToastrService,
     private _authService: AuthService,
     private router: Router
@@ -96,7 +98,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
       }
     });
 
-    this._chatService.getEmojisList()
+    this.chatService.getEmojisList()
       .then(emojis => this.reacts = emojis)
       .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוגים'));
   }
@@ -105,7 +107,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       const media = this.mediaContainer?.nativeElement.querySelectorAll('img, video');
       media?.forEach((item: HTMLMediaElement) => {
-        if (this._chatService.channelInfo?.require_auth_for_view_files && !this._authService.userInfo) {
+        if (this.chatService.channelInfo?.require_auth_for_view_files && !this._authService.userInfo) {
           const wrapper = document.createElement('div');
           wrapper.style.position = 'relative';
           wrapper.style.display = 'inline-block';
@@ -145,7 +147,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
   }
 
   editMessage(message: ChatMessage) {
-    this._chatService.setEditMessage(message);
+    this.chatService.setEditMessage(message);
   }
 
   deleteMessage(message: ChatMessage) {
@@ -177,7 +179,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   setReact(id: number | undefined, react: string) {
     if (id && react)
-      this._chatService.setReact(id, react).catch(() => this.toastrService.danger('', "יש להתחבר לחשבון בכדי להוסיף אימוג'ים"));
+      this.chatService.setReact(id, react).catch(() => this.toastrService.danger('', "יש להתחבר לחשבון בכדי להוסיף אימוג'ים"));
   }
 
   showEmojiMenu() {

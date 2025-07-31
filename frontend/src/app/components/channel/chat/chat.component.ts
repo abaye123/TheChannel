@@ -14,7 +14,6 @@ import { MessageComponent } from "./message/message.component";
 import { firstValueFrom, interval } from 'rxjs';
 import { ChatMessage, ChatService } from '../../../services/chat.service';
 import { AuthService, User } from '../../../services/auth.service';
-import { InputFormComponent } from "./input-form/input-form.component";
 import { SoundService } from '../../../services/sound.service';
 
 @Component({
@@ -31,7 +30,6 @@ import { SoundService } from '../../../services/sound.service';
     NbListModule,
     NbBadgeModule,
     MessageComponent,
-    InputFormComponent
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
@@ -71,7 +69,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this._authService.loadUserInfo().then(res => this.userInfo = res);
 
     this.loadMessages().then(() => {
-      this.scrollToBottom();
+      this.scrollToBottom(false);
     });
   }
 
@@ -159,10 +157,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  scrollToBottom() {
+  scrollToBottom(smooth: boolean = true) {
     setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }, 200);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+    }, 0);
     this.hasNewMessages = false;
   }
 
