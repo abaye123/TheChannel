@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, Optional, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
@@ -6,18 +6,23 @@ import { firstValueFrom } from "rxjs";
 import {
   NbAlertModule,
   NbButtonModule,
-  NbCardModule, NbDialogRef,
+  NbCardModule,
   NbFormFieldModule,
   NbIconModule,
   NbInputModule,
-  NbProgressBarModule, NbSpinnerModule, NbTagModule, NbToastrService, NbToggleModule
+  NbProgressBarModule,
+  NbSpinnerModule,
+  NbTagModule,
+  NbToastrService,
+  NbToggleModule
 } from "@nebular/theme";
 import { AngularEditorModule } from "@kolkov/angular-editor"; // Corrected import path
 import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
 import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
-import { Attachment, ChatFile, ChatMessage } from '../../../../services/chat.service';
+import { Attachment, ChatFile, ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
+import { AutosizeModule } from "ngx-autosize";
 
 @Component({
   selector: 'app-input-form',
@@ -37,7 +42,7 @@ import { AdminService } from '../../../../services/admin.service';
     NbTagModule,
     NbAlertModule,
     NgIconsModule, // Use NgIconsModule directly, icons are configured in app.config.ts
-    MarkdownHelpComponent,
+    AutosizeModule,
   ],
   templateUrl: './input-form.component.html',
   styleUrl: './input-form.component.scss'
@@ -53,7 +58,6 @@ export class InputFormComponent implements OnInit {
   input: string = '';
   isSending: boolean = false;
   showMarkdownPreview: boolean = false;
-  showMarkdownHelp: boolean = false;
   hasScrollbar: boolean = false;
 
   @ViewChild('inputTextArea') inputTextArea!: ElementRef<HTMLTextAreaElement>;
@@ -61,13 +65,18 @@ export class InputFormComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private toastrService: NbToastrService,
-    @Optional() protected dialogRef: NbDialogRef<InputFormComponent>
+    private chatService: ChatService,
   ) { }
 
   ngOnInit() {
     if (this.message) {
       this.input = this.message.text || '';
     }
+
+    this.chatService.messageEditObservable.subscribe((message?: ChatMessage) => {
+      this.message = message;
+      this.input = this.message?.text || '';
+    });
   }
 
   onFileSelected(event: Event) {
@@ -154,7 +163,7 @@ export class InputFormComponent implements OnInit {
       }
 
       this.toastrService.success("", "הודעה פורסמה בהצלחה");
-      this.closeDialog();
+      this.clearInputs();
     } catch (error) {
       this.toastrService.danger("", "שגיאה בפרסום הודעה");
     } finally {
@@ -167,7 +176,12 @@ export class InputFormComponent implements OnInit {
     this.message.text = this.input;
     this.message.deleted = false;
     await firstValueFrom(this.adminService.editMessage(this.message));
+    this.cancelUpdateMessage();
     return true;
+  }
+
+  cancelUpdateMessage() {
+    this.chatService.setEditMessage(undefined);
   }
 
   async sendNewMessage(): Promise<boolean> {
@@ -188,11 +202,10 @@ export class InputFormComponent implements OnInit {
     return true;
   }
 
-  async closeDialog() {
+  async clearInputs() {
     this.input = '';
     this.attachments = [];
     this.message = undefined;
-    this.dialogRef?.close();
   }
 
   removeAttachment(attachment: Attachment) {
@@ -200,8 +213,9 @@ export class InputFormComponent implements OnInit {
     this.input = this.input.replaceAll(attachment.embedded ?? '', '');
   }
 
-  toggleMarkdownHelp() {
-    this.showMarkdownHelp = !this.showMarkdownHelp;
+  openMarkdownDocs() {
+    let markdownDocsUrl = 'https://www.markdownguide.org/basic-syntax/';
+    window.open(markdownDocsUrl, '_blank');
   }
 
   checkScrollbar() {
@@ -279,27 +293,6 @@ export class InputFormComponent implements OnInit {
         textArea.selectionEnd = cursorPos + placeholder.length;
         textArea.focus();
       });
-    }
-  }
-
-  ngAfterViewInit() {
-    this.checkScrollbar();
-
-    if (this.inputTextArea?.nativeElement) {
-      this.inputTextArea.nativeElement.addEventListener('input', () => {
-        setTimeout(() => this.checkScrollbar(), 0);
-      });
-
-      window.addEventListener('resize', () => {
-        setTimeout(() => this.checkScrollbar(), 0);
-      });
-    }
-  }
-
-  ngOnDestroy() {
-    if (this.inputTextArea?.nativeElement) {
-      this.inputTextArea.nativeElement.removeEventListener('input', this.checkScrollbar);
-      window.removeEventListener('resize', this.checkScrollbar);
     }
   }
 }
