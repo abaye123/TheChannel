@@ -10,16 +10,16 @@ import {
   NbToastrService,
   NbUserModule
 } from "@nebular/theme";
-import { InputFormComponent } from "../input-form/input-form.component";
+import { InputFormComponent } from "../chat/input-form/input-form.component";
 import { filter } from "rxjs";
 import { ChannelInfoFormComponent } from '../channel-info-form/channel-info-form.component';
 import Viewer from 'viewerjs';
 import { Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { AuthService, User } from '../../../../services/auth.service';
-import { ChatService } from '../../../../services/chat.service';
-import { NotificationsService } from '../../../../services/notifications.service';
-import { SoundService } from '../../../../services/sound.service';
+import { AuthService, User } from '../../../services/auth.service';
+import { ChatService } from '../../../services/chat.service';
+import { NotificationsService } from '../../../services/notifications.service';
+import { SoundService } from '../../../services/sound.service';
 
 @Component({
   selector: 'app-channel-header',
@@ -29,7 +29,7 @@ import { SoundService } from '../../../../services/sound.service';
     NbIconModule,
     NbUserModule,
     NbContextMenuModule,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './channel-header.component.html',
   styleUrl: './channel-header.component.scss'
