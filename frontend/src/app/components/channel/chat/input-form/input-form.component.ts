@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
@@ -16,7 +16,6 @@ import {
   NbToastrService,
   NbToggleModule
 } from "@nebular/theme";
-import { AngularEditorModule } from "@kolkov/angular-editor"; // Corrected import path
 import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
 import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
@@ -61,6 +60,8 @@ export class InputFormComponent implements OnInit {
   hasScrollbar: boolean = false;
 
   @ViewChild('inputTextArea') inputTextArea!: ElementRef<HTMLTextAreaElement>;
+
+  @Output() inputHeightChanged = new EventEmitter<number>();
 
   constructor(
     private adminService: AdminService,

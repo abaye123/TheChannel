@@ -53,8 +53,9 @@
             </nb-card>
             } @else {
             <div class="d-flex flex-row border rounded-5 fs-4 align-items-center">
-                <textarea #inputTextArea autosize nbInput fullWidth placeholder="הקלד/י הודעה..." [minRows]="1"
-                    [maxRows]="6" [maxlength]="maxMessageLength" [disabled]="showMarkdownPreview || isSending"
+                <textarea #inputTextArea autosize nbInput fullWidth placeholder="הקלד/י הודעה..."
+                    (resized)="inputHeightChanged.emit($event)" [minRows]="1" [maxRows]="6"
+                    [maxlength]="maxMessageLength" [disabled]="showMarkdownPreview || isSending"
                     class="bg-transparent border-0 flex-grow-1 fs-5" [(ngModel)]="input" (input)="checkScrollbar()"
                     style="resize: none"></textarea>
                 <div class="d-flex flex-row align-self-end">
