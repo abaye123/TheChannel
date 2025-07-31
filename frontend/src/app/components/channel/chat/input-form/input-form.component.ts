@@ -18,7 +18,6 @@ import {
 } from "@nebular/theme";
 import { MarkdownComponent } from "ngx-markdown";
 import { NgIconsModule } from "@ng-icons/core";
-import { MarkdownHelpComponent } from "../markdown-help/markdown-help.component";
 import { Attachment, ChatFile, ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
 import { AutosizeModule } from "ngx-autosize";
@@ -34,7 +33,7 @@ import { AutosizeModule } from "ngx-autosize";
     NbProgressBarModule,
     NbCardModule,
     NbFormFieldModule,
-    AngularEditorModule, // Corrected module name
+    // AngularEditorModule, // Corrected module name
     NbToggleModule,
     NbSpinnerModule,
     MarkdownComponent,
