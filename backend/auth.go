@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"time"
@@ -64,10 +65,12 @@ func login(w http.ResponseWriter, r *http.Request) {
     var auth Auth
 
     if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
+		go saveLoginFailedLog("Decode", err)
         http.Error(w, "error", http.StatusBadRequest)
     }
 
     if auth.Code == "" {
+		go saveLoginFailedLog("Decode", errors.New("invalid credentials"))
         http.Error(w, "Invalid credentials", http.StatusUnauthorized)
         return
     }
@@ -82,11 +85,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 
     token, err := googleOAuthConfig.Exchange(ctx, auth.Code)
     if err != nil {
+		go saveLoginFailedLog("Exchange", err)
         http.Error(w, "error", http.StatusInternalServerError)
         return
     }
 
     if !token.Valid() {
+		go saveLoginFailedLog("Invalid token", nil)
         http.Error(w, "Invalid token", http.StatusUnauthorized)
         return
     }
@@ -94,6 +99,7 @@ func login(w http.ResponseWriter, r *http.Request) {
     var claims jwt.MapClaims
     _, _, err = jwt.NewParser().ParseUnverified(token.Extra("id_token").(string), &claims)
     if err != nil {
+		go saveLoginFailedLog("ParseUnverified", err)
         http.Error(w, "error", http.StatusInternalServerError)
         return
     }
@@ -102,11 +108,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 
     u, err := getUser(ctx, claims)
     if err != nil {
+		go saveLoginFailedLog("getUser", err)
         http.Error(w, "error", http.StatusInternalServerError)
         return
     }
 
     if u.Blocked {
+		go saveLoginFailedLog("blocked", err)
         http.Error(w, "User is blocked", http.StatusForbidden)
         return
     }
@@ -124,6 +132,7 @@ func login(w http.ResponseWriter, r *http.Request) {
     session.Values["user"] = userSession
     session.Options.MaxAge = 60 * 60 * 24 * 30 // 30 days
     if err := session.Save(r, w); err != nil {
+		go saveLoginFailedLog("sessionSave", err)
         http.Error(w, "error", http.StatusInternalServerError)
         return
     }
@@ -133,10 +142,6 @@ func login(w http.ResponseWriter, r *http.Request) {
     response := Response{Success: true}
     json.NewEncoder(w).Encode(response)
 }
-
-// func isRootUser(s string) bool {
-// 	return slices.Contains(adminUsers, s)
-// }
 
 func logout(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, cookieName)
