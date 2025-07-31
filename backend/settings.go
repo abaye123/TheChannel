@@ -20,6 +20,7 @@ type ReplaceRegex struct {
 
 type SettingConfig struct {
 	AdSrc                     string
+	AdWidth                   int64
 	RequireAuth               bool
 	RequireAuthForViewFiles   bool
 	RegexReplace              []*ReplaceRegex
@@ -80,6 +81,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 		switch setting.Key {
 		case "ad-iframe-src":
 			config.AdSrc = setting.GetString()
+
+		case "ad-iframe-width":
+			config.AdWidth = setting.GetInt()
 
 		case "require_auth":
 			config.RequireAuth = setting.GetBool()
