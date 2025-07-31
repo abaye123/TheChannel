@@ -36,109 +36,215 @@ nb-icon {
   }
 }
 
+.message-card[style*="opacity: 0.5"] .emojis-section {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .emojis-section {
   border-top: 1px solid rgba(102, 111, 255, 0.15);
-  padding: 6px 8px 4px 8px;
-  margin-top: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 0 0 10px 10px;
+  padding: 8px 12px 6px 12px;
+  margin-top: 6px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(102, 111, 255, 0.05));
+  border-radius: 0 0 12px 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+
+  &.animate-in {
+    animation: slideIn 0.3s ease-out;
+  }
 
   .emoji-reaction {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(102, 111, 255, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid rgba(102, 111, 255, 0.2);
     border-radius: 12px;
-    padding: 6px 6px;
-    margin: 1px 2px;
+    padding: 8px 10px;
+    margin: 2px 3px;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 14px;
     line-height: 1;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     &:hover {
-      background: rgba(102, 111, 255, 0.15);
-      border-color: rgba(102, 111, 255, 0.4);
-      transform: translateY(-1px);
+      background: rgba(102, 111, 255, 0.1);
+      border-color: rgba(102, 111, 255, 0.5);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(102, 111, 255, 0.3);
+    }
+
+    &:active {
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    &.new-reaction {
+      animation: bounceIn 0.5s ease-out;
     }
 
     .emoji {
-      font-size: 16px;
+      font-size: 18px;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
     }
 
     .count {
-      color: #555;
-      font-weight: 500;
-      font-size: 11px;
-      min-width: 12px;
+      color: #4a5568;
+      font-weight: 600;
+      font-size: 12px;
+      min-width: 14px;
       text-align: center;
-    }
-  }
-}
-
-::ng-deep {
-  .emoji-picker-popover {
-    .popover {
-      max-width: none !important;
-      border: none !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      background: rgba(102, 111, 255, 0.1);
+      border-radius: 8px;
+      padding: 2px 4px;
+      line-height: 1.2;
     }
 
-    .popover-body {
-      padding: 6px !important;
-      background: #ffffff !important;
-      border: 1px solid #ddd !important;
-      border-radius: 8px !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-    }
-
-    .popover-arrow::before {
-      border-top-color: #ddd !important;
-    }
-
-    .popover-arrow::after {
-      border-top-color: #ffffff !important;
+    &.user-reacted {
+      background: rgba(102, 111, 255, 0.15);
+      border-color: rgba(102, 111, 255, 0.6);
+      
+      .count {
+        background: rgba(102, 111, 255, 0.2);
+        color: #2d3748;
+        font-weight: 700;
+      }
     }
   }
 }
 
 .emoji-picker-menu {
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  min-width: 140px;
-  max-width: 200px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(102, 111, 255, 0.2);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  max-width: 220px;
+  animation: popIn 0.2s ease-out;
 
   .emoji-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 2px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
 
     .emoji-option {
       border: none;
       background: transparent;
-      border-radius: 4px;
-      padding: 4px;
-      transition: background-color 0.1s ease;
-      font-size: 16px;
+      border-radius: 8px;
+      padding: 8px;
+      transition: all 0.15s ease;
+      font-size: 18px;
       line-height: 1;
       cursor: pointer;
+      position: relative;
 
       &:hover {
-        background: #f0f0f0;
+        background: rgba(102, 111, 255, 0.1);
+        transform: scale(1.2);
       }
 
       &:active {
-        background: #e0e0e0;
+        background: rgba(102, 111, 255, 0.2);
+        transform: scale(1.1);
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(102, 111, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.2s, height 0.2s;
+      }
+
+      &:active::before {
+        width: 100%;
+        height: 100%;
       }
     }
   }
 }
 
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .message-card[style*="opacity: 0.5"] .emojis-section {
-  opacity: 0.6;
+  opacity: 0.4;
   pointer-events: none;
+  filter: grayscale(50%);
+}
+
+@media (max-width: 768px) {
+  .emojis-section {
+    padding: 6px 8px 4px 8px;
+    
+    .emoji-reaction {
+      padding: 6px 8px;
+      margin: 1px 2px;
+      
+      .emoji {
+        font-size: 16px;
+      }
+      
+      .count {
+        font-size: 11px;
+      }
+    }
+  }
+
+  .emoji-picker-menu {
+    min-width: 140px;
+    max-width: 180px;
+    
+    .emoji-grid {
+      grid-template-columns: repeat(5, 1fr);
+      
+      .emoji-option {
+        padding: 6px;
+        font-size: 16px;
+      }
+    }
+  }
 }

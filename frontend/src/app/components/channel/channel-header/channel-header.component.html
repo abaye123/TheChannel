@@ -1,5 +1,5 @@
 <div class="d-flex flex-row gap-2 align-items-center justify-content-between">
-    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center"
+    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-4"
         style="width: 60px; height: 60px">
         @if (chatService.channelInfo?.logoUrl?.length) {
         <img [src]="chatService.channelInfo?.logoUrl" class="rounded-circle img-circle"
@@ -38,7 +38,7 @@
 
     @if (userInfo) {
     <nb-user [name]="userInfo.username" shape="round" [nbContextMenu]="userMenu" [nbContextMenuTag]="userMenuTag"
-        [picture]="userInfo.picture || ''" [onlyPicture]="isSmallScreen">
+        [picture]="userInfo.picture || ''" [onlyPicture]="isSmallScreen" class="font-bold px-3">
     </nb-user>
     } @else {
     <button nbButton shape="round" appearance="outline" title="התחבר באמצעות חשבון גוגל" (click)="googleLogin()">
