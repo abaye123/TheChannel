@@ -34,6 +34,25 @@ nb-icon {
   .mark_message {
     border: 2px solid #6a6fff;
   }
+
+  .emoji-picker-popover {
+    .popover {
+      max-width: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    .popover-body {
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .popover-arrow {
+      display: none !important;
+    }
+  }
 }
 
 .message-card[style*="opacity: 0.5"] .emojis-section {
@@ -45,8 +64,9 @@ nb-icon {
   border-top: 1px solid rgba(102, 111, 255, 0.15);
   padding: 8px 12px 6px 12px;
   margin-top: 6px;
-  background: rgba(249, 250, 251, 0.8);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(102, 111, 255, 0.05));
   border-radius: 0 0 12px 12px;
+  backdrop-filter: blur(10px);
   transition: all 0.2s ease;
 
   &.animate-in {
@@ -54,27 +74,30 @@ nb-icon {
   }
 
   .emoji-reaction {
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid rgba(102, 111, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px 10px;
     margin: 2px 3px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 14px;
     line-height: 1;
     position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     &:hover {
       background: rgba(102, 111, 255, 0.1);
-      transform: translateY(-1px);
+      border-color: rgba(102, 111, 255, 0.5);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(102, 111, 255, 0.3);
     }
 
     &:active {
-      transform: translateY(0);
+      transform: translateY(-1px) scale(1.02);
     }
 
     &.new-reaction {
@@ -82,23 +105,29 @@ nb-icon {
     }
 
     .emoji {
-      font-size: 20px;
+      font-size: 18px;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
     }
 
     .count {
-      color: #374151;
+      color: #4a5568;
       font-weight: 600;
       font-size: 14px;
       min-width: 16px;
       text-align: center;
-      line-height: 1;
+      background: rgba(102, 111, 255, 0.1);
+      border-radius: 8px;
+      padding: 2px 4px;
+      line-height: 1.2;
     }
 
     &.user-reacted {
-      background: rgba(102, 111, 255, 0.12);
-      
+      background: rgba(102, 111, 255, 0.15);
+      border-color: rgba(102, 111, 255, 0.6);
+
       .count {
-        color: #1f2937;
+        background: rgba(102, 111, 255, 0.2);
+        color: #2d3748;
         font-weight: 700;
       }
     }
@@ -125,9 +154,9 @@ nb-icon {
       border: none;
       background: transparent;
       border-radius: 8px;
-      padding: 8px;
+      padding: 6px;
       transition: all 0.15s ease;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1;
       cursor: pointer;
       position: relative;
@@ -150,6 +179,7 @@ nb-icon {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -161,10 +191,12 @@ nb-icon {
     opacity: 0;
     transform: scale(0.3);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.1);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
@@ -176,6 +208,7 @@ nb-icon {
     opacity: 0;
     transform: scale(0.9) translateY(-5px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -191,15 +224,15 @@ nb-icon {
 @media (max-width: 768px) {
   .emojis-section {
     padding: 6px 8px 4px 8px;
-    
+
     .emoji-reaction {
       padding: 5px 6px;
       margin: 1px 2px;
-      
+
       .emoji {
         font-size: 18px;
       }
-      
+
       .count {
         font-size: 13px;
       }
@@ -207,15 +240,12 @@ nb-icon {
   }
 
   .emoji-picker-menu {
-    min-width: 140px;
-    max-width: 180px;
-    
     .emoji-grid {
-      grid-template-columns: repeat(5, 1fr);
-      
+      gap: 2px;
+
       .emoji-option {
-        padding: 6px;
-        font-size: 16px;
+        padding: 4px;
+        font-size: 18px;
       }
     }
   }
