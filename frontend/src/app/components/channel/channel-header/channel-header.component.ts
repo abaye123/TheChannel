@@ -63,7 +63,7 @@ export class ChannelHeaderComponent implements OnInit {
 
   constructor(
     public chatService: ChatService,
-    private _authService: AuthService,
+    public _authService: AuthService,
     private contextMenuService: NbMenuService,
     private toastrService: NbToastrService,
     private router: Router,
