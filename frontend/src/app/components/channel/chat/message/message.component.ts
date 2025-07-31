@@ -231,4 +231,12 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
     return date !== 1;
   }
+
+  copyLink(messageId?: number) {
+    if (!messageId) return;
+    const url = `${window.location.origin}/#${messageId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.toastrService.success('', 'הקישור הועתק ללוח');
+    });
+  }
 }

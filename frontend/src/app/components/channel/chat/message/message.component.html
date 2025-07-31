@@ -16,6 +16,10 @@
                 <nb-icon icon="alert-circle" nbPopover="לחצו כאן לשחזור ההודעה" nbPopoverTrigger="hover"
                     (click)="editMessage(message)" status="danger"></nb-icon>
             </div>
+            <button class="copy-button" nbButton ghost shape="round" size="tiny" (click)="copyLink(message.id)"
+                title="העתק קישור להודעה">
+                <nb-icon icon="link-2-outline"></nb-icon>
+            </button>
         </div>
         <div [ngbPopover]="emojiMenu" [disablePopover]="!reacts.length" [triggers]="'manual'"
             [popoverContext]="{message}" [autoClose]="'outside'" [placement]="getPopoverPlacement()"
