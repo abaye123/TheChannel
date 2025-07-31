@@ -27,6 +27,7 @@ export class AdminPanelComponent implements OnInit {
     readonly info = "info";
     readonly settings = "settings";
     readonly users = "users";
+    readonly privileges = "privileges";
     readonly emojis = "emojis";
 
     selectedMenuItem = this.info;
@@ -40,6 +41,10 @@ export class AdminPanelComponent implements OnInit {
         {
             title: 'הגדרות',
             icon: 'settings-2-outline',
+        },
+        {
+            title: 'ניהול משתמשים',
+            icon: 'people-outline',
         },
         {
             title: 'הרשאות',
@@ -71,8 +76,11 @@ export class AdminPanelComponent implements OnInit {
                 case 'settings-2-outline':
                     this.selectedMenuItem = this.settings;
                     break;
-                case 'shield-outline':
+                case 'people-outline':
                     this.selectedMenuItem = this.users;
+                    break;
+                case 'shield-outline':
+                    this.selectedMenuItem = this.privileges;
                     break;
                 case 'smiling-face-outline':
                     this.selectedMenuItem = this.emojis;
