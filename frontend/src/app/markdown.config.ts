@@ -2,7 +2,6 @@ import { Parser, Token, Tokens, TokensList } from "marked";
 import { MarkdownModuleConfig, MARKED_OPTIONS, MarkedRenderer } from "ngx-markdown";
 
 const matchCustomEmbedRegEx = /^\[(video|audio|image)-embedded#]\((.*?)\)/;
-
 //https://regexr.com/3dj5t
 const matchYoutubeRegEx = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)(?<id>[\w\-]+)(\S+)?$/;
 
@@ -12,7 +11,6 @@ const customEmbedExtension = {
     level: 'inline',
     start: (src: string) => src.match(matchCustomEmbedRegEx)?.index ?? src.match(matchYoutubeRegEx)?.index,
     tokenizer: (src: string, tokens: Token[] | TokensList) => {
-
       let match = src.match(matchCustomEmbedRegEx);
       if (match) {
         return {
@@ -53,7 +51,11 @@ const customEmbedExtension = {
 }
 
 const renderer = new MarkedRenderer();
-// renderer.paragraph = ({ tokens }) => Parser.parseInline(tokens);
+
+renderer.link = ({ href, title, text }) => {
+  const titleAttr = title ? ` title="${title}"` : '';
+  return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+};
 
 export const MarkdownConfig: MarkdownModuleConfig = {
   markedExtensions: [customEmbedExtension],
