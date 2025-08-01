@@ -40,7 +40,7 @@
             (mouseleave)="scheduleEmojiMenuClose()" #p="ngbPopover">
             <div class="d-flex flex-column bg-light rounded-3 border fs-5 f lh-base message-card"
                 [ngStyle]="{'opacity': message.deleted ? 0.5 : 1}">
-                <div class="px-3 pt-2" #media>
+                <div class="px-3 pt-3" #media>
                     <markdown [data]="message.text" [disableSanitizer]="true" (click)="viewLargeImage($event)">
                     </markdown>
                 </div>
