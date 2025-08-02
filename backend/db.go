@@ -479,3 +479,45 @@ func dbGetUsersAmount(ctx context.Context) (int64, error) {
 	}
 	return amount, nil
 }
+
+func syncOldUsersToUsersList(ctx context.Context) error {
+	registeredEmails, err := rdb.SMembers(ctx, "registered_emails").Result()
+	if err != nil {
+		return fmt.Errorf("failed to get registered emails: %v", err)
+	}
+
+	users, err := dbGetUsersList(ctx)
+	if err != nil && err != redis.Nil {
+		return fmt.Errorf("failed to get users list: %v", err)
+	}
+
+	existingEmails := make(map[string]bool)
+	for _, user := range users {
+		existingEmails[user.Email] = true
+	}
+
+	var newUsers []User
+	for _, email := range registeredEmails {
+		if !existingEmails[email] {
+			newUser := User{
+				ID:         "",
+				Username:   "משתמש ללא שם",
+				Email:      email,
+				PublicName: "משתמש ללא שם",
+				Privileges: Privileges{},
+				Blocked:    false,
+			}
+			newUsers = append(newUsers, newUser)
+			users = append(users, newUser)
+		}
+	}
+
+	if len(newUsers) > 0 {
+		if err := dbSetUsersList(ctx, users); err != nil {
+			return fmt.Errorf("failed to save updated users list: %v", err)
+		}
+		log.Printf("Synced %d old users to users list", len(newUsers))
+	}
+
+	return nil
+}

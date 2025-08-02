@@ -209,30 +209,40 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 
 	if v, ok := privilegesUsers.Load(email); ok {
 		user = v.(User)
+		
+		updated := false
 		if user.ID != id && id != "" {
 			user.ID = id
+			updated = true
 		}
-		if user.Username == "" {
+		if user.Username == "" || user.Username == "משתמש ללא שם" {
 			user.Username = claims["name"].(string)
+			updated = true
 		}
 		if user.Email == "" {
 			user.Email = email
+			updated = true
 		}
-		if user.PublicName == "" {
+		if user.PublicName == "" || user.PublicName == "משתמש ללא שם" {
 			user.PublicName = claims["name"].(string)
+			updated = true
 		}
-		privilegesUsers.Store(email, user)
-		users, err := dbGetUsersList(ctx)
-		if err != nil && err != redis.Nil {
-			return nil, err
-		}
-		for i, u := range users {
-			if u.Email == email {
-				users[i] = user
+		
+		if updated {
+			privilegesUsers.Store(email, user)
+			users, err := dbGetUsersList(ctx)
+			if err != nil && err != redis.Nil {
+				return nil, err
 			}
-		}
-		if err := dbSetUsersList(ctx, users); err != nil {
-			return nil, err
+			for i, u := range users {
+				if u.Email == email {
+					users[i] = user
+					break
+				}
+			}
+			if err := dbSetUsersList(ctx, users); err != nil {
+				return nil, err
+			}
 		}
 	} else {
 		privileges := Privileges{}

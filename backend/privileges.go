@@ -28,11 +28,16 @@ func initializePrivilegeUsers() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	if err := syncOldUsersToUsersList(ctx); err != nil {
+		log.Printf("Warning: failed to sync old users: %v", err)
+	}
+
 	privilegesUsers.Clear()
 	users, err := dbGetUsersList(ctx)
 	if err != nil && err != redis.Nil {
 		panic("Failed to get users list from database: " + err.Error())
 	}
+	
 	existsEmails := make(map[string]bool)
 	for _, user := range users {
 		existsEmails[user.Email] = true
