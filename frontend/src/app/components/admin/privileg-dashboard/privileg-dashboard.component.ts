@@ -155,6 +155,7 @@ export class PrivilegDashboardComponent implements OnInit {
       return user1.email === user2.email &&
         user1.username === user2.username &&
         user1.publicName === user2.publicName &&
+        user1.deleted === user2.deleted &&
         JSON.stringify(user1.privileges) === JSON.stringify(user2.privileges);
     });
   }
@@ -180,6 +181,7 @@ export class PrivilegDashboardComponent implements OnInit {
     const original = this.originalPrivilegeUsersList[index];
 
     return current.publicName !== original.publicName ||
+      current.deleted !== original.deleted ||
       JSON.stringify(current.privileges) !== JSON.stringify(original.privileges);
   }
 
