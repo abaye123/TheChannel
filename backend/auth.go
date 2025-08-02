@@ -241,8 +241,6 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 			if err := dbSetUsersList(ctx, users); err != nil {
 				return nil, err
 			}
-			
-			log.Printf("User %s was re-registered after being deleted", email)
 		} else {
 			updated := false
 			if user.ID != id && id != "" {
