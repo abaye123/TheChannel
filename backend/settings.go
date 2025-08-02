@@ -30,6 +30,7 @@ type SettingConfig struct {
 	RootStaticFolder          string
 	CountViews                bool
 	ShowAuthorToAuthenticated bool
+	AutoGrantWriterPrivilege  bool
 	GoogleAnalyticsID         string
 	HideEditTime              bool
 	OnNotification            bool
@@ -105,6 +106,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "show_author_to_authenticated":
 			config.ShowAuthorToAuthenticated = setting.GetBool()
+
+		case "auto_grant_writer_privilege":
+			config.AutoGrantWriterPrivilege = setting.GetBool()
 
 		case "hide_edit_time":
 			config.HideEditTime = setting.GetBool()
