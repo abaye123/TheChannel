@@ -5,6 +5,7 @@ backend/__debug*
 thechannel-firebase-adminsdk.json
 caddy_data/
 redis_data/
+logs/
 channel_data/*
 caddy_config/
 data/kvrocks.sock
