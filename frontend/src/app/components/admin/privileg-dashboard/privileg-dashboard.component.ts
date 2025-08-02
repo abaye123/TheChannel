@@ -96,6 +96,7 @@ export class PrivilegDashboardComponent implements OnInit {
 
     this.privilegeUsersList[index].deleted = true;
     this.markAsChanged();
+    this.saveChanges();
   }
 
   saveNewUser() {

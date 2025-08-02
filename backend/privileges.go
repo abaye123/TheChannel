@@ -97,8 +97,15 @@ func getPrivilegeUsersList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	filteredUsers := users[:0]
+	for _, user := range users {
+		if !user.Deleted {
+			filteredUsers = append(filteredUsers, user)
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(filteredUsers)
 }
 
 func setPrivilegeUsers(w http.ResponseWriter, r *http.Request) {
