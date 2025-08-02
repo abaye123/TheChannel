@@ -40,6 +40,7 @@ type User struct {
 	PublicName string     `json:"publicName"`
 	Privileges Privileges `json:"privileges"`
 	Blocked    bool       `json:"blocked"`
+	Deleted    bool       `json:"deleted,omitempty"`
 }
 
 type PushMessage struct {
@@ -500,12 +501,13 @@ func syncOldUsersToUsersList(ctx context.Context) error {
 	for _, email := range registeredEmails {
 		if !existingEmails[email] {
 			newUser := User{
-				ID:         "",
-				Username:   "משתמש ללא שם",
+				ID:         "", // נעדכן כשהמשתמש יתחבר שוב
+				Username:   "", // יעודכן בהתחברות הבאה
 				Email:      email,
-				PublicName: "משתמש ללא שם",
-				Privileges: Privileges{},
+				PublicName: "", // יעודכן בהתחברות הבאה
+				Privileges: Privileges{}, // ללא הרשאות
 				Blocked:    false,
+				Deleted:    false,
 			}
 			newUsers = append(newUsers, newUser)
 			users = append(users, newUser)

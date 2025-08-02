@@ -10,6 +10,7 @@ export interface PrivilegeUser {
   email: string;
   publicName: string;
   privileges: Record<string, boolean>;
+  deleted?: boolean;
 }
 
 export interface Users {

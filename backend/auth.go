@@ -203,45 +203,76 @@ func getUserInfo(w http.ResponseWriter, r *http.Request) {
 
 func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 	var user User
-
 	email := claims["email"].(string)
 	id, _ := claims.GetSubject() // Google user ID
-
+	
 	if v, ok := privilegesUsers.Load(email); ok {
 		user = v.(User)
 		
-		updated := false
-		if user.ID != id && id != "" {
-			user.ID = id
-			updated = true
-		}
-		if user.Username == "" || user.Username == "משתמש ללא שם" {
-			user.Username = claims["name"].(string)
-			updated = true
-		}
-		if user.Email == "" {
-			user.Email = email
-			updated = true
-		}
-		if user.PublicName == "" || user.PublicName == "משתמש ללא שם" {
-			user.PublicName = claims["name"].(string)
-			updated = true
-		}
-		
-		if updated {
+		if user.Deleted {
+			privileges := Privileges{}
+			if settingConfig.AutoGrantWriterPrivilege {
+				privileges[Writer] = true
+			}
+			
+			user = User{
+				ID:         id,
+				Username:   claims["name"].(string),
+				Email:      email,
+				PublicName: claims["name"].(string),
+				Privileges: privileges,
+				Blocked:    false,
+				Deleted:    false, // Remove the mark as deleted
+			}
+			
 			privilegesUsers.Store(email, user)
 			users, err := dbGetUsersList(ctx)
 			if err != nil && err != redis.Nil {
 				return nil, err
 			}
+			
 			for i, u := range users {
 				if u.Email == email {
 					users[i] = user
 					break
 				}
 			}
+			
 			if err := dbSetUsersList(ctx, users); err != nil {
 				return nil, err
+			}
+			
+			log.Printf("User %s was re-registered after being deleted", email)
+		} else {
+			updated := false
+			if user.ID != id && id != "" {
+				user.ID = id
+				updated = true
+			}
+			if user.Username == "" {
+				user.Username = claims["name"].(string)
+				updated = true
+			}
+			if user.PublicName == "" {
+				user.PublicName = claims["name"].(string)
+				updated = true
+			}
+			
+			if updated {
+				privilegesUsers.Store(email, user)
+				users, err := dbGetUsersList(ctx)
+				if err != nil && err != redis.Nil {
+					return nil, err
+				}
+				for i, u := range users {
+					if u.Email == email {
+						users[i] = user
+						break
+					}
+				}
+				if err := dbSetUsersList(ctx, users); err != nil {
+					return nil, err
+				}
 			}
 		}
 	} else {
@@ -249,13 +280,15 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 		if settingConfig.AutoGrantWriterPrivilege {
 			privileges[Writer] = true
 		}
-
+		
 		user = User{
 			ID:         id,
 			Username:   claims["name"].(string),
-			Email:      claims["email"].(string),
+			Email:      email,
 			PublicName: claims["name"].(string),
 			Privileges: privileges,
+			Blocked:    false,
+			Deleted:    false,
 		}
 		
 		privilegesUsers.Store(email, user)
@@ -263,12 +296,12 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 		if err != nil && err != redis.Nil {
 			return nil, err
 		}
-
+		
 		users = append(users, user)
 		if err := dbSetUsersList(ctx, users); err != nil {
 			return nil, err
 		}
 	}
-
+	
 	return &user, nil
 }

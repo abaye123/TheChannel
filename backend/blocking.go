@@ -150,6 +150,10 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	var usersWithStatus []UserWithStatus
 	for _, user := range users {
+		if user.Deleted {
+			continue
+		}
+		
 		usersWithStatus = append(usersWithStatus, UserWithStatus{
 			User:    user,
 			IsAdmin: user.Privileges[Admin],

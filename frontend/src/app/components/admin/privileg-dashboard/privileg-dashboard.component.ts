@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminService, PrivilegeUser } from '../../../services/admin.service';
-import { 
-  NbButtonModule, 
-  NbCardModule, 
-  NbInputModule, 
-  NbToastrService, 
-  NbIconModule, 
+import {
+  NbButtonModule,
+  NbCardModule,
+  NbInputModule,
+  NbToastrService,
+  NbIconModule,
   NbCheckboxModule,
   NbAlertModule,
   NbSpinnerModule
@@ -43,7 +43,7 @@ export class PrivilegDashboardComponent implements OnInit {
   addingNewUser: boolean = false;
   hasChanges: boolean = false;
   isSaving: boolean = false;
-  
+
   newUser: PrivilegeUser = {
     username: '',
     publicName: '',
@@ -93,7 +93,8 @@ export class PrivilegDashboardComponent implements OnInit {
     if (!confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${user.publicName || user.email}?`)) {
       return;
     }
-    this.privilegeUsersList.splice(index, 1);
+
+    this.privilegeUsersList[index].deleted = true;
     this.markAsChanged();
   }
 
@@ -110,7 +111,7 @@ export class PrivilegDashboardComponent implements OnInit {
       return;
     }
 
-    this.privilegeUsersList.push({...this.newUser});
+    this.privilegeUsersList.push({ ...this.newUser });
     this.resetNewUser();
     this.markAsChanged();
     this.tostService.success('', 'משתמש חדש נוסף בהצלחה');
@@ -147,13 +148,13 @@ export class PrivilegDashboardComponent implements OnInit {
 
   private areArraysEqual(arr1: PrivilegeUser[], arr2: PrivilegeUser[]): boolean {
     if (arr1.length !== arr2.length) return false;
-    
+
     return arr1.every((user1, index) => {
       const user2 = arr2[index];
       return user1.email === user2.email &&
-             user1.username === user2.username &&
-             user1.publicName === user2.publicName &&
-             JSON.stringify(user1.privileges) === JSON.stringify(user2.privileges);
+        user1.username === user2.username &&
+        user1.publicName === user2.publicName &&
+        JSON.stringify(user1.privileges) === JSON.stringify(user2.privileges);
     });
   }
 
@@ -173,12 +174,12 @@ export class PrivilegDashboardComponent implements OnInit {
 
   hasUserChanged(index: number): boolean {
     if (index >= this.originalPrivilegeUsersList.length) return true;
-    
+
     const current = this.privilegeUsersList[index];
     const original = this.originalPrivilegeUsersList[index];
-    
+
     return current.publicName !== original.publicName ||
-           JSON.stringify(current.privileges) !== JSON.stringify(original.privileges);
+      JSON.stringify(current.privileges) !== JSON.stringify(original.privileges);
   }
 
   trackByIndex(index: number): number {
