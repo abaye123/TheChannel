@@ -58,6 +58,36 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	addViewsToMessages(ctx, messages)
 }
 
+func getThreadRepliesHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	messageIdParam := chi.URLParam(r, "messageId")
+	messageId, err := strconv.Atoi(messageIdParam)
+	if err != nil {
+		http.Error(w, "Invalid message ID", http.StatusBadRequest)
+		return
+	}
+
+	isAuthenticated := false
+	session, err := store.Get(r, cookieName)
+	if err == nil {
+		if _, ok := session.Values["user"].(Session); ok {
+			isAuthenticated = true
+		}
+	}
+
+	replies, err := funcGetThreadReplies(ctx, messageId, checkPrivilege(r, Writer), settingConfig.CountViews, isAuthenticated)
+	if err != nil {
+		log.Printf("Failed to get thread replies: %v\n", err)
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(replies)
+}
+
 func addMessage(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -79,6 +109,16 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 	for _, regex := range settingConfig.RegexReplace {
 		t := regex.Pattern.ReplaceAllString(body.Text, regex.Replace)
 		body.Text = t
+	}
+
+	if body.ReplyTo > 0 {
+    	replyToKey := fmt.Sprintf("messages:%d", body.ReplyTo)
+    	exists, err := rdb.Exists(ctx, replyToKey).Result()
+    	if err != nil || exists == 0 {
+    	    log.Printf("Referenced message %d does not exist", body.ReplyTo)
+        	http.Error(w, "Referenced message not found", http.StatusBadRequest)
+        	return
+    	}
 	}
 
 	message.ID = getMessageNextId(ctx)

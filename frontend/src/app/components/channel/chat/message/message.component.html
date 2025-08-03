@@ -29,6 +29,10 @@
                 shape="round" size="small" (click)="deleteMessage(message)" title="מחק הודעה">
                 <nb-icon icon="trash-2"></nb-icon>
             </button>
+            <button *ngIf="userPrivilege?.['writer'] && !message.deleted" class="copy-button" nbButton ghost
+                shape="round" size="small" (click)="replyToThisMessage(message)" title="הגב להודעה">
+                <nb-icon icon="corner-up-right"></nb-icon>
+            </button>
             <button class="copy-button" nbButton ghost shape="round" size="small" (click)="copyLink(message.id)"
                 title="העתק קישור להודעה">
                 <nb-icon icon="link-2"></nb-icon>
@@ -40,6 +44,20 @@
             (mouseleave)="scheduleEmojiMenuClose()" #p="ngbPopover">
             <div class="d-flex flex-column bg-light rounded-3 border fs-5 f lh-base message-card"
                 [ngStyle]="{'opacity': message.deleted ? 0.5 : 1}">
+                
+                <div *ngIf="replyToMessage" class="reply-quote-section">
+                    <div class="reply-quote" (click)="navigateToOriginalMessage(replyToMessage.id!)">
+                        <div class="reply-quote-header">
+                            <nb-icon icon="corner-up-right" class="reply-icon"></nb-icon>
+                            <span class="reply-author">{{ replyToMessage.author }}</span>
+                            <span class="reply-time">{{ replyToMessage.timestamp | messageTime }}</span>
+                        </div>
+                        <div class="reply-quote-content">
+                            {{ truncateText(replyToMessage.text || '') }}
+                        </div>
+                    </div>
+                </div>
+
                 <div class="px-3 pt-3" #media>
                     <markdown [data]="message.text" [disableSanitizer]="true" (click)="viewLargeImage($event)">
                     </markdown>

@@ -195,7 +195,14 @@ var getMessageRange = redis.NewScript(`
 						message[key] = 0	
 					end
 				elseif key == 'deleted' then
-					message[key] = value == '1'
+    				message[key] = value == '1'
+				elseif key == 'is_thread' then
+    				message['isThread'] = value == '1'
+				elseif key == 'reply_to' then
+    				local replyToValue = tonumber(value)
+    				if replyToValue and replyToValue > 0 then
+        				message['replyTo'] = replyToValue
+    				end
 				elseif key == 'last_edit' then
     				if not hideEditTime then
         				message[key] = value
@@ -522,4 +529,119 @@ func syncOldUsersToUsersList(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// 1. עדכן בקובץ backend/db.go - שנה את שם ה-Lua script:
+
+// Lua script לקבלת תגובות להודעה מסוימת  
+var getThreadRepliesScript = redis.NewScript(`
+	local parent_message_id = ARGV[1]
+	local isAdmin = ARGV[2] == 'true'
+	local countViews = ARGV[3] == 'true'
+	local isAuthenticated = ARGV[4] == 'true'
+	local showAuthorToAuthenticated = ARGV[5] == 'true'
+	local hideEditTime = ARGV[6] == 'true'
+
+	local all_messages = redis.call('KEYS', 'messages:*')
+	local thread_messages = {}
+
+	for i, message_key in ipairs(all_messages) do
+		if string.match(message_key, '^messages:%d+$') then
+			local reply_to = redis.call('HGET', message_key, 'reply_to')
+			if reply_to == parent_message_id then
+				local message_data = redis.call('HGETALL', message_key)
+				local message = {}
+		
+				for j = 1, #message_data, 2 do
+					local key = message_data[j]
+					local value = message_data[j+1]
+		
+					if key == 'id' then
+						message[key] = tonumber(value)
+					elseif key == 'views' then
+						if countViews then
+							message[key] = tonumber(value)
+						else
+							message[key] = 0	
+						end
+					elseif key == 'deleted' then
+						message[key] = value == '1'
+					elseif key == 'is_thread' then
+						message['isThread'] = value == '1'
+					elseif key == 'reply_to' then
+						local replyToValue = tonumber(value)
+						if replyToValue and replyToValue > 0 then
+							message['replyTo'] = replyToValue
+						end
+					elseif key == 'last_edit' then
+						if not hideEditTime then
+							message[key] = value
+						end
+					elseif key == 'author' then
+						if isAdmin then
+							message[key] = value
+						elseif showAuthorToAuthenticated and isAuthenticated then
+							message[key] = value
+						else
+							message[key] = "Anonymous"
+						end
+					elseif key == 'authorId' then
+						if isAdmin then
+						   message[key] = value
+						elseif showAuthorToAuthenticated and isAuthenticated then
+							message[key] = value
+						else
+						   message[key] = "Anonymous"
+						end
+					elseif key == 'reactions' then
+						local success, parsedReactions = pcall(cjson.decode, value)
+						if success then
+							message[key] = parsedReactions
+						else
+							message[key] = {}
+						end
+					else
+						message[key] = value
+					end
+				end
+		
+				if not message['deleted'] or isAdmin then
+					table.insert(thread_messages, message)
+				end
+			end
+		end
+	end
+
+	-- מיון לפי timestamp
+	table.sort(thread_messages, function(a, b)
+		return a.timestamp < b.timestamp
+	end)
+
+	return cjson.encode(thread_messages)
+`)
+
+// פונקציה לקבלת תגובות להודעה מסוימת
+func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, countViews, isAuthenticated bool) ([]Message, error) {
+	res, err := getThreadRepliesScript.Run(ctx, rdb, []string{}, []string{
+		strconv.Itoa(parentMessageId),
+		strconv.FormatBool(isAdmin), 
+		strconv.FormatBool(countViews),
+		strconv.FormatBool(isAuthenticated),
+		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
+		strconv.FormatBool(settingConfig.HideEditTime),
+	}).Result()
+	if err != nil {
+		return []Message{}, err
+	}
+
+	if res == "{}" || res == "[]" {
+		return []Message{}, nil
+	}
+
+	var messages []Message
+	if err := json.Unmarshal([]byte(res.(string)), &messages); err != nil {
+		return []Message{}, err
+	}
+
+	return messages, nil
 }

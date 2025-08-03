@@ -248,3 +248,79 @@ nb-icon {
     }
   }
 }
+
+
+
+// עיצוב תגובות
+.reply-quote-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(102, 111, 255, 0.05) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border-radius: 12px 12px 0 0;
+  margin: 0;
+}
+
+.reply-quote {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 8px;
+  border-radius: 8px;
+  border-right: 3px solid #666fff;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(5px);
+  
+  &:hover {
+    background: rgba(102, 111, 255, 0.1);
+    transform: translateX(-2px);
+    box-shadow: 0 2px 8px rgba(102, 111, 255, 0.2);
+  }
+}
+
+.reply-quote-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #666;
+  
+  .reply-icon {
+    color: #666fff;
+    font-size: 14px;
+  }
+  
+  .reply-author {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .reply-time {
+    opacity: 0.7;
+  }
+}
+
+.reply-quote-content {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+// הדגשת הודעה שנלחץ עליה
+::ng-deep .highlighted-message {
+  border: 2px solid #666fff !important;
+  box-shadow: 0 0 20px rgba(102, 111, 255, 0.3) !important;
+  animation: highlightPulse 1s ease-in-out;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 111, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(102, 111, 255, 0.5);
+  }
+}

@@ -58,6 +58,8 @@ export class InputFormComponent implements OnInit {
   showMarkdownPreview: boolean = false;
   hasScrollbar: boolean = false;
 
+  replyToMessage?: ChatMessage;
+
   @ViewChild('inputTextArea') inputTextArea!: ElementRef<HTMLTextAreaElement>;
 
   @Output() inputHeightChanged = new EventEmitter<number>();
@@ -76,6 +78,19 @@ export class InputFormComponent implements OnInit {
     this.chatService.messageEditObservable.subscribe((message?: ChatMessage) => {
       this.message = message;
       this.input = this.message?.text || '';
+    });
+
+    this.chatService.replyToMessageObservable.subscribe((replyMessage?: ChatMessage) => {
+      this.replyToMessage = replyMessage;
+      if (this.replyToMessage) {
+        this.message = undefined;
+        this.input = '';
+      }
+      if (this.replyToMessage) {
+        setTimeout(() => {
+          this.inputTextArea?.nativeElement.focus();
+        }, 100);
+      }
     });
   }
 
@@ -191,6 +206,8 @@ export class InputFormComponent implements OnInit {
       type: 'md',
       text: this.input,
       file: undefined,
+      replyTo: this.replyToMessage?.id,
+      isThread: !!this.replyToMessage
     };
 
     this.message = await firstValueFrom(this.adminService.addMessage(newMessage));
@@ -206,6 +223,8 @@ export class InputFormComponent implements OnInit {
     this.input = '';
     this.attachments = [];
     this.message = undefined;
+    this.replyToMessage = undefined;
+    this.chatService.clearReplyToMessage();
   }
 
   removeAttachment(attachment: Attachment) {
@@ -294,5 +313,16 @@ export class InputFormComponent implements OnInit {
         textArea.focus();
       });
     }
+  }
+
+  cancelReply() {
+    this.chatService.clearReplyToMessage();
+  }
+
+  truncateText(text: string, maxLength: number = 100): string {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return text.substring(0, maxLength) + '...';
   }
 }

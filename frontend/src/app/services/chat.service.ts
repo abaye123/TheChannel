@@ -19,6 +19,8 @@ export interface ChatMessage {
   file?: ChatFile;
   views?: number;
   reactions?: Reactions;
+  replyTo?: number;
+  isThread?: boolean;
 }
 export interface ChatResponse {
   messages: ChatMessage[];
@@ -49,6 +51,9 @@ export class ChatService {
 
   private messageEdit = new BehaviorSubject<ChatMessage | undefined>(undefined);
   messageEditObservable = this.messageEdit.asObservable();
+
+  private replyToMessage = new BehaviorSubject<ChatMessage | undefined>(undefined);
+  replyToMessageObservable = this.replyToMessage.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -106,5 +111,21 @@ export class ChatService {
 
   setEditMessage(message?: ChatMessage) {
     this.messageEdit.next(message);
+  }
+
+  setReplyToMessage(message?: ChatMessage) {
+    this.replyToMessage.next(message);
+  }
+
+  getReplyToMessage(): ChatMessage | undefined {
+    return this.replyToMessage.value;
+  }
+
+  clearReplyToMessage() {
+    this.replyToMessage.next(undefined);
+  }
+
+  findMessageById(messages: ChatMessage[], messageId: number): ChatMessage | undefined {
+    return messages.find(m => m.id === messageId);
   }
 }

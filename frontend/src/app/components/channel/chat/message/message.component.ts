@@ -52,6 +52,9 @@ export class MessageComponent implements OnInit, AfterViewInit {
   @Input()
   userInfo?: User;
 
+  @Input()
+  allMessages: ChatMessage[] = [];
+
   @ViewChild(NgbPopover) popover!: NgbPopover;
   @ViewChild('media') mediaContainer!: ElementRef;
 
@@ -65,11 +68,17 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   reacts: string[] = [];
   private closeEmojiMenuTimeout: any;
+  replyToMessage?: ChatMessage;
+
 
   ngOnInit() {
     this.chatService.getEmojisList()
       .then(emojis => this.reacts = emojis)
       .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוגים'));
+
+    if (this.message?.replyTo) {
+      this.replyToMessage = this.allMessages.find(m => m.id === this.message?.replyTo);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -207,5 +216,31 @@ export class MessageComponent implements OnInit, AfterViewInit {
     navigator.clipboard.writeText(url).then(() => {
       this.toastrService.success('', 'הקישור הועתק ללוח');
     });
+  }
+
+  // הוספת פונקציה להגבה על הודעה
+  replyToThisMessage(message: ChatMessage) {
+    this.chatService.setReplyToMessage(message);
+  }
+
+  // פונקציה לניווט להודעה המקורית
+  navigateToOriginalMessage(messageId: number) {
+    const element = document.getElementById(messageId.toString());
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // הדגשת ההודעה
+      element.classList.add('highlighted-message');
+      setTimeout(() => {
+        element.classList.remove('highlighted-message');
+      }, 3000);
+    }
+  }
+
+  // פונקציה לקצר טקסט עבור תצוגת ציטוט
+  truncateText(text: string, maxLength: number = 100): string {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return text.substring(0, maxLength) + '...';
   }
 }

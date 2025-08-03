@@ -4,7 +4,7 @@
 
         <nb-list-item *ngFor="let message of messages">
             <app-message class="overflow-auto" [userPrivilege]="userInfo?.privileges" [message]="message"
-                [id]="message.id"></app-message>
+                [allMessages]="messages" [userInfo]="userInfo" [id]="message.id"></app-message>
         </nb-list-item>
 
         <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">

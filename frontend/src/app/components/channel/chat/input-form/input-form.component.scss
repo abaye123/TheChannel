@@ -2,3 +2,71 @@
     font-size: 1.25rem;
     color: #333333;
 }
+
+// עיצוב תצוגת התגובה
+.reply-preview-section {
+    margin-bottom: 8px;
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+.reply-preview {
+    background: linear-gradient(135deg, rgba(102, 111, 255, 0.08) 0%, rgba(255, 255, 255, 0.9) 100%);
+    border: 1px solid rgba(102, 111, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    border-right: 4px solid #666fff;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(102, 111, 255, 0.1);
+}
+
+.reply-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+
+    .reply-icon {
+        color: #666fff;
+        font-size: 16px;
+        margin-left: 6px;
+    }
+
+    span {
+        flex-grow: 1;
+        color: #333;
+    }
+
+    button {
+        padding: 2px !important;
+    }
+}
+
+.reply-preview-content {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(102, 111, 255, 0.1);
+    max-height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 100px;
+    }
+}

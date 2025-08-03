@@ -25,10 +25,10 @@ app-advertising {
     position: relative !important;
     bottom: var(--input-height, 0px) !important;
 
-    @if (variable-exists(--input-height)) {
+    // @if (variable-exists(--input-height)) {
       //noinspection CssInvalidPropertyValue
       padding-top: calc(nb-theme(header-height) + nb-theme(header-padding) * 2) !important;
-    }
+    // }
   }
 }
 
