@@ -12,7 +12,8 @@
 markdown,
 markdown p {
   font-weight: 500;
-  font-size: clamp(0.875rem, 2.5vw, 1.15rem);
+  font-size: clamp(0.875rem, 2.5vw, 1.02rem);
+  line-height: 1.6 !important;
 }
 
 /* Styling for blockquotes inside markdown component */
