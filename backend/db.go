@@ -18,19 +18,20 @@ var redisPass = os.Getenv("REDIS_PASSWORD")
 var rdb *redis.Client
 
 type Message struct {
-	ID        int          `json:"id" redis:"id"`
-	Type      string       `json:"type" redis:"type"`
-	Text      string       `json:"text" redis:"text"`
-	Author    string       `json:"author" redis:"author"`
-	AuthorId  string       `json:"authorId" redis:"authorId"`
-	Timestamp time.Time    `json:"timestamp" redis:"timestamp"`
-	LastEdit  time.Time    `json:"last_edit" redis:"last_edit"`
-	File      FileResponse `json:"file" redis:"-"`
-	Deleted   bool         `json:"deleted" redis:"deleted"`
-	Views     int          `json:"views" redis:"views"`
-	Reactions Reactions    `json:"reactions" redis:"reactions"`
-	ReplyTo   int          `json:"replyTo,omitempty" redis:"reply_to"`
-	IsThread  bool         `json:"isThread" redis:"is_thread"`
+	ID        int          		`json:"id" redis:"id"`
+	Type      string       		`json:"type" redis:"type"`
+	Text      string       		`json:"text" redis:"text"`
+	Author    string       		`json:"author" redis:"author"`
+	AuthorId  string       		`json:"authorId" redis:"authorId"`
+	Timestamp time.Time    		`json:"timestamp" redis:"timestamp"`
+	LastEdit  time.Time    		`json:"last_edit" redis:"last_edit"`
+	File      FileResponse 		`json:"file" redis:"-"`
+	Deleted   bool         		`json:"deleted" redis:"deleted"`
+	Views     int          		`json:"views" redis:"views"`
+	Reactions Reactions    		`json:"reactions" redis:"reactions"`
+	ReplyTo   int          		`json:"replyTo,omitempty" redis:"reply_to"`
+	IsThread  bool         		`json:"isThread" redis:"is_thread"`
+	OriginalMessage *Message	`json:"originalMessage,omitempty" redis:"-"`
 }
 
 type User struct {
@@ -163,6 +164,101 @@ var getMessageRange = redis.NewScript(`
 	local showAuthorToAuthenticated = ARGV[5] == 'true'
 	local hideEditTime = ARGV[6] == 'true'
 
+	local function parseMessageData(message_data, messageId)
+		if #message_data == 0 then
+			return nil
+		end
+		
+		local message = {}
+		for j = 1, #message_data, 2 do
+			local key = message_data[j]
+			local value = message_data[j+1]
+
+			if key == 'id' then
+				message[key] = tonumber(value)
+			elseif key == 'views' then
+				if countViews then
+					message[key] = tonumber(value)
+				else
+					message[key] = 0	
+				end
+			elseif key == 'deleted' then
+				message[key] = value == '1'
+			elseif key == 'is_thread' then
+				message['isThread'] = value == '1'
+			elseif key == 'reply_to' then
+				local replyToValue = tonumber(value)
+				if replyToValue and replyToValue > 0 then
+					message['replyTo'] = replyToValue
+				end
+			elseif key == 'last_edit' then
+				if not hideEditTime then
+					message[key] = value
+				end
+			elseif key == 'author' then
+				if isAdmin then
+					message[key] = value
+				elseif showAuthorToAuthenticated and isAuthenticated then
+					message[key] = value
+				else
+					message[key] = "Anonymous"
+				end
+			elseif key == 'authorId' then
+				if isAdmin then
+				   message[key] = value
+				elseif showAuthorToAuthenticated and isAuthenticated then
+					message[key] = value
+				else
+				   message[key] = "Anonymous"
+				end
+			elseif key == 'reactions' then
+				local success, parsedReactions = pcall(cjson.decode, value)
+				if success then
+					message[key] = parsedReactions
+				else
+					message[key] = {}
+				end
+			else
+				message[key] = value
+			end
+		end
+		
+		if not message['id'] and messageId then
+			message['id'] = tonumber(messageId)
+		end
+		
+		return message
+	end
+
+	local function getOriginalMessage(messageId)
+		local message_key = 'messages:' .. messageId
+		local message_data = redis.call('HGETALL', message_key)
+		
+		if #message_data == 0 then
+			return {
+				id = tonumber(messageId),
+				text = "*הודעה לא נמצאה*",
+				author = "משתמש ללא שם",
+				timestamp = "",
+				deleted = true
+			}
+		end
+		
+		local originalMessage = parseMessageData(message_data, messageId)
+		
+		if originalMessage and originalMessage['deleted'] and not isAdmin then
+			return {
+				id = originalMessage['id'],
+				text = "*הודעה שנמחקה*",
+				author = originalMessage['author'] or "משתמש ללא שם",
+				timestamp = originalMessage['timestamp'] or "",
+				deleted = true
+			}
+		end
+		
+		return originalMessage
+	end
+
 	local start_index = redis.call('ZREVRANK', time_set_key, offset_key) or 0
 	if start_index > 0 then
 		start_index = start_index + 1
@@ -179,63 +275,18 @@ var getMessageRange = redis.NewScript(`
 		end
 
 		for i, message_key in ipairs(message_ids) do
+			local messageId = string.match(message_key, '%d+')
 			local message_data = redis.call('HGETALL', message_key)
-			local message = {}
+			local message = parseMessageData(message_data, messageId)
 	
-			for j = 1, #message_data, 2 do
-				local key = message_data[j]
-				local value = message_data[j+1]
-	
-				if key == 'id' then
-					message[key] = tonumber(value)
-                elseif key == 'views' then
-					if countViews then
-						message[key] = tonumber(value)
-					else
-						message[key] = 0	
+			if message and (not message['deleted'] or isAdmin) then
+				if message['replyTo'] then
+					local originalMessage = getOriginalMessage(tostring(message['replyTo']))
+					if originalMessage then
+						message['originalMessage'] = originalMessage
 					end
-				elseif key == 'deleted' then
-    				message[key] = value == '1'
-				elseif key == 'is_thread' then
-    				message['isThread'] = value == '1'
-				elseif key == 'reply_to' then
-    				local replyToValue = tonumber(value)
-    				if replyToValue and replyToValue > 0 then
-        				message['replyTo'] = replyToValue
-    				end
-				elseif key == 'last_edit' then
-    				if not hideEditTime then
-        				message[key] = value
-    				end
-				elseif key == 'author' then
-				    if isAdmin then
-				        message[key] = value
-				    elseif showAuthorToAuthenticated and isAuthenticated then
-				        message[key] = value
-				    else
-				        message[key] = "Anonymous"
-				    end
-				elseif key == 'authorId' then
-					if isAdmin then
-					   message[key] = value
-                    elseif showAuthorToAuthenticated and isAuthenticated then
-				        message[key] = value
-				    else
-                       message[key] = "Anonymous"
-                    end
-				elseif key == 'reactions' then
-				    local success, parsedReactions = pcall(cjson.decode, value)
-					if success then
-						message[key] = parsedReactions
-					else
-						message[key] = {}
-					end
-				else
-					message[key] = value
 				end
-			end
-	
-			if not message['deleted'] or isAdmin then
+				
 				table.insert(messages, message)
 			end
 		end
@@ -612,7 +663,6 @@ var getThreadRepliesScript = redis.NewScript(`
 		end
 	end
 
-	-- מיון לפי timestamp
 	table.sort(thread_messages, function(a, b)
 		return a.timestamp < b.timestamp
 	end)

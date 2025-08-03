@@ -76,7 +76,9 @@ export class MessageComponent implements OnInit, AfterViewInit {
       .then(emojis => this.reacts = emojis)
       .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוגים'));
 
-    if (this.message?.replyTo) {
+    if (this.message?.originalMessage) {
+      this.replyToMessage = this.message.originalMessage;
+    } else if (this.message?.replyTo) {
       this.replyToMessage = this.allMessages.find(m => m.id === this.message?.replyTo);
     }
   }

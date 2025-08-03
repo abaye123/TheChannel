@@ -21,6 +21,7 @@ export interface ChatMessage {
   reactions?: Reactions;
   replyTo?: number;
   isThread?: boolean;
+  originalMessage?: ChatMessage;
 }
 export interface ChatResponse {
   messages: ChatMessage[];
