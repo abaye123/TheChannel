@@ -42,7 +42,7 @@
             [popoverContext]="{message}" [autoClose]="'outside'" [placement]="getPopoverPlacement()"
             [popoverClass]="'emoji-picker-popover'" (mouseenter)="showEmojiMenu()"
             (mouseleave)="scheduleEmojiMenuClose()" #p="ngbPopover">
-            <div class="d-flex flex-column bg-light rounded-3 border fs-5 f lh-base message-card"
+            <div class="d-flex flex-column rounded-3 border fs-5 f lh-base message-card"
                 [ngStyle]="{'opacity': message.deleted ? 0.5 : 1}">
                 
                 <div *ngIf="replyToMessage" class="reply-quote-section">
