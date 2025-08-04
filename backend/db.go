@@ -317,7 +317,7 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{
 		strconv.FormatInt(stop, 10), 
 		strconv.FormatBool(isAdmin), 
-		strconv.FormatBool(countViews), direction}).Result()
+		strconv.FormatBool(countViews), direction}),
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
 		strconv.FormatBool(settingConfig.HideEditTime),
