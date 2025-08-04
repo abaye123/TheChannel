@@ -321,8 +321,8 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
 		strconv.FormatBool(settingConfig.HideEditTime),
-		strconv.FormatBool(isModerator),
-	}).Result()
+		strconv.FormatBool(isModerator)
+	.Result()
 	if err != nil {
 		return []Message{}, err
 	}
