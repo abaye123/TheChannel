@@ -183,7 +183,7 @@ var getMessageRange = redis.NewScript(`
 				else
 					message[key] = 0	
 				end
-			elseified key == 'deleted' then
+			elseif key == 'deleted' then
 				message[key] = value == '1'
 			elseif key == 'is_thread' then
 				message['isThread'] = value == '1'
