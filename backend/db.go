@@ -163,6 +163,7 @@ var getMessageRange = redis.NewScript(`
 	local isAuthenticated = ARGV[4] == 'true'
 	local showAuthorToAuthenticated = ARGV[5] == 'true'
 	local hideEditTime = ARGV[6] == 'true'
+	local isModerator = ARGV[7] == 'true'
 
 	local function parseMessageData(message_data, messageId)
 		if #message_data == 0 then
@@ -182,7 +183,7 @@ var getMessageRange = redis.NewScript(`
 				else
 					message[key] = 0	
 				end
-			elseif key == 'deleted' then
+			elseified key == 'deleted' then
 				message[key] = value == '1'
 			elseif key == 'is_thread' then
 				message['isThread'] = value == '1'
@@ -196,7 +197,7 @@ var getMessageRange = redis.NewScript(`
 					message[key] = value
 				end
 			elseif key == 'author' then
-				if isAdmin then
+				if isAdmin or isModerator then
 					message[key] = value
 				elseif showAuthorToAuthenticated and isAuthenticated then
 					message[key] = value
@@ -204,7 +205,7 @@ var getMessageRange = redis.NewScript(`
 					message[key] = "Anonymous"
 				end
 			elseif key == 'authorId' then
-				if isAdmin then
+				if isAdmin or isModerator then
 				   message[key] = value
 				elseif showAuthorToAuthenticated and isAuthenticated then
 					message[key] = value
@@ -246,7 +247,7 @@ var getMessageRange = redis.NewScript(`
 		
 		local originalMessage = parseMessageData(message_data, messageId)
 		
-		if originalMessage and originalMessage['deleted'] and not isAdmin then
+		if originalMessage and originalMessage['deleted'] and not (isAdmin or isModerator) then
 			return {
 				id = originalMessage['id'],
 				text = "*הודעה שנמחקה*",
@@ -279,7 +280,7 @@ var getMessageRange = redis.NewScript(`
 			local message_data = redis.call('HGETALL', message_key)
 			local message = parseMessageData(message_data, messageId)
 	
-			if message and (not message['deleted'] or isAdmin) then
+			if message and (not message['deleted'] or isAdmin or isModerator) then
 				if message['replyTo'] then
 					local originalMessage = getOriginalMessage(tostring(message['replyTo']))
 					if originalMessage then
@@ -298,7 +299,7 @@ var getMessageRange = redis.NewScript(`
 	return cjson.encode(messages)
 `)
 
-func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool) ([]Message, error) {
+func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool, isModerator bool) ([]Message, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
 	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{
 		strconv.FormatInt(stop, 10), 
@@ -307,6 +308,7 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
 		strconv.FormatBool(settingConfig.HideEditTime),
+		strconv.FormatBool(isModerator),
 	}).Result()
 	if err != nil {
 		return []Message{}, err

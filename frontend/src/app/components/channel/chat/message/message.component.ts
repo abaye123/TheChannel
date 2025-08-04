@@ -162,6 +162,10 @@ export class MessageComponent implements OnInit, AfterViewInit {
   }
 
   canUserEditMessage(message: ChatMessage): boolean {
+    if (this.userPrivilege?.['admin'] || this.userPrivilege?.['moderator']) {
+      return true;
+    }
+
     if (!this.userPrivilege?.['writer']) {
       return false;
     }

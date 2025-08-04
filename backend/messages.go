@@ -30,14 +30,19 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isAuthenticated := false
+	isAdmin := false
+	isModerator := false
+	
 	session, err := store.Get(r, cookieName)
 	if err == nil {
-		if _, ok := session.Values["user"].(Session); ok {
+		if userSession, ok := session.Values["user"].(Session); ok {
 			isAuthenticated = true
+			isAdmin = userSession.Privileges[Admin]
+			isModerator = userSession.Privileges[Moderator]
 		}
 	}
 
-	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), checkPrivilege(r, Writer), settingConfig.CountViews, isAuthenticated)
+	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), isAdmin, settingConfig.CountViews, isAuthenticated, isModerator)
 	if err != nil {
 		log.Printf("Failed to get messages: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
@@ -180,27 +185,38 @@ func updateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	originalAuthorId := originalMessage["authorId"]
-	if originalAuthorId != user.ID {
-		http.Error(w, "You can only edit your own messages", http.StatusForbidden)
-		return
-	}
+	isAdmin := user.Privileges[Admin]
+	isModerator := user.Privileges[Moderator]
+	isOwner := originalAuthorId == user.ID
 
-	timestampStr := originalMessage["timestamp"]
-	if timestampStr == "" {
-		http.Error(w, "Message timestamp not found", http.StatusInternalServerError)
-		return
-	}
+	if !isAdmin && !isModerator {
+		if !isOwner {
+			http.Error(w, "You can only edit your own messages", http.StatusForbidden)
+			return
+		}
 
-	timestamp, err := time.Parse(time.RFC3339, timestampStr)
-	if err != nil {
-		http.Error(w, "Invalid message timestamp", http.StatusInternalServerError)
-		return
-	}
+		if !user.Privileges[Writer] {
+			http.Error(w, "Writer privilege required to edit messages", http.StatusForbidden)
+			return
+		}
 
-	elapsedTime := time.Since(timestamp).Seconds()
-	if elapsedTime > float64(settingConfig.EditTimeLimit) {
-		http.Error(w, "Edit time limit exceeded", http.StatusForbidden)
-		return
+		timestampStr := originalMessage["timestamp"]
+		if timestampStr == "" {
+			http.Error(w, "Message timestamp not found", http.StatusInternalServerError)
+			return
+		}
+
+		timestamp, err := time.Parse(time.RFC3339, timestampStr)
+		if err != nil {
+			http.Error(w, "Invalid message timestamp", http.StatusInternalServerError)
+			return
+		}
+
+		elapsedTime := time.Since(timestamp).Seconds()
+		if elapsedTime > float64(settingConfig.EditTimeLimit) {
+			http.Error(w, "Edit time limit exceeded", http.StatusForbidden)
+			return
+		}
 	}
 
 	body.LastEdit = time.Now()
