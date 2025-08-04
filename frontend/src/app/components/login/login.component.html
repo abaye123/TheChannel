@@ -1,60 +1,63 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
+<div class="login-page">
+  <div class="login-container">
 
-      <div *ngIf="!loadingChannelInfo && channelInfo" class="card mb-4 channel-info-card">
-        <div class="card-body text-center">
-          <div class="mb-3">
-            <img *ngIf="channelInfo.logoUrl" [src]="channelInfo.logoUrl" [alt]="channelInfo.name" class="channel-logo">
-            <div *ngIf="!channelInfo.logoUrl" class="channel-logo-placeholder">
-              {{ channelInfo.name?.charAt(0) || '?' }}
-            </div>
-          </div>
-
-          <h2 class="channel-name mb-3">{{ channelInfo.name || 'ערוץ עדכונים' }}</h2>
-
-          <p *ngIf="channelInfo.description" class="channel-description mb-3">
-            {{ channelInfo.description }}
-          </p>
-
-          <div *ngIf="channelInfo.login_description" class="login-description mb-3">
-            <div [innerHTML]="channelInfo.login_description"></div>
-          </div>
-
-          <div class="participants-count mb-3">
-            <i class="bi bi-people-fill"></i>
-            <span class="ms-2">{{ channelInfo.views }} משתתפים רשומים</span>
-          </div>
-        </div>
+    <div *ngIf="!loadingChannelInfo && channelInfo" class="channel-section">
+      <div class="channel-logo">
+        <img *ngIf="channelInfo.logoUrl" [src]="channelInfo.logoUrl" [alt]="channelInfo.name">
+        <span *ngIf="!channelInfo.logoUrl" class="logo-placeholder">
+          {{ channelInfo.name?.charAt(0) || '?' }}
+        </span>
       </div>
 
-      <div *ngIf="loadingChannelInfo" class="card mb-4">
-        <div class="card-body text-center">
-          <div class="spinner-border text-primary mb-3"></div>
-          <p>טוען מידע הערוץ...</p>
-        </div>
+      <h1 class="channel-name">{{ channelInfo.name || 'ערוץ עדכונים' }}</h1>
+
+      <p *ngIf="channelInfo.description" class="channel-description">
+        {{ channelInfo.description }}
+      </p>
+
+      <div *ngIf="channelInfo.login_description" class="login-note" [innerHTML]="channelInfo.login_description">
       </div>
 
-      <div class="card login-card">
-        <div class="card-header text-center">
-          <h4>התחברות לערוץ</h4>
-        </div>
-        <div class="card-body">
-          <div class="alert alert-danger" role="alert" *ngIf="status === 'failed'">
-            התחברות נכשלה, נסו שנית.
-          </div>
-
-          <button *ngIf="!code && !checkUserInfo" type="submit" class="btn btn-primary w-100 btn-lg" (click)="login()">
-            <i class="bi bi-google me-2"></i>
-            התחבר באמצעות חשבון גוגל
-          </button>
-
-          <div *ngIf="code || checkUserInfo" class="text-center">
-            <div class="spinner-border text-primary"></div>
-            <p class="mt-2">מתחבר...</p>
-          </div>
-        </div>
+      <div class="participants">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+        {{ channelInfo.views }} משתתפים
       </div>
     </div>
+
+    <div *ngIf="loadingChannelInfo" class="loading-section">
+      <div class="spinner"></div>
+      <p>טוען מידע הערוץ...</p>
+    </div>
+
+    <div class="login-section">
+      <h2>התחברות</h2>
+
+      <div *ngIf="status === 'failed'" class="error-message">
+        התחברות נכשלה. נסה שוב.
+      </div>
+
+      <button *ngIf="!code && !checkUserInfo" class="login-button" (click)="login()">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+          <path fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+        </svg>
+        המשך עם Google
+      </button>
+
+      <div *ngIf="code || checkUserInfo" class="loading-section">
+        <div class="spinner"></div>
+        <p>מתחבר...</p>
+      </div>
+    </div>
+
   </div>
 </div>
