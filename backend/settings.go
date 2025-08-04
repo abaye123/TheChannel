@@ -45,6 +45,7 @@ type SettingConfig struct {
 	ProjectDomain             string
 	MaxFileSize               int64
 	EditTimeLimit             int64
+	CustomTitle               string
 }
 
 type Setting struct {
@@ -184,6 +185,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 			if timeLimit > 0 {
 				config.EditTimeLimit = timeLimit
 			}
+
+		case "custom_title":
+			config.CustomTitle = setting.GetString()
 		}
 	}
 
