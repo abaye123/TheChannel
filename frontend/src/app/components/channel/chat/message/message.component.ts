@@ -191,7 +191,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
     }
 
     if (this.userPrivilege?.['writer'] && message.authorId === this.userInfo?.id) {
-      return this.canUserEditMessage(message);דדד
+      return this.canUserEditMessage(message);
     }
 
     return false;
