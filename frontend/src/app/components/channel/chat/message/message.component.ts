@@ -69,7 +69,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
   reacts: string[] = [];
   private closeEmojiMenuTimeout: any;
   replyToMessage?: ChatMessage;
-
+  editTimeLimit: number = 120;
 
   ngOnInit() {
     this.chatService.getEmojisList()
@@ -80,6 +80,17 @@ export class MessageComponent implements OnInit, AfterViewInit {
       this.replyToMessage = this.message.originalMessage;
     } else if (this.message?.replyTo) {
       this.replyToMessage = this.allMessages.find(m => m.id === this.message?.replyTo);
+    }
+
+    this.loadEditTimeLimit();
+  }
+
+  async loadEditTimeLimit() {
+    try {
+      this.editTimeLimit = 120;
+    } catch (error) {
+      console.error('Failed to load edit time limit:', error);
+      this.editTimeLimit = 120;
     }
   }
 
@@ -127,13 +138,63 @@ export class MessageComponent implements OnInit, AfterViewInit {
   }
 
   editMessage(message: ChatMessage) {
+    if (!this.canUserEditMessage(message)) {
+      if (message.authorId !== this.userInfo?.id) {
+        this.toastrService.warning('', 'ניתן לערוך רק הודעות שכתבת בעצמך');
+      } else {
+        this.toastrService.warning('', 'חלף הזמן המותר לעריכת ההודעה');
+      }
+      return;
+    }
+
     this.chatService.setEditMessage(message);
   }
 
   deleteMessage(message: ChatMessage) {
+    if (!this.canUserDeleteMessage(message)) {
+      this.toastrService.warning('', 'אין לך הרשאה למחוק הודעה זו');
+      return;
+    }
+
     const confirm = window.confirm('האם אתה בטוח שברצונך למחוק את ההודעה?');
     if (confirm)
       this._adminService.deleteMessage(message.id).subscribe();
+  }
+
+  canUserEditMessage(message: ChatMessage): boolean {
+    if (!this.userPrivilege?.['writer']) {
+      return false;
+    }
+
+    if (message.authorId !== this.userInfo?.id) {
+      return false;
+    }
+
+    if (message.deleted) {
+      return false;
+    }
+
+    if (!message.timestamp) {
+      return false;
+    }
+
+    const messageTime = new Date(message.timestamp);
+    const currentTime = new Date();
+    const elapsedSeconds = (currentTime.getTime() - messageTime.getTime()) / 1000;
+
+    return elapsedSeconds <= this.editTimeLimit;
+  }
+
+  canUserDeleteMessage(message: ChatMessage): boolean {
+    if (this.userPrivilege?.['admin'] || this.userPrivilege?.['moderator']) {
+      return true;
+    }
+
+    if (this.userPrivilege?.['writer'] && message.authorId === this.userInfo?.id) {
+      return this.canUserEditMessage(message);דדד
+    }
+
+    return false;
   }
 
   viewLargeImage(event: MouseEvent) {
@@ -220,17 +281,14 @@ export class MessageComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // הוספת פונקציה להגבה על הודעה
   replyToThisMessage(message: ChatMessage) {
     this.chatService.setReplyToMessage(message);
   }
 
-  // פונקציה לניווט להודעה המקורית
   navigateToOriginalMessage(messageId: number) {
     const element = document.getElementById(messageId.toString());
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // הדגשת ההודעה
       element.classList.add('highlighted-message');
       setTimeout(() => {
         element.classList.remove('highlighted-message');
@@ -238,7 +296,6 @@ export class MessageComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // פונקציה לקצר טקסט עבור תצוגת ציטוט
   truncateText(text: string, maxLength: number = 100): string {
     if (text.length <= maxLength) {
       return text;

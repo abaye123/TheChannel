@@ -81,7 +81,7 @@ export class ChatService {
   }
 
   async getEmojisList(reload: boolean = false): Promise<string[]> {
-    if (this.emojis && !reload) return Promise.resolve(this.emojis); // הסרתי את בדיקת האורך, משום שזה יוצר קריאות מיותרות לשרת כאשר לא מוגדר אימוגים
+    if (this.emojis && !reload) return Promise.resolve(this.emojis);
     this.emojis = await firstValueFrom(this.http.get<string[]>('/api/emojis/list'));
     return this.emojis;
   }
@@ -128,5 +128,25 @@ export class ChatService {
 
   findMessageById(messages: ChatMessage[], messageId: number): ChatMessage | undefined {
     return messages.find(m => m.id === messageId);
+  }
+
+  canEditMessage(message: ChatMessage, userId: string, editTimeLimit: number = 120): boolean {
+    if (message.authorId !== userId) {
+      return false;
+    }
+
+    if (message.deleted) {
+      return false;
+    }
+
+    if (!message.timestamp) {
+      return false;
+    }
+
+    const messageTime = new Date(message.timestamp);
+    const currentTime = new Date();
+    const elapsedSeconds = (currentTime.getTime() - messageTime.getTime()) / 1000;
+
+    return elapsedSeconds <= editTimeLimit;
   }
 }

@@ -44,6 +44,7 @@ type SettingConfig struct {
 	FcmMeasurementId          string
 	ProjectDomain             string
 	MaxFileSize               int64
+	EditTimeLimit             int64
 }
 
 type Setting struct {
@@ -77,6 +78,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 	}
 
 	config.MaxFileSize = 50
+	config.EditTimeLimit = 120
 
 	for _, setting := range *s {
 		switch setting.Key {
@@ -177,6 +179,11 @@ func (s *Settings) ToConfig() *SettingConfig {
 				config.MaxFileSize = requestedSize
 			}
 
+		case "edit_time_limit":
+			timeLimit := setting.GetInt()
+			if timeLimit > 0 {
+				config.EditTimeLimit = timeLimit
+			}
 		}
 	}
 

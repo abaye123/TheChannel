@@ -152,10 +152,54 @@ func updateMessage(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer r.Body.Close()
 
+	session, _ := store.Get(r, cookieName)
+	user, ok := session.Values["user"].(Session)
+	if !ok {
+		http.Error(w, "User not authenticated", http.StatusUnauthorized)
+		return
+	}
+
 	body := Message{}
 	if err = json.NewDecoder(r.Body).Decode(&body); err != nil {
 		response := Response{Success: false}
 		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	messageKey := fmt.Sprintf("messages:%d", body.ID)
+	exists, err := rdb.Exists(ctx, messageKey).Result()
+	if err != nil || exists == 0 {
+		http.Error(w, "Message not found", http.StatusNotFound)
+		return
+	}
+
+	originalMessage, err := rdb.HGetAll(ctx, messageKey).Result()
+	if err != nil {
+		http.Error(w, "Failed to get original message", http.StatusInternalServerError)
+		return
+	}
+
+	originalAuthorId := originalMessage["authorId"]
+	if originalAuthorId != user.ID {
+		http.Error(w, "You can only edit your own messages", http.StatusForbidden)
+		return
+	}
+
+	timestampStr := originalMessage["timestamp"]
+	if timestampStr == "" {
+		http.Error(w, "Message timestamp not found", http.StatusInternalServerError)
+		return
+	}
+
+	timestamp, err := time.Parse(time.RFC3339, timestampStr)
+	if err != nil {
+		http.Error(w, "Invalid message timestamp", http.StatusInternalServerError)
+		return
+	}
+
+	elapsedTime := time.Since(timestamp).Seconds()
+	if elapsedTime > float64(settingConfig.EditTimeLimit) {
+		http.Error(w, "Edit time limit exceeded", http.StatusForbidden)
 		return
 	}
 
@@ -178,8 +222,67 @@ func deleteMessage(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	id := chi.URLParam(r, "id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(w, "Invalid message ID", http.StatusBadRequest)
+		return
+	}
 
-	idInt, _ := strconv.Atoi(id)
+	session, _ := store.Get(r, cookieName)
+	user, ok := session.Values["user"].(Session)
+	if !ok {
+		http.Error(w, "User not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	messageKey := fmt.Sprintf("messages:%s", id)
+	exists, err := rdb.Exists(ctx, messageKey).Result()
+	if err != nil || exists == 0 {
+		http.Error(w, "Message not found", http.StatusNotFound)
+		return
+	}
+
+	originalMessage, err := rdb.HGetAll(ctx, messageKey).Result()
+	if err != nil {
+		http.Error(w, "Failed to get original message", http.StatusInternalServerError)
+		return
+	}
+
+	originalAuthorId := originalMessage["authorId"]
+	isAdmin := user.Privileges[Admin]
+	isModerator := user.Privileges[Moderator]
+	isOwner := originalAuthorId == user.ID
+
+	if !isAdmin && !isModerator {
+		if !isOwner {
+			http.Error(w, "You can only delete your own messages", http.StatusForbidden)
+			return
+		}
+
+		if !user.Privileges[Writer] {
+			http.Error(w, "Writer privilege required to delete messages", http.StatusForbidden)
+			return
+		}
+
+		timestampStr := originalMessage["timestamp"]
+		if timestampStr == "" {
+			http.Error(w, "Message timestamp not found", http.StatusInternalServerError)
+			return
+		}
+
+		timestamp, err := time.Parse(time.RFC3339, timestampStr)
+		if err != nil {
+			http.Error(w, "Invalid message timestamp", http.StatusInternalServerError)
+			return
+		}
+
+		elapsedTime := time.Since(timestamp).Seconds()
+		if elapsedTime > float64(settingConfig.EditTimeLimit) {
+			http.Error(w, "Delete time limit exceeded", http.StatusForbidden)
+			return
+		}
+	}
+
 	message := Message{ID: idInt, Deleted: true}
 
 	if err := funcDeleteMessage(ctx, id); err != nil {
