@@ -40,9 +40,11 @@ export class PrivilegDashboardComponent implements OnInit {
 
   privilegeUsersList: PrivilegeUser[] = [];
   originalPrivilegeUsersList: PrivilegeUser[] = [];
+  filteredPrivilegeUsersList: PrivilegeUser[] = [];
   addingNewUser: boolean = false;
   hasChanges: boolean = false;
   isSaving: boolean = false;
+  searchTerm: string = '';
 
   newUser: PrivilegeUser = {
     username: '',
@@ -63,10 +65,29 @@ export class PrivilegDashboardComponent implements OnInit {
     try {
       this.privilegeUsersList = await this.adminService.getPrivilegeUsersList();
       this.originalPrivilegeUsersList = JSON.parse(JSON.stringify(this.privilegeUsersList));
+      this.filteredPrivilegeUsersList = [...this.privilegeUsersList];
       this.hasChanges = false;
     } catch (error) {
       this.tostService.danger('', 'שגיאה בטעינת רשימת המורשים');
     }
+  }
+
+  onSearchChange() {
+    if (!this.searchTerm.trim()) {
+      this.filteredPrivilegeUsersList = [...this.privilegeUsersList];
+    } else {
+      const searchTermLower = this.searchTerm.toLowerCase().trim();
+      this.filteredPrivilegeUsersList = this.privilegeUsersList.filter(user =>
+        (user.username?.toLowerCase().includes(searchTermLower)) ||
+        (user.email?.toLowerCase().includes(searchTermLower)) ||
+        (user.publicName?.toLowerCase().includes(searchTermLower))
+      );
+    }
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.onSearchChange();
   }
 
   async saveChanges() {
@@ -80,6 +101,7 @@ export class PrivilegDashboardComponent implements OnInit {
       await this.adminService.setPrivilegeUsers(this.privilegeUsersList);
       this.originalPrivilegeUsersList = JSON.parse(JSON.stringify(this.privilegeUsersList));
       this.hasChanges = false;
+      this.onSearchChange();
       this.tostService.success('', 'השינויים נשמרו בהצלחה!');
     } catch (error) {
       this.tostService.danger('', 'שגיאה בשמירת השינויים');
@@ -89,13 +111,19 @@ export class PrivilegDashboardComponent implements OnInit {
   }
 
   deleteUser(index: number) {
-    const user = this.privilegeUsersList[index];
+    const userToDelete = this.filteredPrivilegeUsersList[index];
+    const realIndex = this.privilegeUsersList.findIndex(user => user.email === userToDelete.email);
+
+    if (realIndex === -1) return;
+
+    const user = this.privilegeUsersList[realIndex];
     if (!confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${user.publicName || user.email}?`)) {
       return;
     }
 
-    this.privilegeUsersList[index].deleted = true;
+    this.privilegeUsersList[realIndex].deleted = true;
     this.markAsChanged();
+    this.onSearchChange();
     this.saveChanges();
   }
 
@@ -105,7 +133,6 @@ export class PrivilegDashboardComponent implements OnInit {
       return;
     }
 
-    // בדיקת מייל כפול
     const existingUser = this.privilegeUsersList.find(user => user.email === this.newUser.email);
     if (existingUser) {
       this.tostService.warning('', 'משתמש עם מייל זה כבר קיים');
@@ -115,6 +142,7 @@ export class PrivilegDashboardComponent implements OnInit {
     this.privilegeUsersList.push({ ...this.newUser });
     this.resetNewUser();
     this.markAsChanged();
+    this.onSearchChange();
     this.tostService.success('', 'משתמש חדש נוסף בהצלחה');
   }
 
@@ -140,6 +168,7 @@ export class PrivilegDashboardComponent implements OnInit {
     this.hasChanges = false;
     this.addingNewUser = false;
     this.resetNewUser();
+    this.onSearchChange();
     this.tostService.info('', 'השינויים בוטלו');
   }
 
@@ -175,10 +204,13 @@ export class PrivilegDashboardComponent implements OnInit {
   }
 
   hasUserChanged(index: number): boolean {
-    if (index >= this.originalPrivilegeUsersList.length) return true;
+    const userToCheck = this.filteredPrivilegeUsersList[index];
+    const realIndex = this.privilegeUsersList.findIndex(user => user.email === userToCheck.email);
 
-    const current = this.privilegeUsersList[index];
-    const original = this.originalPrivilegeUsersList[index];
+    if (realIndex === -1 || realIndex >= this.originalPrivilegeUsersList.length) return true;
+
+    const current = this.privilegeUsersList[realIndex];
+    const original = this.originalPrivilegeUsersList[realIndex];
 
     return current.publicName !== original.publicName ||
       current.deleted !== original.deleted ||
