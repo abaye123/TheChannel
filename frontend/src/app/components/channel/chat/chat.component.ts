@@ -43,8 +43,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   offset: number = 0;
   limit: number = 20;
-  hasMoreMessages: boolean = true;
-  hasNewMessages: boolean = false;
+  hasOldMessages: boolean = true;
+  hasNewMessages: boolean = true;
+  thereNewMessages: boolean = false;
   showScrollToBottom: boolean = false;
   private lastHeartbeat: number = Date.now();
   private subLastHeartbeat: any;
@@ -121,7 +122,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.zone.run(() => {
             this.messages.unshift(message.message);
             const isMyMessage = message.message.author === this.userInfo?.username;
-            this.hasNewMessages = !isMyMessage;
+            this.thereNewMessages = !isMyMessage;
 
             if (!isMyMessage) {
               if (this.soundService.isInitialized()) {
@@ -189,7 +190,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     const distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
     this.showScrollToBottom = distanceFromBottom > 100;
     if (distanceFromBottom < 10) {
-      this.hasNewMessages = false;
+      this.thereNewMessages = false;
     }
   }
 
@@ -197,31 +198,34 @@ export class ChatComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
     }, 0);
-    this.hasNewMessages = false;
+    this.thereNewMessages = false;
   }
 
   async loadMessages(scrollDown?: boolean, messageId?: number) {
-    if (this.isLoading || (!this.hasMoreMessages && !messageId && !scrollDown)) return;
+    if (this.isLoading || (scrollDown && !this.hasNewMessages) || (!scrollDown && !this.hasOldMessages)) return;
+    console.log('Loading messages', { scrollDown, messageId });
 
     let startId: number;
     let resetList: boolean = false;
+    let direction: string = "desc";
 
+    const maxId = Math.max(...this.messages.map(m => m.id!));
     if (scrollDown) {
-      //const maxId = Math.max(...this.messages.map(m => m.id!));
-      //
-      startId = this.offset + this.limit + 20;
+      direction = "asc";
+      startId = maxId;
     } else {
       if (messageId) {
-        const maxId = Math.max(...this.messages.map(m => m.id!));
         if (messageId > maxId + this.limit) {
           resetList = true;
           startId = messageId + 10;
+          direction = "asc";
+          scrollDown = true;
         } else if (messageId > maxId) {
-          startId = this.offset + this.limit;
+          startId = maxId;
+          direction = "asc";
           scrollDown = true;
         } else {
-          const minId = Math.min(...this.messages.map(m => m.id!));
-          if (messageId < minId - this.limit) {
+          if (messageId < this.offset - this.limit) {
             resetList = true;
             startId = messageId + 10;
           } else {
@@ -235,13 +239,14 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     try {
       this.isLoading = true;
-      const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit))
-      if (response?.messages) {
-        this.hasMoreMessages = response.hasMore;
+      const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction))
+      if (response) {
         if (scrollDown) {
-          resetList ? this.messages = response.messages : this.messages.unshift(...response.messages);
+          resetList ? this.messages = response.reverse() : this.messages.unshift(...response.reverse());
+          this.hasNewMessages = response.length > this.limit;
         } else {
-          resetList ? this.messages = response.messages : this.messages.push(...response.messages);
+          resetList ? this.messages = response : this.messages.push(...response);
+          this.hasOldMessages = response.length > this.limit;
         }
         this.offset = Math.min(...this.messages.map(m => m.id!));
         setTimeout(() => {

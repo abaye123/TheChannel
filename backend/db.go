@@ -164,6 +164,7 @@ var getMessageRange = redis.NewScript(`
 	local showAuthorToAuthenticated = ARGV[5] == 'true'
 	local hideEditTime = ARGV[6] == 'true'
 	local isModerator = ARGV[7] == 'true'
+	local direction = ARGV[8] or 'desc'
 
 	local function parseMessageData(message_data, messageId)
 		if #message_data == 0 then
@@ -260,7 +261,13 @@ var getMessageRange = redis.NewScript(`
 		return originalMessage
 	end
 
-	local start_index = redis.call('ZREVRANK', time_set_key, offset_key) or 0
+	local start_index
+	if direction == 'asc' then
+	    start_index = redis.call('ZRANK', time_set_key, offset_key) or 0
+	else
+	    start_index = redis.call('ZREVRANK', time_set_key, offset_key) or 0
+	end
+	
 	if start_index > 0 then
 		start_index = start_index + 1
 	end
@@ -269,7 +276,13 @@ var getMessageRange = redis.NewScript(`
 	repeat
 		local batch_size = required_length - #messages
 		local stop_index = start_index + batch_size
-		local message_ids = redis.call('ZREVRANGE', time_set_key, start_index, stop_index)
+		local message_ids
+		
+		if direction == 'asc' then
+		 	message_ids = redis.call('ZRANGE', time_set_key, start_index, stop_index)
+		else
+		 	message_ids = redis.call('ZREVRANGE', time_set_key, start_index, stop_index)
+		end
 
 		if #message_ids == 0 then
 			break
@@ -299,12 +312,12 @@ var getMessageRange = redis.NewScript(`
 	return cjson.encode(messages)
 `)
 
-func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool, isModerator bool) ([]Message, error) {
+func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool, isModerator bool, direction string) ([]Message, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
 	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{
 		strconv.FormatInt(stop, 10), 
 		strconv.FormatBool(isAdmin), 
-		strconv.FormatBool(countViews),
+		strconv.FormatBool(countViews), direction}).Result()
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
 		strconv.FormatBool(settingConfig.HideEditTime),

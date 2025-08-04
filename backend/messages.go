@@ -18,6 +18,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 
 	offsetFromClient := r.URL.Query().Get("offset")
 	limitFromClient := r.URL.Query().Get("limit")
+	direction := r.URL.Query().Get("direction")
 
 	offset, err := strconv.Atoi(offsetFromClient)
 	if err != nil {
@@ -42,23 +43,15 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), isAdmin, settingConfig.CountViews, isAuthenticated, isModerator)
+	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), isAdmin, settingConfig.CountViews, isAuthenticated, isModerator, direction)
 	if err != nil {
 		log.Printf("Failed to get messages: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
 		return
 	}
 
-	res := struct {
-		Messages []Message `json:"messages"`
-		HasMore  bool      `json:"hasMore"`
-	}{
-		Messages: messages,
-		HasMore:  len(messages) >= limit,
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(messages)
 
 	addViewsToMessages(ctx, messages)
 }
