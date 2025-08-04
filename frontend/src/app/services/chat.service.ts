@@ -61,8 +61,13 @@ export class ChatService {
     return;
   }
 
-  editChannelInfo(name: string, description: string, logoUrl: string): Observable<ResponseResult> {
-    return this.http.post<ResponseResult>('/api/admin/edit-channel-info', { name, description, logoUrl });
+  editChannelInfo(name: string, description: string, loginDescription: string, logoUrl: string): Observable<ResponseResult> {
+    return this.http.post<ResponseResult>('/api/admin/edit-channel-info', {
+      name,
+      description,
+      login_description: loginDescription,
+      logoUrl
+    });
   }
 
   getMessages(offset: number, limit: number, direction: string): Observable<ChatResponse> {

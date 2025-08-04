@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	// "strings"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -224,5 +225,42 @@ func getFavicon(w http.ResponseWriter, r *http.Request) {
 	fileHash := metaData["hash"].(string)
 	filePath := filepath.Join(rootUploadPath, fileHash[:2], fileHash[2:4], fileHash)
 
+	http.ServeFile(w, r, filePath)
+}
+
+// TODO: That will allow only the logo file to be returned.
+func serveFilePublic(w http.ResponseWriter, r *http.Request) {
+	fileId := chi.URLParam(r, "fileid")
+
+	metadataFilePath := filepath.Join(rootUploadPath, fileId[:2], fileId[2:4], fileId+".yaml")
+	metadataFile, err := os.ReadFile(metadataFilePath)
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	var metaData map[string]any
+	if err := yaml.Unmarshal(metadataFile, &metaData); err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	if delete := metaData["delete"].(bool); delete {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	fileHash := metaData["hash"].(string)
+	filePath := filepath.Join(rootUploadPath, fileHash[:2], fileHash[2:4], fileHash)
+	originalFileName := metaData["filename"].(string)
+
+	// fileType := metaData["type"].(string)
+	// if !strings.HasPrefix(fileType, "image/") {
+	//	http.Error(w, "Access denied", http.StatusForbidden)
+	//	return
+	//}
+
+	w.Header().Set("Content-Disposition", `attachment; filename*=UTF-8''`+url.QueryEscape(originalFileName))
+	w.Header().Set("Cache-Control", "public, max-age=86400") // cache לשעה
 	http.ServeFile(w, r, filePath)
 }

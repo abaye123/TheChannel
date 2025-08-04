@@ -1,6 +1,9 @@
 <nb-card>
-    <nb-card-body>
-        <div style="position: relative;">
+    <nb-card-header>
+        <h5>הגדרות פרטי הערוץ</h5>
+    </nb-card-header>
+    <nb-card-body class="scrollable-content">
+        <div style="position: relative;" class="mb-4">
             <img [src]="channel.logoUrl" class="rounded-circle" (click)="fileInput.click()"
                 nbPopover="לחצו כאן להעלאת תמונה חדשה" nbPopoverTrigger="hover">
             <button nbButton (click)="fileInput.click()" shape="round"
@@ -9,20 +12,46 @@
             </button>
         </div>
         <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" hidden>
-        <div class="m-2"></div>
-        <div>
-            <h6>כותרת:</h6>
-            <input type="text" nbInput fullWidth [(ngModel)]="channel.name">
-            <div class="m-2"></div>
-            <h6>תיאור:</h6>
-            <input type="text" nbInput fullWidth [(ngModel)]="channel.description">
+
+        <div class="form-group mb-3">
+            <h6>שם הערוץ:</h6>
+            <input type="text" nbInput fullWidth [(ngModel)]="channel.name" placeholder="הכנס שם הערוץ">
         </div>
+
+        <div class="form-group mb-3">
+            <h6>תיאור הערוץ:</h6>
+            <input type="text" nbInput fullWidth [(ngModel)]="channel.description"
+                placeholder="הכנס תיאור קצר של הערוץ">
+        </div>
+
+        <div class="form-group mb-3">
+            <h6>מידע נוסף לעמוד ההתחברות:</h6>
+            <small class="text-muted mb-2 d-block">
+                טקסט זה יוצג בעמוד ההתחברות לפני שמשתמשים נרשמים. ניתן להשתמש ב-HTML בסיסי.
+            </small>
+            <textarea nbInput fullWidth [(ngModel)]="channel.login_description"
+                placeholder="לדוגמא: ברוכים הבאים לערוץ העדכונים שלנו! כאן תמצאו הודעות חשובות ועדכונים..."
+                rows="4"></textarea>
+
+            <div class="mt-2">
+                <small class="text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    ניתן להשתמש בתגיות HTML כמו: &lt;strong&gt;, &lt;em&gt;, &lt;br&gt;, &lt;ul&gt;, &lt;li&gt;
+                </small>
+            </div>
+        </div>
+
+        <!--div *ngIf="channel.login_description" class="preview-section">
+            <h6>תצוגה מקדימה:</h6>
+            <div class="preview-box" [innerHTML]="channel.login_description"></div>
+        </div-->
     </nb-card-body>
-    <nb-card-footer>
+    <nb-card-footer class="fixed-footer">
         <div class="d-flex flex-row-reverse">
-            <div class="m-2"></div>
             <button nbButton status="primary" shape="round" outline [nbSpinner]="isSending" [disabled]="isSending"
-                nbSpinnerStatus="primary" (click)="editChannelInfo()">עדכן
+                nbSpinnerStatus="primary" (click)="editChannelInfo()">
+                <nb-icon *ngIf="!isSending" icon="save-outline" class="me-1"></nb-icon>
+                עדכן פרטי ערוץ
             </button>
         </div>
     </nb-card-footer>

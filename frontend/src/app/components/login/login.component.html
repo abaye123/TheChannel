@@ -1,19 +1,57 @@
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col-md-4">
-      <div class="card">
+    <div class="col-md-6 col-lg-5">
+
+      <div *ngIf="!loadingChannelInfo && channelInfo" class="card mb-4 channel-info-card">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <img *ngIf="channelInfo.logoUrl" [src]="channelInfo.logoUrl" [alt]="channelInfo.name" class="channel-logo">
+            <div *ngIf="!channelInfo.logoUrl" class="channel-logo-placeholder">
+              {{ channelInfo.name?.charAt(0) || '?' }}
+            </div>
+          </div>
+
+          <h2 class="channel-name mb-3">{{ channelInfo.name || 'ערוץ עדכונים' }}</h2>
+
+          <p *ngIf="channelInfo.description" class="channel-description mb-3">
+            {{ channelInfo.description }}
+          </p>
+
+          <div *ngIf="channelInfo.login_description" class="login-description mb-3">
+            <div [innerHTML]="channelInfo.login_description"></div>
+          </div>
+
+          <div class="participants-count mb-3">
+            <i class="bi bi-people-fill"></i>
+            <span class="ms-2">{{ channelInfo.views }} משתתפים רשומים</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loadingChannelInfo" class="card mb-4">
+        <div class="card-body text-center">
+          <div class="spinner-border text-primary mb-3"></div>
+          <p>טוען מידע הערוץ...</p>
+        </div>
+      </div>
+
+      <div class="card login-card">
         <div class="card-header text-center">
-          <h4>התחברות</h4>
+          <h4>התחברות לערוץ</h4>
         </div>
         <div class="card-body">
           <div class="alert alert-danger" role="alert" *ngIf="status === 'failed'">
             התחברות נכשלה, נסו שנית.
           </div>
-          <button *ngIf="!code && !checkUserInfo" type="submit" class="btn btn-primary w-100" (click)="login()">
+
+          <button *ngIf="!code && !checkUserInfo" type="submit" class="btn btn-primary w-100 btn-lg" (click)="login()">
+            <i class="bi bi-google me-2"></i>
             התחבר באמצעות חשבון גוגל
           </button>
+
           <div *ngIf="code || checkUserInfo" class="text-center">
             <div class="spinner-border text-primary"></div>
+            <p class="mt-2">מתחבר...</p>
           </div>
         </div>
       </div>

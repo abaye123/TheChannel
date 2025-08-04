@@ -1,21 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { NbCardModule, NbDialogRef, NbButtonModule, NbSpinnerModule, NbInputModule, NbToastrService, NbPopoverModule } from '@nebular/theme';
+import { NbCardModule, NbDialogRef, NbButtonModule, NbSpinnerModule, NbInputModule, NbToastrService, NbPopoverModule, NbIconModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
 import { Channel } from '../../../models/channel.model';
 import { AdminService } from '../../../services/admin.service';
 import { ChatService, Attachment, ChatFile } from '../../../services/chat.service';
-
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-channel-info-form',
   imports: [
     FormsModule,
+    CommonModule,
     NbCardModule,
     NbButtonModule,
     NbSpinnerModule,
     NbInputModule,
     NbPopoverModule,
+    NbIconModule,
   ],
   templateUrl: './channel-info-form.component.html',
   styleUrl: './channel-info-form.component.scss'
@@ -38,7 +40,12 @@ export class ChannelInfoFormComponent implements OnInit {
 
   editChannelInfo() {
     this.isSending = true;
-    this.chatService.editChannelInfo(this.channel.name || '', this.channel.description || '', this.channel.logoUrl || '').subscribe({
+    this.chatService.editChannelInfo(
+      this.channel.name || '',
+      this.channel.description || '',
+      this.channel.login_description || '',
+      this.channel.logoUrl || ''
+    ).subscribe({
       next: () => {
         this.isSending = false;
         this.toastrService.success("", "עריכת פרטי ערוץ בוצעה בהצלחה");

@@ -14,6 +14,7 @@ type Channel struct {
 	Id                      int       `json:"id"`
 	Name                    string    `json:"name"`
 	Description             string    `json:"description"`
+	LoginDescription        string    `json:"login_description"`
 	CreatedAt               time.Time `json:"created_at"`
 	LogoUrl                 string    `json:"logoUrl"`
 	Views                   int64     `json:"views"`
@@ -42,10 +43,42 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.Id, _ = strconv.Atoi(c["id"])
 	channel.Name = c["name"]
 	channel.Description = c["description"]
+	channel.LoginDescription = c["login_description"]
 	channel.CreatedAt, _ = time.Parse(time.RFC3339, c["created_at"])
 	channel.Views = amount //strconv.Atoi(c["views"])
 	channel.LogoUrl = c["logoUrl"]
 	channel.RequireAuthForViewFiles = settingConfig.RequireAuthForViewFiles
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(channel)
+}
+
+func getChannelInfoPublic(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	amount, err := dbGetUsersAmount(ctx)
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	amount, _ = dyno.GetInteger(amount)
+
+	c, err := getChannelDetails(ctx)
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	var channel Channel
+	channel.Id, _ = strconv.Atoi(c["id"])
+	channel.Name = c["name"]
+	channel.Description = c["description"]
+	channel.LoginDescription = c["login_description"]
+	channel.CreatedAt, _ = time.Parse(time.RFC3339, c["created_at"])
+	channel.Views = amount
+	channel.LogoUrl = c["logoUrl"]
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(channel)
@@ -56,9 +89,10 @@ func editChannelInfo(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	type Request struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		LogoUrl     string `json:"logoUrl"`
+		Name             string `json:"name"`
+		Description      string `json:"description"`
+		LoginDescription string `json:"login_description"`
+		LogoUrl          string `json:"logoUrl"`
 	}
 
 	var req Request
@@ -68,7 +102,7 @@ func editChannelInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if _, err := rdb.HSet(ctx, "channel:1", "name", req.Name, "description", req.Description, "logoUrl", req.LogoUrl).Result(); err != nil {
+	if _, err := rdb.HSet(ctx, "channel:1", "name", req.Name, "description", req.Description, "login_description", req.LoginDescription, "logoUrl", req.LogoUrl).Result(); err != nil {
 		http.Error(w, "error", http.StatusInternalServerError)
 		return
 	}
