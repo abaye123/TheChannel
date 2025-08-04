@@ -322,7 +322,7 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
 		strconv.FormatBool(settingConfig.HideEditTime),
 		strconv.FormatBool(isModerator),
-		direction
+		direction,
 	}).Result()
 
 	if err != nil {
