@@ -79,12 +79,10 @@ func getMessageNextId(ctx context.Context) int {
 func setMessage(ctx context.Context, m Message, isUpdate bool) error {
 	messageKey := fmt.Sprintf("messages:%d", m.ID)
 
-	// Set message in hash
 	if err := rdb.HSet(ctx, messageKey, m).Err(); err != nil {
 		return err
 	}
 
-	// Add message timestamp to sorted set
 	if !isUpdate {
 		if err := rdb.ZAdd(ctx, "m_times:1", redis.Z{Score: float64(m.Timestamp.Unix()), Member: messageKey}).Err(); err != nil {
 			return err
@@ -165,6 +163,7 @@ var getMessageRange = redis.NewScript(`
 	local hideEditTime = ARGV[6] == 'true'
 	local isModerator = ARGV[7] == 'true'
 	local direction = ARGV[8] or 'desc'
+	local hideCountViewsForUsers = ARGV[9] == 'true'
 
 	local function parseMessageData(message_data, messageId)
 		if #message_data == 0 then
@@ -180,7 +179,11 @@ var getMessageRange = redis.NewScript(`
 				message[key] = tonumber(value)
 			elseif key == 'views' then
 				if countViews then
-					message[key] = tonumber(value)
+					if hideCountViewsForUsers and not (isAdmin or isModerator) then
+						message[key] = 0
+					else
+						message[key] = tonumber(value)
+					end
 				else
 					message[key] = 0	
 				end
@@ -323,6 +326,7 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 		strconv.FormatBool(settingConfig.HideEditTime),
 		strconv.FormatBool(isModerator),
 		direction,
+		strconv.FormatBool(settingConfig.HideCountViewsForUsers),
 	}).Result()
 
 	if err != nil {
@@ -598,8 +602,6 @@ func syncOldUsersToUsersList(ctx context.Context) error {
 
 	return nil
 }
-
-// 1. עדכן בקובץ backend/db.go - שנה את שם ה-Lua script:
 
 // Lua script לקבלת תגובות להודעה מסוימת  
 var getThreadRepliesScript = redis.NewScript(`

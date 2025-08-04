@@ -29,6 +29,7 @@ type SettingConfig struct {
 	ApiSecretKey              string
 	RootStaticFolder          string
 	CountViews                bool
+	HideCountViewsForUsers    bool
 	ShowAuthorToAuthenticated bool
 	AutoGrantWriterPrivilege  bool
 	GoogleAnalyticsID         string
@@ -106,6 +107,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "count_views":
 			config.CountViews = setting.GetBool()
+
+		case "hide_count_views_for_users":
+			config.HideCountViewsForUsers = setting.GetBool()
 
 		case "show_author_to_authenticated":
 			config.ShowAuthorToAuthenticated = setting.GetBool()

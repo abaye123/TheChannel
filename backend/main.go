@@ -120,21 +120,21 @@ func main() {
 	if err := http.ListenAndServe(":"+os.Getenv("SERVER_PORT"), r); err != nil {
 		log.Fatal(err)
 	}
+}
 
 		
-	func serveSpaFile(w http.ResponseWriter, r *http.Request) {
-		htmlPath := filepath.Join(settingConfig.RootStaticFolder, "index.html")
-		content, err := os.ReadFile(htmlPath)
-		if err != nil {
-			http.Error(w, "File not found", http.StatusNotFound)
-			return
-		}
-
-		if settingConfig.CustomTitle != "" {
-			content = bytes.ReplaceAll(content, []byte("<title></title>"), []byte(settingConfig.CustomTitle))
-		}
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write(content)
+func serveSpaFile(w http.ResponseWriter, r *http.Request) {
+	htmlPath := filepath.Join(settingConfig.RootStaticFolder, "index.html")
+	content, err := os.ReadFile(htmlPath)
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
 	}
+
+	if settingConfig.CustomTitle != "" {
+		content = bytes.ReplaceAll(content, []byte("<title></title>"), []byte(settingConfig.CustomTitle))
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(content)
 }
