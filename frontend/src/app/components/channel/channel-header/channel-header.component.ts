@@ -160,4 +160,8 @@ export class ChannelHeaderComponent implements OnInit {
       this.soundService.playNotificationSound();
     }
   }
+
+  openContactUs() {
+    window.open(this.chatService.channelInfo?.contact_us, '_blank');
+  }
 }

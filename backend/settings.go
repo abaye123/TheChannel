@@ -48,6 +48,7 @@ type SettingConfig struct {
 	MaxFileSize               int64
 	EditTimeLimit             int64
 	CustomTitle               string
+	ContactUs                 string
 }
 
 type Setting struct {
@@ -226,6 +227,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "fcm_json_universe_domain":
 			config.FcmJson.UniverseDomain = setting.GetString()
+
+		case "contact_us":
+			config.ContactUs = setting.GetString()
 		}
 	}
 
