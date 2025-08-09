@@ -119,6 +119,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'new-message':
+          if (this.hasNewMessages) break;
           this.zone.run(() => {
             this.messages.unshift(message.message);
             const isMyMessage = message.message.author === this.userInfo?.username;
@@ -217,6 +218,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       if (messageId) {
         if (messageId > maxId + this.limit) {
           resetList = true;
+          this.hasNewMessages = true;
+          this.hasOldMessages = true;
           startId = messageId + 10;
           direction = "asc";
           scrollDown = true;
@@ -227,6 +230,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         } else {
           if (messageId < this.offset - this.limit) {
             resetList = true;
+            this.hasNewMessages = true;
+            this.hasOldMessages = true;
             startId = messageId + 10;
           } else {
             startId = this.offset;
