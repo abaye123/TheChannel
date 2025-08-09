@@ -711,7 +711,8 @@ func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, cou
 
 	var messages []Message
 	resStr, _ := dyno.GetString(res)
-	if err := json.Unmarshal([]byte(resStr), &reactions); err != nil {
+	// if err := json.Unmarshal([]byte(resStr), &reactions); err != nil {
+	if err := json.Unmarshal([]byte(resStr), &messages); err != nil {
 		return []Message{}, err
 	}
 
