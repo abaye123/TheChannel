@@ -99,7 +99,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 
     var claims jwt.MapClaims
 	tokenStr, _ := dyno.GetString(token.Extra("id_token"))
-	_, _, err = jwt.NewParser().ParseUnverified(tokenStr, &claims)    if err != nil {
+	_, _, err = jwt.NewParser().ParseUnverified(tokenStr, &claims)
+	if err != nil {
 		go saveLoginFailedLog("ParseUnverified", err)
         http.Error(w, "error", http.StatusInternalServerError)
         return
