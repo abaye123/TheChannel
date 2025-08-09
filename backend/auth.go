@@ -10,6 +10,7 @@ import (
 
 	"github.com/boj/redistore"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/icza/dyno"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -97,14 +98,15 @@ func login(w http.ResponseWriter, r *http.Request) {
     }
 
     var claims jwt.MapClaims
-    _, _, err = jwt.NewParser().ParseUnverified(token.Extra("id_token").(string), &claims)
-    if err != nil {
+	tokenStr, _ := dyno.GetString(token.Extra("id_token"))
+	_, _, err = jwt.NewParser().ParseUnverified(tokenStr, &claims)    if err != nil {
 		go saveLoginFailedLog("ParseUnverified", err)
         http.Error(w, "error", http.StatusInternalServerError)
         return
     }
 
-    go registeringEmail(claims["email"].(string))
+    email, _ := dyno.GetString(claims["email"])
+	go registeringEmail(email)
 
     u, err := getUser(ctx, claims)
     if err != nil {
@@ -118,12 +120,12 @@ func login(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "User is blocked", http.StatusForbidden)
         return
     }
-
+	picture, _ := dyno.GetString(claims["picture"])
     userSession := Session{
         ID:         u.ID,
         Username:   u.Username,
         PublicName: u.PublicName,
-        Picture:    claims["picture"].(string),
+        Picture:    picture,
         Privileges: u.Privileges,
         Blocked:    u.Blocked,
     }
@@ -203,7 +205,14 @@ func getUserInfo(w http.ResponseWriter, r *http.Request) {
 
 func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 	var user User
-	email := claims["email"].(string)
+	email, _ := dyno.GetString(claims["email"])
+	if email == "" {
+		return nil, errors.New("email not found in claims")
+	}
+	name, _ := dyno.GetString(claims["name"])
+	if name == "" {
+		return nil, errors.New("name not found in claims")
+	}
 	id, _ := claims.GetSubject() // Google user ID
 	
 	if v, ok := privilegesUsers.Load(email); ok {
@@ -217,9 +226,9 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 			
 			user = User{
 				ID:         id,
-				Username:   claims["name"].(string),
+				Username: 	name,
 				Email:      email,
-				PublicName: claims["name"].(string),
+				PublicName: name,
 				Privileges: privileges,
 				Blocked:    false,
 				Deleted:    false, // Remove the mark as deleted
@@ -248,11 +257,11 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 				updated = true
 			}
 			if user.Username == "" {
-				user.Username = claims["name"].(string)
+				user.Username = name
 				updated = true
 			}
 			if user.PublicName == "" {
-				user.PublicName = claims["name"].(string)
+				user.PublicName = name
 				updated = true
 			}
 			
@@ -281,9 +290,9 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 		
 		user = User{
 			ID:         id,
-			Username:   claims["name"].(string),
+			Username: 	name,
 			Email:      email,
-			PublicName: claims["name"].(string),
+			PublicName: name,
 			Privileges: privileges,
 			Blocked:    false,
 			Deleted:    false,
