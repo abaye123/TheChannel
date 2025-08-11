@@ -30,3 +30,12 @@ markdown blockquote {
 markdown blockquote p {
   margin-bottom: 0;
 }
+
+@font-face {
+  font-family: 'Noto Color Emoji';
+  src: url('assets/fonts/NotoColorEmoji-Regular/NotoColorEmoji-Regular.ttf') format('truetype');
+}
+
+.emoji {
+  font-family: 'Noto Color Emoji', sans-serif;
+}
