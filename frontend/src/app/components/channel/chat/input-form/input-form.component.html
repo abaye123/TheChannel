@@ -62,7 +62,7 @@
     <div class="d-flex flex-row">
         <div class="flex-grow-1 overflow-auto">
             @if (showMarkdownPreview) {
-            <nb-card class="rounded-2 mb-0">
+            <nb-card class="rounded-3 mb-0">
                 <nb-card-body>
                     <markdown [data]="input" [disableSanitizer]="true" class="fs-5"></markdown>
                 </nb-card-body>
@@ -88,7 +88,7 @@
                 </nb-card-footer>
             </nb-card>
             } @else {
-            <div class="d-flex flex-row border rounded-2 fs-4 align-items-center">
+            <div class="d-flex flex-row border rounded-3 fs-4 align-items-center">
                 <textarea #inputTextArea autosize nbInput fullWidth
                     [placeholder]="replyToMessage ? 'הקלד תגובה... (Ctrl+Enter לשליחה)' : 'הקלד הודעה... (Ctrl+Enter לשליחה)'"
                     (resized)="inputHeightChanged.emit($event)" [minRows]="1" [maxRows]="6"
