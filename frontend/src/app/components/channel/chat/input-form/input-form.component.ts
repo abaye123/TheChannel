@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpEventType } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
@@ -69,6 +69,15 @@ export class InputFormComponent implements OnInit {
     private toastrService: NbToastrService,
     private chatService: ChatService,
   ) { }
+
+  // הוספת HostListener לטיפול ב-Ctrl+Enter
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === 'Enter') {
+      event.preventDefault();
+      this.sendMessage();
+    }
+  }
 
   ngOnInit() {
     if (this.message) {
@@ -274,7 +283,6 @@ export class InputFormComponent implements OnInit {
         prefix = '```\n';
         suffix = '\n```';
         placeholder = 'קוד';
-        // Add new lines if not already present around the selection/cursor
         const before = this.input.substring(0, start);
         const after = this.input.substring(end);
         if (start > 0 && before.charAt(start - 1) !== '\n') {
@@ -292,7 +300,6 @@ export class InputFormComponent implements OnInit {
     if (selectedText) {
       newText = prefix + selectedText + suffix;
       this.input = this.input.substring(0, start) + newText + this.input.substring(end);
-      // Keep the original selection highlighted
       setTimeout(() => {
         textArea.selectionStart = start;
         textArea.selectionEnd = start + newText.length;
@@ -301,12 +308,11 @@ export class InputFormComponent implements OnInit {
     } else {
       newText = prefix + placeholder + suffix;
       this.input = this.input.substring(0, start) + newText + this.input.substring(end);
-      // Set cursor position inside the markers or after for code block
       setTimeout(() => {
         if (format === 'code') {
-          cursorPos = start + prefix.length; // Cursor at the beginning of the placeholder inside code block
+          cursorPos = start + prefix.length;
         } else {
-          cursorPos = start + prefix.length; // Cursor at the beginning of the placeholder
+          cursorPos = start + prefix.length;
         }
         textArea.selectionStart = cursorPos;
         textArea.selectionEnd = cursorPos + placeholder.length;

@@ -66,10 +66,31 @@
                 <nb-card-body>
                     <markdown [data]="input" [disableSanitizer]="true" class="fs-5"></markdown>
                 </nb-card-body>
+                <nb-card-footer class="d-flex justify-content-end">
+                    @if (message?.id) {
+                    <button nbButton ghost title="בטל" shape="round" [size]="'small'" (click)="cancelUpdateMessage()"
+                        [disabled]="isSending">
+                        <ng-icon class="fs-4" [name]="'heroXMark'"></ng-icon>
+                        <span class="ms-2">בטל</span>
+                    </button>
+                    <button nbButton status="primary" title="ערוך" shape="round" [size]="'small'"
+                        (click)="sendMessage()" [disabled]="isSending" class="ms-2">
+                        <ng-icon class="fs-4" [name]="'heroCheck'"></ng-icon>
+                        <span class="ms-2">ערוך</span>
+                    </button>
+                    } @else {
+                    <button nbButton status="primary" title="שלח (Ctrl+Enter)" shape="round" [size]="'small'"
+                        (click)="sendMessage()" [disabled]="isSending">
+                        <ng-icon class="fs-4" [name]="'heroPaperAirplane'" style="scale: -1 1"></ng-icon>
+                        <span class="ms-2">שלח</span>
+                    </button>
+                    }
+                </nb-card-footer>
             </nb-card>
             } @else {
             <div class="d-flex flex-row border rounded-5 fs-4 align-items-center">
-                <textarea #inputTextArea autosize nbInput fullWidth [placeholder]="replyToMessage ? 'הקלד תגובה...' : 'הקלד הודעה...'"
+                <textarea #inputTextArea autosize nbInput fullWidth
+                    [placeholder]="replyToMessage ? 'הקלד תגובה... (Ctrl+Enter לשליחה)' : 'הקלד הודעה... (Ctrl+Enter לשליחה)'"
                     (resized)="inputHeightChanged.emit($event)" [minRows]="1" [maxRows]="6"
                     [maxlength]="maxMessageLength" [disabled]="showMarkdownPreview || isSending"
                     class="bg-transparent border-0 flex-grow-1 fs-5" [(ngModel)]="input" (input)="checkScrollbar()"
@@ -85,7 +106,8 @@
                         <ng-icon class="fs-4" [name]="'heroCheck'"></ng-icon>
                     </button>
                     } @else {
-                    <button nbButton ghost title="שלח" shape="round" [size]="'tiny'" (click)="sendMessage()">
+                    <button nbButton ghost title="שלח (Ctrl+Enter)" shape="round" [size]="'tiny'"
+                        (click)="sendMessage()" [disabled]="isSending">
                         <ng-icon class="fs-4" [name]="'heroPaperAirplane'" style="scale: -1 1"></ng-icon>
                     </button>
                     }
