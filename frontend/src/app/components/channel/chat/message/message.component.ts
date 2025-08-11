@@ -16,7 +16,8 @@ import { NgbPopover, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { MessageTimePipe } from '../../../../pipes/message-time.pipe';
 import { ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
-import { AuthService, User } from '../../../../services/auth.service';
+import { AuthService } from '../../../../services/auth.service';
+import { User } from '../../../../models/user.model'; // יבוא נפרד של User
 import { ReportComponent } from './report/report.component';
 
 @Component({
@@ -68,6 +69,11 @@ export class MessageComponent implements OnInit, AfterViewInit {
   private closeEmojiMenuTimeout: any;
   replyToMessage?: ChatMessage;
   editTimeLimit: number = 120;
+
+  // הוספת getter עבור userPrivilege
+  get userPrivilege() {
+    return this._authService.userInfo?.privileges || this.userInfo?.privileges;
+  }
 
   ngOnInit() {
     this.chatService.getEmojisList()
