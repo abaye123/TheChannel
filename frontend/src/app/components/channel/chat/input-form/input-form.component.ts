@@ -70,7 +70,6 @@ export class InputFormComponent implements OnInit {
     private chatService: ChatService,
   ) { }
 
-  // הוספת HostListener לטיפול ב-Ctrl+Enter
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (event.ctrlKey && event.key === 'Enter') {
@@ -188,6 +187,7 @@ export class InputFormComponent implements OnInit {
 
       this.toastrService.success("", "הודעה פורסמה בהצלחה");
       this.clearInputs();
+      this.showMarkdownPreview = false;
     } catch (error) {
       this.toastrService.danger("", "שגיאה בפרסום הודעה");
     } finally {
