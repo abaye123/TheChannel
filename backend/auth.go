@@ -39,6 +39,7 @@ type GoogleAuthValues struct {
 type Session struct {
 	ID         string     `json:"id"`
 	Username   string     `json:"username"`
+	Email      string     `json:"email"`
 	PublicName string     `json:"publicName"`
 	Picture    string     `json:"picture,omitempty"`
 	Privileges Privileges `json:"privileges,omitempty"`
@@ -131,6 +132,7 @@ func login(w http.ResponseWriter, r *http.Request) {
         Picture:    picture,
         Privileges: u.Privileges,
         Blocked:    u.Blocked,
+		Email:      u.Email,
     }
 
     session, _ := store.Get(r, cookieName)

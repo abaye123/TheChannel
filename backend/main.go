@@ -67,6 +67,7 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(checkLogin)
 		r.Post("/api/reactions/set-reactions", setReactions)
+		r.Post("/api/messages/report", reportMessage)
 	})
 
 	r.Group(func(r chi.Router) {
@@ -100,6 +101,8 @@ func main() {
 				protected.Post("/privilegs-users/set", protectedWithPrivilege(Admin, setPrivilegeUsers))
 				protected.Get("/settings/get", protectedWithPrivilege(Admin, getSettings))
 				protected.Post("/settings/set", protectedWithPrivilege(Admin, setSettings))
+				protected.Get("/reports/get", protectedWithPrivilege(Admin, getReports))
+				protected.Post("/reports/set", protectedWithPrivilege(Admin, setReports))
 
 				protected.Post("/block-user", protectedWithPrivilege(Admin, blockUser))
 				protected.Post("/unblock-user", protectedWithPrivilege(Admin, unblockUser))

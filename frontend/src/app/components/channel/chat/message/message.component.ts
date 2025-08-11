@@ -17,6 +17,7 @@ import { MessageTimePipe } from '../../../../pipes/message-time.pipe';
 import { ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
 import { AuthService, User } from '../../../../services/auth.service';
+import { ReportComponent } from './report/report.component';
 
 @Component({
   selector: 'app-message',
@@ -47,9 +48,6 @@ export class MessageComponent implements OnInit, AfterViewInit {
   message: ChatMessage | undefined;
 
   @Input()
-  userPrivilege: Record<string, boolean> | undefined = {};
-
-  @Input()
   userInfo?: User;
 
   @Input()
@@ -63,7 +61,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
     private dialogService: NbDialogService,
     protected chatService: ChatService,
     private toastrService: NbToastrService,
-    private _authService: AuthService,
+    public _authService: AuthService,
   ) { }
 
   reacts: string[] = [];
@@ -199,6 +197,11 @@ export class MessageComponent implements OnInit, AfterViewInit {
     }
 
     return false;
+  }
+
+  openReportDialog(messageId?: number) {
+    if (!messageId) return;
+    this.dialogService.open(ReportComponent, { closeOnBackdropClick: true, context: { messageId } });
   }
 
   viewLargeImage(event: MouseEvent) {
