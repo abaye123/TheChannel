@@ -47,7 +47,7 @@ import { AutosizeModule } from "ngx-autosize";
 })
 export class InputFormComponent implements OnInit {
 
-  protected readonly maxMessageLength: number = 2048;
+  protected readonly maxMessageLength: number = 4096;
 
   message?: ChatMessage;
 
