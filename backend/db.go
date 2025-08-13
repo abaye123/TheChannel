@@ -33,6 +33,7 @@ type Message struct {
 	ReplyTo   int          		`json:"replyTo,omitempty" redis:"reply_to"`
 	IsThread  bool         		`json:"isThread" redis:"is_thread"`
 	OriginalMessage *Message	`json:"originalMessage,omitempty" redis:"-"`
+	ThreadCount     int     	`json:"threadCount,omitempty" redis:"-"`
 }
 
 type User struct {
@@ -165,6 +166,30 @@ var getMessageRange = redis.NewScript(`
 	local isModerator = ARGV[7] == 'true'
 	local direction = ARGV[8] or 'desc'
 	local hideCountViewsForUsers = ARGV[9] == 'true'
+	local threadsEnabled = ARGV[10] == 'true'
+
+	local function getThreadCount(messageId)
+		if not threadsEnabled then
+			return 0
+		end
+		
+		local count = 0
+		local all_messages = redis.call('KEYS', 'messages:*')
+		
+		for i, message_key in ipairs(all_messages) do
+			if string.match(message_key, '^messages:%d+$') then
+				local reply_to = redis.call('HGET', message_key, 'reply_to')
+				local is_thread = redis.call('HGET', message_key, 'is_thread')
+				local deleted = redis.call('HGET', message_key, 'deleted')
+				
+				if reply_to == tostring(messageId) and is_thread == '1' and (deleted ~= '1' or isAdmin or isModerator) then
+					count = count + 1
+				end
+			end
+		end
+		
+		return count
+	end
 
 	local function parseMessageData(message_data, messageId)
 		if #message_data == 0 then
@@ -233,6 +258,10 @@ var getMessageRange = redis.NewScript(`
 			message['id'] = tonumber(messageId)
 		end
 		
+		if message['id'] then
+			message['threadCount'] = getThreadCount(message['id'])
+		end
+		
 		return message
 	end
 
@@ -298,14 +327,16 @@ var getMessageRange = redis.NewScript(`
 			local message = parseMessageData(message_data, messageId)
 	
 			if message and (not message['deleted'] or isAdmin or isModerator) then
-				if message['replyTo'] then
-					local originalMessage = getOriginalMessage(tostring(message['replyTo']))
-					if originalMessage then
-						message['originalMessage'] = originalMessage
+				if not (message['isThread'] and message['replyTo']) then
+					if message['replyTo'] and not message['isThread'] then
+						local originalMessage = getOriginalMessage(tostring(message['replyTo']))
+						if originalMessage then
+							message['originalMessage'] = originalMessage
+						end
 					end
+					
+					table.insert(messages, message)
 				end
-				
-				table.insert(messages, message)
 			end
 		end
 
@@ -328,6 +359,7 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 		strconv.FormatBool(isModerator),
 		direction,
 		strconv.FormatBool(settingConfig.HideCountViewsForUsers),
+		strconv.FormatBool(settingConfig.ThreadsEnabled),
 	}).Result()
 
 	if err != nil {
@@ -605,7 +637,6 @@ func syncOldUsersToUsersList(ctx context.Context) error {
 	return nil
 }
 
-// Lua script לקבלת תגובות להודעה מסוימת  
 var getThreadRepliesScript = redis.NewScript(`
 	local parent_message_id = ARGV[1]
 	local isAdmin = ARGV[2] == 'true'
@@ -613,6 +644,7 @@ var getThreadRepliesScript = redis.NewScript(`
 	local isAuthenticated = ARGV[4] == 'true'
 	local showAuthorToAuthenticated = ARGV[5] == 'true'
 	local hideEditTime = ARGV[6] == 'true'
+	local isModerator = ARGV[7] == 'true'
 
 	local all_messages = redis.call('KEYS', 'messages:*')
 	local thread_messages = {}
@@ -620,7 +652,9 @@ var getThreadRepliesScript = redis.NewScript(`
 	for i, message_key in ipairs(all_messages) do
 		if string.match(message_key, '^messages:%d+$') then
 			local reply_to = redis.call('HGET', message_key, 'reply_to')
-			if reply_to == parent_message_id then
+			local is_thread = redis.call('HGET', message_key, 'is_thread')
+			
+			if reply_to == parent_message_id and is_thread == '1' then
 				local message_data = redis.call('HGETALL', message_key)
 				local message = {}
 		
@@ -650,7 +684,7 @@ var getThreadRepliesScript = redis.NewScript(`
 							message[key] = value
 						end
 					elseif key == 'author' then
-						if isAdmin then
+						if isAdmin or isModerator then
 							message[key] = value
 						elseif showAuthorToAuthenticated and isAuthenticated then
 							message[key] = value
@@ -658,7 +692,7 @@ var getThreadRepliesScript = redis.NewScript(`
 							message[key] = "Anonymous"
 						end
 					elseif key == 'authorId' then
-						if isAdmin then
+						if isAdmin or isModerator then
 						   message[key] = value
 						elseif showAuthorToAuthenticated and isAuthenticated then
 							message[key] = value
@@ -677,7 +711,7 @@ var getThreadRepliesScript = redis.NewScript(`
 					end
 				end
 		
-				if not message['deleted'] or isAdmin then
+				if not message['deleted'] or isAdmin or isModerator then
 					table.insert(thread_messages, message)
 				end
 			end
@@ -691,8 +725,7 @@ var getThreadRepliesScript = redis.NewScript(`
 	return cjson.encode(thread_messages)
 `)
 
-// פונקציה לקבלת תגובות להודעה מסוימת
-func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, countViews, isAuthenticated bool) ([]Message, error) {
+func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, countViews, isAuthenticated bool, isModerator bool) ([]Message, error) {
 	res, err := getThreadRepliesScript.Run(ctx, rdb, []string{}, []string{
 		strconv.Itoa(parentMessageId),
 		strconv.FormatBool(isAdmin), 
@@ -700,6 +733,7 @@ func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, cou
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
 		strconv.FormatBool(settingConfig.HideEditTime),
+		strconv.FormatBool(isModerator),
 	}).Result()
 	if err != nil {
 		return []Message{}, err
@@ -711,7 +745,6 @@ func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, cou
 
 	var messages []Message
 	resStr, _ := dyno.GetString(res)
-	// if err := json.Unmarshal([]byte(resStr), &reactions); err != nil {
 	if err := json.Unmarshal([]byte(resStr), &messages); err != nil {
 		return []Message{}, err
 	}

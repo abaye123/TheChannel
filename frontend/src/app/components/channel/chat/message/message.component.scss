@@ -339,3 +339,28 @@ nb-icon {
     box-shadow: 0 0 30px rgba(102, 111, 255, 0.5);
   }
 }
+
+
+.thread-button {
+  position: relative;
+
+  .thread-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #666fff;
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+}
+
+.thread-button:hover .thread-count {
+  background: #5555ee;
+}

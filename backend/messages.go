@@ -68,14 +68,18 @@ func getThreadRepliesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isAuthenticated := false
+	isAdmin := false
+	isModerator := false
 	session, err := store.Get(r, cookieName)
 	if err == nil {
-		if _, ok := session.Values["user"].(Session); ok {
+		if userSession, ok := session.Values["user"].(Session); ok {
 			isAuthenticated = true
+			isAdmin = userSession.Privileges[Admin]
+			isModerator = userSession.Privileges[Moderator]
 		}
 	}
 
-	replies, err := funcGetThreadReplies(ctx, messageId, checkPrivilege(r, Writer), settingConfig.CountViews, isAuthenticated)
+	replies, err := funcGetThreadReplies(ctx, messageId, isAdmin, settingConfig.CountViews, isAuthenticated, isModerator)
 	if err != nil {
 		log.Printf("Failed to get thread replies: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
@@ -101,6 +105,11 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewDecoder(r.Body).Decode(&body); err != nil {
 		log.Printf("Failed to decode message: %v\n", err)
 		http.Error(w, "error", http.StatusBadRequest)
+		return
+	}
+
+	if body.IsThread && !settingConfig.ThreadsEnabled {
+		http.Error(w, "Threads are disabled", http.StatusForbidden)
 		return
 	}
 

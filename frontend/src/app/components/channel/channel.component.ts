@@ -14,6 +14,7 @@ import { InputFormComponent } from "./chat/input-form/input-form.component";
 import { AuthService } from "../../services/auth.service";
 import { ChannelHeaderComponent } from "./channel-header/channel-header.component";
 import { ChatComponent } from "./chat/chat.component";
+import { ThreadPanelComponent } from "./thread-panel/thread-panel.component"; // תיקון נתיב
 import { User } from '../../models/user.model';
 
 @Component({
@@ -30,6 +31,7 @@ import { User } from '../../models/user.model';
     NbSidebarModule,
     NbListModule,
     ChatComponent,
+    ThreadPanelComponent,
   ],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
@@ -51,7 +53,6 @@ export class ChannelComponent implements OnInit {
     private renderer: Renderer2,
     private el: ElementRef
   ) { }
-
 
   ad: Ad = { src: '', width: 0 };
   userInfo?: User;

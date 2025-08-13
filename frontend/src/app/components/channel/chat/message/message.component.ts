@@ -17,7 +17,7 @@ import { MessageTimePipe } from '../../../../pipes/message-time.pipe';
 import { ChatMessage, ChatService } from '../../../../services/chat.service';
 import { AdminService } from '../../../../services/admin.service';
 import { AuthService } from '../../../../services/auth.service';
-import { User } from '../../../../models/user.model'; // יבוא נפרד של User
+import { User } from '../../../../models/user.model';
 import { ReportComponent } from './report/report.component';
 
 @Component({
@@ -54,6 +54,9 @@ export class MessageComponent implements OnInit, AfterViewInit {
   @Input()
   allMessages: ChatMessage[] = [];
 
+  @Input()
+  isInThread: boolean = false;
+
   @ViewChild(NgbPopover) popover!: NgbPopover;
   @ViewChild('media') mediaContainer!: ElementRef;
 
@@ -70,7 +73,6 @@ export class MessageComponent implements OnInit, AfterViewInit {
   replyToMessage?: ChatMessage;
   editTimeLimit: number = 120;
 
-  // הוספת getter עבור userPrivilege
   get userPrivilege() {
     return this._authService.userInfo?.privileges || this.userInfo?.privileges;
   }
@@ -78,7 +80,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.chatService.getEmojisList()
       .then(emojis => this.reacts = emojis)
-      .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוגים'));
+      .catch(() => this.toastrService.danger('', 'שגיאה בהגדרת אימוג\'יים'));
 
     if (this.message?.originalMessage) {
       this.replyToMessage = this.message.originalMessage;
@@ -291,7 +293,12 @@ export class MessageComponent implements OnInit, AfterViewInit {
   }
 
   replyToThisMessage(message: ChatMessage) {
-    this.chatService.setReplyToMessage(message);
+    if (this.isInThread) {
+      // אם אנחנו בשרשור, הגב בשרשור
+      this.replyInThread(message);
+    } else {
+      this.chatService.setReplyToMessage(message);
+    }
   }
 
   navigateToOriginalMessage(messageId: number) {
@@ -310,5 +317,24 @@ export class MessageComponent implements OnInit, AfterViewInit {
       return text;
     }
     return text.substring(0, maxLength) + '...';
+  }
+
+  // פונקציות שרשור חדשות
+  openThread(message: ChatMessage) {
+    if (message.threadCount && message.threadCount > 0) {
+      this.chatService.openThread(message);
+    }
+  }
+
+  replyInThread(message: ChatMessage) {
+    const threadReply: ChatMessage = {
+      replyTo: message.id,
+      isThread: true
+    };
+    this.chatService.setReplyToMessage(threadReply);
+  }
+
+  hasThreadReplies(message: ChatMessage): boolean {
+    return !!(message.threadCount && message.threadCount > 0);
   }
 }

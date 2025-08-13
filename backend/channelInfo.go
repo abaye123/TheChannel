@@ -19,6 +19,7 @@ type Channel struct {
 	LogoUrl                 string    `json:"logoUrl"`
 	Views                   int64     `json:"views"`
 	RequireAuthForViewFiles bool      `json:"require_auth_for_view_files"`
+	ThreadsEnabled 			bool      `json:"threads_enabled"`
 	ContactUs               string    `json:"contact_us"`
 }
 
@@ -49,6 +50,7 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.Views = amount //strconv.Atoi(c["views"])
 	channel.LogoUrl = c["logoUrl"]
 	channel.RequireAuthForViewFiles = settingConfig.RequireAuthForViewFiles
+	channel.ThreadsEnabled = settingConfig.ThreadsEnabled
 	channel.ContactUs = settingConfig.ContactUs
 
 	w.Header().Set("Content-Type", "application/json")

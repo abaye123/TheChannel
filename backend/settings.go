@@ -49,6 +49,7 @@ type SettingConfig struct {
 	EditTimeLimit             int64
 	CustomTitle               string
 	ContactUs                 string
+	ThreadsEnabled 			  bool
 }
 
 type Setting struct {
@@ -84,6 +85,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 	config.MaxFileSize = 50
 	config.EditTimeLimit = 120
+	config.ThreadsEnabled = true
 
 	for _, setting := range *s {
 		switch setting.Key {
@@ -230,6 +232,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "contact_us":
 			config.ContactUs = setting.GetString()
+
+		case "threads_enabled":
+			config.ThreadsEnabled = setting.GetBool()
 		}
 	}
 

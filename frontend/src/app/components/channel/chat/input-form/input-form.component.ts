@@ -215,8 +215,8 @@ export class InputFormComponent implements OnInit {
       type: 'md',
       text: this.input,
       file: undefined,
-      replyTo: this.replyToMessage?.id,
-      // isThread: !!this.replyToMessage
+      replyTo: this.replyToMessage?.replyTo || this.replyToMessage?.id,
+      isThread: this.replyToMessage?.isThread || false
     };
 
     this.message = await firstValueFrom(this.adminService.addMessage(newMessage));

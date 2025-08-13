@@ -22,6 +22,7 @@ export interface ChatMessage {
   replyTo?: number;
   isThread?: boolean;
   originalMessage?: ChatMessage;
+  threadCount?: number; // הוספה חדשה
 }
 
 export type ChatResponse = ChatMessage[];
@@ -53,6 +54,16 @@ export class ChatService {
 
   private replyToMessage = new BehaviorSubject<ChatMessage | undefined>(undefined);
   replyToMessageObservable = this.replyToMessage.asObservable();
+
+  // הוספת BehaviorSubjects לשרשורים
+  private threadVisible = new BehaviorSubject<boolean>(false);
+  threadVisibleObservable = this.threadVisible.asObservable();
+
+  private currentThreadMessage = new BehaviorSubject<ChatMessage | undefined>(undefined);
+  currentThreadMessageObservable = this.currentThreadMessage.asObservable();
+
+  private threadMessages = new BehaviorSubject<ChatMessage[]>([]);
+  threadMessagesObservable = this.threadMessages.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -156,5 +167,58 @@ export class ChatService {
     const elapsedSeconds = (currentTime.getTime() - messageTime.getTime()) / 1000;
 
     return elapsedSeconds <= editTimeLimit;
+  }
+
+  // פונקציות שרשורים
+  getThreadReplies(messageId: number): Observable<ChatMessage[]> {
+    return this.http.get<ChatMessage[]>(`/api/thread/${messageId}`);
+  }
+
+  openThread(message: ChatMessage) {
+    this.currentThreadMessage.next(message);
+    this.threadVisible.next(true);
+    this.loadThreadMessages(message.id!);
+  }
+
+  closeThread() {
+    this.threadVisible.next(false);
+    this.currentThreadMessage.next(undefined);
+    this.threadMessages.next([]);
+  }
+
+  isThreadVisible(): boolean {
+    return this.threadVisible.value;
+  }
+
+  getCurrentThreadMessage(): ChatMessage | undefined {
+    return this.currentThreadMessage.value;
+  }
+
+  async loadThreadMessages(messageId: number) {
+    try {
+      const messages = await firstValueFrom(this.getThreadReplies(messageId));
+      this.threadMessages.next(messages);
+    } catch (error) {
+      console.error('Failed to load thread messages:', error);
+    }
+  }
+
+  addThreadMessage(message: ChatMessage) {
+    const currentMessages = this.threadMessages.value;
+    this.threadMessages.next([...currentMessages, message]);
+  }
+
+  setReplyToThreadMessage(message?: ChatMessage) {
+    const currentThread = this.getCurrentThreadMessage();
+    if (currentThread && message) {
+      const threadReply: ChatMessage = {
+        ...message,
+        replyTo: currentThread.id,
+        isThread: true
+      };
+      this.setReplyToMessage(threadReply);
+    } else {
+      this.setReplyToMessage(message);
+    }
   }
 }

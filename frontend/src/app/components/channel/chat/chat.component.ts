@@ -11,7 +11,7 @@ import {
   NbListModule
 } from "@nebular/theme";
 import { MessageComponent } from "./message/message.component";
-import { firstValueFrom, interval } from 'rxjs';
+import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { ChatMessage, ChatService } from '../../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
 import { SoundService } from '../../../services/sound.service';
@@ -51,6 +51,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   showScrollToBottom: boolean = false;
   private lastHeartbeat: number = Date.now();
   private subLastHeartbeat: any;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private chatService: ChatService,
@@ -114,6 +115,22 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.loadMessages().then(() => {
       this.scrollToBottom(false);
     });
+
+    this.subscribeToThreadMessages();
+  }
+
+  private subscribeToThreadMessages() {
+    this.subscriptions.push(
+      this.chatService.threadMessagesObservable.subscribe((threadMessages: ChatMessage[]) => {
+        const currentThread = this.chatService.getCurrentThreadMessage();
+        if (currentThread) {
+          const mainMessage = this.messages.find(m => m.id === currentThread.id);
+          if (mainMessage) {
+            mainMessage.threadCount = threadMessages.length;
+          }
+        }
+      })
+    );
   }
 
   private async initializeMessageListener() {
@@ -125,15 +142,27 @@ export class ChatComponent implements OnInit, OnDestroy {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'new-message':
-          if (this.hasNewMessages) break;
           this.zone.run(() => {
-            this.messages.unshift(message.message);
-            const isMyMessage = message.message.author === this.userInfo?.username;
-            this.thereNewMessages = !isMyMessage;
+            if (message.message.isThread && message.message.replyTo) {
+              const currentThread = this.chatService.getCurrentThreadMessage();
+              if (currentThread && currentThread.id === message.message.replyTo) {
+                this.chatService.addThreadMessage(message.message);
 
-            if (!isMyMessage) {
-              if (this.soundService.isInitialized()) {
-                this.soundService.playNotificationSound();
+                const mainMessage = this.messages.find(m => m.id === message.message.replyTo);
+                if (mainMessage) {
+                  mainMessage.threadCount = (mainMessage.threadCount || 0) + 1;
+                }
+              }
+            } else if (!message.message.isThread) {
+              if (this.hasNewMessages) return;
+              this.messages.unshift(message.message);
+              const isMyMessage = message.message.author === this.userInfo?.username;
+              this.thereNewMessages = !isMyMessage;
+
+              if (!isMyMessage) {
+                if (this.soundService.isInitialized()) {
+                  this.soundService.playNotificationSound();
+                }
               }
             }
           });
@@ -158,9 +187,6 @@ export class ChatComponent implements OnInit, OnDestroy {
             const index = this.messages.findIndex(m => m.id === message.message.id);
             if (index !== -1) {
               this.messages[index] = message.message;
-            } else {
-              // TOTO: Find the closest message to attach the retrieved message to
-              //  const closestIndex = this.messages.reduce
             }
           });
           break;
@@ -180,6 +206,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.chatService.sseClose();
     clearInterval(this.subLastHeartbeat);
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   async keepAliveSSE() {

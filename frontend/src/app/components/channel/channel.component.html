@@ -11,6 +11,8 @@
         <app-advertising [ad]="ad"></app-advertising>
     </nb-layout-column>
 
+    <app-thread-panel></app-thread-panel>
+
     @if (userInfo?.privileges?.['writer']) {
     <nb-layout-footer #inputForm id="inputForm" class="fixed-footer">
         <app-input-form class="w-100" (inputHeightChanged)="onInputHeightChanged()"></app-input-form>
