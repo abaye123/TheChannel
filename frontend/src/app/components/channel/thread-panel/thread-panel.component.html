@@ -1,7 +1,7 @@
-<div class="thread-panel-container" [class.in-chat-area]="isInChatArea">
+<div class="thread-panel-container" [class.in-chat-area]="isInChatArea"
+  [class.has-input]="authService.userInfo?.privileges?.['writer'] && chatService.channelInfo?.threads_enabled">
 
   <div class="thread-content">
-
     <div class="original-message" *ngIf="threadMessage">
       <div class="original-message-label">
         <nb-icon icon="corner-up-right-outline"></nb-icon>
@@ -17,7 +17,6 @@
     </div>
 
     <div class="thread-replies">
-
       <div class="loading-container" *ngIf="isLoading">
         <nb-spinner size="medium"></nb-spinner>
         <p>טוען תגובות...</p>
