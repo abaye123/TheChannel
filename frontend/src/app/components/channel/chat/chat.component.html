@@ -1,33 +1,38 @@
-<div nbInfiniteList (scroll)="onListScroll()" [threshold]="300" [throttleTime]="1000" (topThreshold)="loadMessages()"
-    (bottomThreshold)="loadMessages(true)" [listenWindowScroll]="true">
-    <nb-list class="flex-column-reverse">
+<div class="chat-container" [class.thread-open]="chatService.isThreadVisible()">
+    <div class="main-chat" [class.with-thread]="chatService.isThreadVisible()">
+        <div nbInfiniteList (scroll)="onListScroll()" [threshold]="300" [throttleTime]="1000"
+            (topThreshold)="loadMessages()" (bottomThreshold)="loadMessages(true)" [listenWindowScroll]="false"
+            class="messages-container">
+            <nb-list class="flex-column-reverse">
 
-        <nb-list-item *ngFor="let message of messages">
-            <!--app-message class="overflow-auto" [userPrivilege]="userInfo?.privileges" [message]="message"
-                 [id]="message.id"></app-message-->
-            <app-message class="overflow-auto" [message]="message" [allMessages]="messages" [userInfo]="userInfo"
-                [id]="message.id"></app-message>
-        </nb-list-item>
+                <nb-list-item *ngFor="let message of messages">
+                    <app-message class="overflow-auto" [message]="message" [allMessages]="messages"
+                        [userInfo]="userInfo" [id]="message.id"></app-message>
+                </nb-list-item>
 
-        <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">
-            <div *ngIf="!isLoading" class="align-self-center flex-grow-1">
-                <span>אין הודעות</span>
+                <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">
+                    <div *ngIf="!isLoading" class="align-self-center flex-grow-1">
+                        <span>אין הודעות</span>
+                    </div>
+                </nb-list-item>
+
+                <nb-list-item *ngIf="isLoading" class="align-self-center loading-indicator">
+                    <div class="align-self-center flex-grow-1">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+                </nb-list-item>
+            </nb-list>
+
+            <div class="scroll-to-bottom-btn" *ngIf="showScrollToBottom">
+                <button nbButton status="primary" shape="round" class="shadow" (click)="scrollToBottom()">
+                    <nb-icon icon="arrow-downward-outline"></nb-icon>
+                </button>
+                <nb-badge *ngIf="thereNewMessages" [dotMode]="true" status="danger"></nb-badge>
             </div>
-        </nb-list-item>
+        </div>
+    </div>
 
-        <!-- Loading indicator -->
-        <nb-list-item *ngIf="isLoading" class="align-self-center loading-indicator">
-            <div class="align-self-center flex-grow-1">
-                <div class="spinner-border text-primary"></div>
-            </div>
-        </nb-list-item>
-    </nb-list>
-
-    <!-- Scroll to bottom -->
-    <div class="scroll-to-bottom-btn" *ngIf="showScrollToBottom">
-        <button nbButton status="primary" shape="round" class="shadow" (click)="scrollToBottom()">
-            <nb-icon icon="arrow-downward-outline"></nb-icon>
-        </button>
-        <nb-badge *ngIf="thereNewMessages" [dotMode]="true" status="danger"></nb-badge>
+    <div class="thread-panel" *ngIf="isThreadOpen()" [class.visible]="isThreadOpen()">
+        <app-thread-panel [isInChatArea]="true"></app-thread-panel>
     </div>
 </div>

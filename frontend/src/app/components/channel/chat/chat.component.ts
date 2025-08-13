@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, NgZone, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, NgZone, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NbBadgeModule,
@@ -11,6 +11,7 @@ import {
   NbListModule
 } from "@nebular/theme";
 import { MessageComponent } from "./message/message.component";
+import { ThreadPanelComponent } from "../thread-panel/thread-panel.component";
 import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { ChatMessage, ChatService } from '../../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
@@ -33,12 +34,15 @@ import { User } from '../../../models/user.model';
     NbListModule,
     NbBadgeModule,
     MessageComponent,
+    ThreadPanelComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
 
 export class ChatComponent implements OnInit, OnDestroy {
+  @ViewChild('messagesContainer') messagesContainer!: ElementRef;
+  
   private eventSource!: EventSource;
   messages: ChatMessage[] = [];
   userInfo?: User;
@@ -54,7 +58,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private chatService: ChatService,
+    public chatService: ChatService,
     private _authService: AuthService,
     private notificationService: NotificationsService,
     private zone: NgZone,
@@ -64,7 +68,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
-    this.onListScroll();
+    if (!this.chatService.isThreadVisible()) {
+      this.onListScroll();
+    }
   }
 
   @HostListener('document:keydown')
@@ -128,6 +134,16 @@ export class ChatComponent implements OnInit, OnDestroy {
           if (mainMessage) {
             mainMessage.threadCount = threadMessages.length;
           }
+        }
+      })
+    );
+
+    this.subscriptions.push(
+      this.chatService.threadVisibleObservable.subscribe((visible: boolean) => {
+        if (!visible) {
+          setTimeout(() => {
+            this.onListScroll();
+          }, 100);
         }
       })
     );
@@ -221,6 +237,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   onListScroll() {
+    const chatContainer = document.querySelector('.main-chat .messages-container');
+    if (!chatContainer) return;
+
     const distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
     this.showScrollToBottom = distanceFromBottom > 100;
     if (distanceFromBottom < 10) {
@@ -230,7 +249,17 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   scrollToBottom(smooth: boolean = true) {
     setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+      if (this.chatService.isThreadVisible()) {
+        const mainChatContainer = document.querySelector('.main-chat .messages-container');
+        if (mainChatContainer) {
+          mainChatContainer.scrollTo({ 
+            top: mainChatContainer.scrollHeight, 
+            behavior: smooth ? 'smooth' : 'instant' 
+          });
+        }
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+      }
     }, 0);
     this.thereNewMessages = false;
   }
@@ -307,5 +336,21 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   isSoundEnabled(): boolean {
     return this.soundService.isEnabled();
+  }
+
+  isThreadOpen(): boolean {
+    return this.chatService.isThreadVisible();
+  }
+
+  getCurrentThreadMessage() {
+    return this.chatService.getCurrentThreadMessage();
+  }
+
+  getChatContainerClass(): string {
+    return this.isThreadOpen() ? 'chat-container thread-open' : 'chat-container';
+  }
+
+  getMainChatClass(): string {
+    return this.isThreadOpen() ? 'main-chat with-thread' : 'main-chat';
   }
 }

@@ -13,6 +13,7 @@ import { filter } from 'rxjs';
     NbLayoutModule,
     NbCardModule,
   ],
+  standalone: true,
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

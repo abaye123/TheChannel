@@ -1,0 +1,418 @@
+.thread-input-container {
+    width: 100%;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.toolbar-icon {
+    font-size: 1rem;
+    color: #333333;
+}
+
+.toolbar-button {
+    padding: 6px !important;
+    margin: 2px;
+    min-width: 32px;
+    min-height: 32px;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+}
+
+.input-container {
+    .input-wrapper {
+        background: white;
+        border: 2px solid #e9ecef;
+        transition: border-color 0.2s ease;
+        min-height: 44px;
+
+        &:focus-within {
+            border-color: #666fff;
+            box-shadow: 0 0 0 2px rgba(102, 111, 255, 0.1);
+        }
+
+        &.editing {
+            border-color: #17a2b8;
+            background: rgba(23, 162, 184, 0.05);
+        }
+    }
+
+    .thread-textarea {
+        padding: 8px 12px !important;
+        line-height: 1.4;
+        font-size: 14px !important;
+
+        &::placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        &:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    }
+
+    .send-button-container {
+        padding: 4px 8px;
+
+        .cancel-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+
+            &:hover:not(:disabled) {
+                background: #c82333;
+                transform: scale(1.05);
+            }
+
+            &:disabled {
+                background: #e9ecef;
+                color: #6c757d;
+                cursor: not-allowed;
+            }
+
+            ng-icon {
+                font-size: 16px;
+            }
+        }
+
+        .send-button {
+            background: #666fff;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+
+            &.editing {
+                background: #17a2b8;
+            }
+
+            &:hover:not(:disabled) {
+                background: #5555ee;
+                transform: scale(1.05);
+
+                &.editing {
+                    background: #138496;
+                }
+            }
+
+            &:disabled {
+                background: #e9ecef;
+                color: #6c757d;
+                cursor: not-allowed;
+            }
+
+            ng-icon {
+                font-size: 18px;
+            }
+        }
+    }
+}
+
+.preview-container {
+    .preview-card {
+        border: 2px solid #e9ecef;
+        background: white;
+
+        &.editing {
+            border-color: #17a2b8;
+            background: rgba(23, 162, 184, 0.02);
+        }
+
+        nb-card-body {
+            padding: 12px 16px;
+            min-height: 60px;
+
+            markdown {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+        }
+
+        nb-card-footer {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+
+            button {
+                background: #666fff;
+                border: none;
+
+                &.editing {
+                    background: #17a2b8;
+                }
+
+                &:hover:not(:disabled) {
+                    background: #5555ee;
+
+                    &.editing {
+                        background: #138496;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.character-counter {
+    text-align: left;
+    padding: 4px 8px;
+
+    small {
+        font-size: 11px;
+        font-weight: 500;
+    }
+}
+
+.editing-alert {
+    margin-bottom: 8px;
+    animation: slideInFromTop 0.3s ease-out;
+
+    nb-alert {
+        margin-bottom: 0;
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+        border: 1px solid rgba(23, 162, 184, 0.3);
+        color: #0c5460;
+
+        nb-icon {
+            color: #17a2b8;
+            margin-left: 6px;
+        }
+
+        button {
+            padding: 2px !important;
+            min-width: 20px;
+            min-height: 20px;
+
+            nb-icon {
+                font-size: 14px;
+                color: #6c757d;
+            }
+
+            &:hover nb-icon {
+                color: #495057;
+            }
+        }
+    }
+}
+
+.deleted-message-alert {
+    margin-bottom: 8px;
+    animation: slideInFromTop 0.3s ease-out;
+
+    nb-alert {
+        margin-bottom: 0;
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+}
+
+.attachment-item {
+    background: rgba(102, 111, 255, 0.1);
+    border: 1px solid rgba(102, 111, 255, 0.3);
+    border-radius: 20px;
+    padding: 6px 10px;
+    margin: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+
+    img {
+        border-radius: 4px;
+    }
+
+    button {
+        padding: 2px !important;
+        min-width: 20px;
+        min-height: 20px;
+
+        nb-icon {
+            font-size: 14px;
+        }
+    }
+}
+
+.bg-light {
+    background: #f1f3f4 !important;
+    border: 1px solid #e0e0e0;
+    padding: 6px 8px;
+
+    nb-toggle {
+        margin-right: auto;
+        font-size: 12px;
+
+        span {
+            color: #666;
+            font-weight: 500;
+        }
+    }
+}
+
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .thread-input-container {
+        padding: 8px;
+    }
+
+    .toolbar-button {
+        padding: 4px !important;
+        min-width: 28px;
+        min-height: 28px;
+        margin: 1px;
+    }
+
+    .toolbar-icon {
+        font-size: 0.9rem;
+    }
+
+    .input-container {
+        .thread-textarea {
+            font-size: 13px !important;
+            padding: 6px 10px !important;
+        }
+
+        .send-button-container {
+            padding: 2px 6px;
+
+            .cancel-button {
+                width: 28px;
+                height: 28px;
+
+                ng-icon {
+                    font-size: 14px;
+                }
+            }
+
+            .send-button {
+                width: 32px;
+                height: 32px;
+
+                ng-icon {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+
+    .preview-container {
+        .preview-card {
+            nb-card-body {
+                padding: 8px 12px;
+
+                markdown {
+                    font-size: 13px;
+                }
+            }
+
+            nb-card-footer {
+                padding: 6px 12px;
+
+                button {
+                    font-size: 12px;
+                    padding: 6px 12px;
+                }
+            }
+        }
+    }
+
+    .editing-alert nb-alert button {
+        min-width: 18px;
+        min-height: 18px;
+
+        nb-icon {
+            font-size: 12px;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .bg-light {
+        padding: 4px 6px;
+
+        nb-toggle span {
+            display: none !important;
+        }
+    }
+
+    .toolbar-button {
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    .toolbar-icon {
+        font-size: 0.8rem;
+    }
+}
+
+.thread-input-container {
+    transition: all 0.2s ease;
+
+    &.editing {
+        border-color: #17a2b8;
+        background: rgba(23, 162, 184, 0.02);
+    }
+}
+
+.toolbar-button {
+    transition: all 0.15s ease;
+}
+
+.send-button,
+.cancel-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-wrapper:focus-within {
+    .send-button:not(:disabled) {
+        background: #666fff;
+        box-shadow: 0 2px 8px rgba(102, 111, 255, 0.3);
+
+        &.editing {
+            background: #17a2b8;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+    }
+}
+
+::ng-deep {
+    .thread-input-container {
+        .nb-toggle-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .nb-toggle-switcher {
+            transform: scale(0.8);
+        }
+    }
+}

@@ -3,18 +3,17 @@
         <app-channel-header [(userInfo)]="userInfo" style="flex: auto;"></app-channel-header>
     </nb-layout-header>
 
-    <nb-layout-column class="chat-column">
+    <nb-layout-column class="chat-column" [class.with-thread]="chatService.isThreadVisible()">
         <app-chat class=""></app-chat>
     </nb-layout-column>
 
-    <nb-layout-column *ngIf="ad" class="ad-column d-none d-lg-flex">
+    <nb-layout-column *ngIf="ad" class="ad-column d-none d-lg-flex" [class.with-thread]="chatService.isThreadVisible()">
         <app-advertising [ad]="ad"></app-advertising>
     </nb-layout-column>
 
-    <app-thread-panel></app-thread-panel>
-
     @if (userInfo?.privileges?.['writer']) {
-    <nb-layout-footer #inputForm id="inputForm" class="fixed-footer">
+    <nb-layout-footer #inputForm id="inputForm" class="fixed-footer"
+        [class.with-thread]="chatService.isThreadVisible()">
         <app-input-form class="w-100" (inputHeightChanged)="onInputHeightChanged()"></app-input-form>
     </nb-layout-footer>
     }

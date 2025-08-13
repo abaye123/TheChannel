@@ -55,7 +55,6 @@ export class ChatService {
   private replyToMessage = new BehaviorSubject<ChatMessage | undefined>(undefined);
   replyToMessageObservable = this.replyToMessage.asObservable();
 
-  // הוספת BehaviorSubjects לשרשורים
   private threadVisible = new BehaviorSubject<boolean>(false);
   threadVisibleObservable = this.threadVisible.asObservable();
 
@@ -64,6 +63,9 @@ export class ChatService {
 
   private threadMessages = new BehaviorSubject<ChatMessage[]>([]);
   threadMessagesObservable = this.threadMessages.asObservable();
+
+  private threadMessageEdit = new BehaviorSubject<ChatMessage | undefined>(undefined);
+  threadMessageEditObservable = this.threadMessageEdit.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -169,14 +171,15 @@ export class ChatService {
     return elapsedSeconds <= editTimeLimit;
   }
 
-  // פונקציות שרשורים
   getThreadReplies(messageId: number): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(`/api/thread/${messageId}`);
   }
 
   openThread(message: ChatMessage) {
+    console.log('ChatService: Opening thread for message', message);
     this.currentThreadMessage.next(message);
     this.threadVisible.next(true);
+    console.log('ChatService: Thread visibility set to true');
     this.loadThreadMessages(message.id!);
   }
 
@@ -184,6 +187,7 @@ export class ChatService {
     this.threadVisible.next(false);
     this.currentThreadMessage.next(undefined);
     this.threadMessages.next([]);
+    this.threadMessageEdit.next(undefined);
   }
 
   isThreadVisible(): boolean {
@@ -220,5 +224,34 @@ export class ChatService {
     } else {
       this.setReplyToMessage(message);
     }
+  }
+
+  setEditThreadMessage(message?: ChatMessage) {
+    this.threadMessageEdit.next(message);
+  }
+
+  getEditThreadMessage(): ChatMessage | undefined {
+    return this.threadMessageEdit.value;
+  }
+
+  clearEditThreadMessage() {
+    this.threadMessageEdit.next(undefined);
+  }
+
+  updateThreadMessage(updatedMessage: ChatMessage) {
+    const currentMessages = this.threadMessages.value;
+    const messageIndex = currentMessages.findIndex(m => m.id === updatedMessage.id);
+
+    if (messageIndex !== -1) {
+      const newMessages = [...currentMessages];
+      newMessages[messageIndex] = updatedMessage;
+      this.threadMessages.next(newMessages);
+    }
+  }
+
+  deleteThreadMessage(messageId: number) {
+    const currentMessages = this.threadMessages.value;
+    const updatedMessages = currentMessages.filter(m => m.id !== messageId);
+    this.threadMessages.next(updatedMessages);
   }
 }

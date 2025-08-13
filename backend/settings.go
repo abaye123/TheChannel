@@ -85,7 +85,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 	config.MaxFileSize = 50
 	config.EditTimeLimit = 120
-	config.ThreadsEnabled = true
+	config.ThreadsEnabled = false
 
 	for _, setting := range *s {
 		switch setting.Key {

@@ -1,6 +1,24 @@
 @use '../../../themes' as *;
 
-nb-layout-column.chat-column {}
+nb-layout-column.chat-column {
+  transition: width 0.3s ease;
+
+  &.with-thread {
+    width: 66.666% !important;
+
+    @media (max-width: 1024px) {
+      width: 60% !important;
+    }
+
+    @media (max-width: 768px) {
+      width: 50% !important;
+    }
+
+    @media (max-width: 480px) {
+      width: 100% !important;
+    }
+  }
+}
 
 nb-layout-column.ad-column {
   flex: 0 0 fit-content !important;
@@ -8,6 +26,23 @@ nb-layout-column.ad-column {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  transition: width 0.3s ease;
+
+  &.with-thread {
+    width: 33.333% !important;
+
+    @media (max-width: 1024px) {
+      width: 40% !important;
+    }
+
+    @media (max-width: 768px) {
+      width: 50% !important;
+    }
+
+    @media (max-width: 480px) {
+      display: none !important;
+    }
+  }
 }
 
 app-advertising {
@@ -26,8 +61,8 @@ app-advertising {
     bottom: var(--input-height, 0px) !important;
 
     // @if (variable-exists(--input-height)) {
-      //noinspection CssInvalidPropertyValue
-      padding-top: calc(nb-theme(header-height) + nb-theme(header-padding) * 2) !important;
+    //noinspection CssInvalidPropertyValue
+    padding-top: calc(nb-theme(header-height) + nb-theme(header-padding) * 2) !important;
     // }
   }
 }
@@ -37,4 +72,32 @@ app-advertising {
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 50;
+  transition: width 0.3s ease;
+
+  &.with-thread {
+    width: 66.666%;
+    left: 33.333%;
+  }
+
+  @media (max-width: 1024px) {
+    &.with-thread {
+      width: 60%;
+      left: 40%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    &.with-thread {
+      width: 50%;
+      left: 50%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &.with-thread {
+      width: 100%;
+      left: 0;
+    }
+  }
 }

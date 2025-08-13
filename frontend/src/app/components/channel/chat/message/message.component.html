@@ -30,18 +30,9 @@
                 (click)="deleteMessage(message)" title="מחק הודעה">
                 <nb-icon icon="trash-2"></nb-icon>
             </button>
-
-            <!-- כפתורי שרשור חדשים -->
-            <button *ngIf="chatService.channelInfo?.threads_enabled && hasThreadReplies(message) && !isInThread"
-                class="icon-button thread-button" nbButton ghost shape="round" size="small"
-                (click)="openThread(message)" [title]="'פתח שרשור (' + message.threadCount + ' תגובות)'">
-                <nb-icon icon="message-square-outline"></nb-icon>
-                <span class="thread-count">{{ message.threadCount }}</span>
-            </button>
-
             <button
                 *ngIf="chatService.channelInfo?.threads_enabled && _authService?.userInfo?.privileges?.['writer'] && !message.deleted && !isInThread"
-                class="icon-button" nbButton ghost shape="round" size="small" (click)="replyInThread(message)"
+                class="icon-button" nbButton ghost shape="round" size="small" (click)="startThread(message)"
                 title="הגב בשרשור">
                 <nb-icon icon="message-circle-outline"></nb-icon>
             </button>
@@ -62,7 +53,6 @@
             </button>
         </div>
 
-        <!-- שאר התוכן של ההודעה -->
         <div [ngbPopover]="emojiMenuTemplate" [disablePopover]="!reacts.length" [triggers]="'manual'"
             [popoverContext]="{message}" [autoClose]="'outside'" [placement]="getPopoverPlacement()"
             [popoverClass]="'emoji-picker-popover'" (mouseenter)="showEmojiMenu()"
@@ -96,6 +86,21 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div *ngIf="chatService.channelInfo?.threads_enabled && !isInThread && !message.deleted && hasThreadReplies(message)" class="thread-actions">
+            <button *ngIf="hasThreadReplies(message)" class="thread-replies-button" nbButton ghost size="small"
+                (click)="openThread(message)" [title]="'פתח שרשור (' + message.threadCount + ' תגובות)'">
+                <nb-icon icon="message-square-outline"></nb-icon>
+                <span class="thread-count">{{ message.threadCount }} תגובות</span>
+            </button>
+
+            <!--button *ngIf="!hasThreadReplies(message) && _authService?.userInfo?.privileges?.['writer']" 
+                class="thread-start-button" nbButton ghost size="small" (click)="startThread(message)"
+                title="התחל שרשור">
+                <nb-icon icon="message-square-outline"></nb-icon>
+                <span>התחל שרשור</span>
+            </button-->
         </div>
     </div>
 </div>

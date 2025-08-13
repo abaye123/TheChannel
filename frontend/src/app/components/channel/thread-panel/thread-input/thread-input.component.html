@@ -1,0 +1,120 @@
+<div class="thread-input-container">
+    <div class="d-flex flex-column gap-1">
+
+        <div *ngIf="isEditing && editingMessage" class="editing-alert">
+            <nb-alert status="info" size="small">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>
+                        <nb-icon icon="edit-outline"></nb-icon>
+                        עורך הודעה של {{ editingMessage.author }}
+                    </span>
+                    <button nbButton ghost size="tiny" (click)="cancelEditing()" title="בטל עריכה">
+                        <nb-icon icon="close"></nb-icon>
+                    </button>
+                </div>
+            </nb-alert>
+        </div>
+
+        <div *ngIf="isEditing && editingMessage?.deleted" class="deleted-message-alert">
+            <nb-alert status="danger" size="small">
+                ההודעה מחוקה ומוסתרת! אישור עריכת ההודעה יפרסם אותה מחדש.
+            </nb-alert>
+        </div>
+
+        <div class="d-flex flex-row flex-wrap" *ngIf="attachments.length > 0">
+            <div *ngFor="let attachment of attachments; track attachment"
+                class="d-flex flex-row rounded-5 bg-primary-subtle text-primary align-items-center p-1 ms-1"
+                style="border-style: solid; border-width: 0.06rem;">
+                <div *ngIf="attachment.uploading || !attachment.url"
+                    class="spinner-border spinner-border-sm text-primary"></div>
+                <img *ngIf="!attachment.uploading && attachment.url" [src]="attachment.url" width="30" height="30"
+                    class="rounded-5">
+                <small class="m-1">{{ attachment.file.name.substring(attachment.file.name.length - 15) }}</small>
+                <button nbButton ghost status="primary" style="padding: 0" (click)="removeAttachment(attachment)"
+                    title="הסר קובץ">
+                    <nb-icon icon="close"></nb-icon>
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex flex-row flex-wrap align-items-center rounded-5 bg-light px-2">
+            <button nbButton ghost shape="round" title="הדגשה" (click)="applyFormat('bold')" class="toolbar-button">
+                <ng-icon name="heroBold" class="toolbar-icon"></ng-icon>
+            </button>
+            <button nbButton ghost shape="round" title="נטוי" (click)="applyFormat('italic')" class="toolbar-button">
+                <ng-icon name="heroItalic" class="toolbar-icon"></ng-icon>
+            </button>
+            <button nbButton ghost shape="round" title="קו תחתון" (click)="applyFormat('underline')"
+                class="toolbar-button">
+                <ng-icon name="heroUnderline" class="toolbar-icon"></ng-icon>
+            </button>
+            <button nbButton ghost shape="round" title="הוסף בלוק קוד" (click)="applyFormat('code')"
+                class="toolbar-button">
+                <ng-icon name="heroCodeBracket" class="toolbar-icon"></ng-icon>
+            </button>
+            <button nbButton ghost shape="round" title="צרף קובץ" (click)="fileInput.click()" class="toolbar-button">
+                <ng-icon name="heroPaperClip" class="toolbar-icon"></ng-icon>
+            </button>
+            <button nbButton ghost shape="round" title="עזרה לmarkdown" (click)="openMarkdownDocs()"
+                class="toolbar-button">
+                <ng-icon name="heroQuestionMarkCircle" class="toolbar-icon"></ng-icon>
+            </button>
+            <input type="file" #fileInput multiple (change)="onFileSelected($event)" hidden>
+            <nb-toggle class="me-auto" labelPosition="start" [(checked)]="showMarkdownPreview" [disabled]="!input">
+                <span class="d-none d-md-inline-block">תצוגה מקדימה</span>
+            </nb-toggle>
+        </div>
+
+        <div class="d-flex flex-row">
+            <div class="flex-grow-1 overflow-auto">
+                <div *ngIf="showMarkdownPreview" class="preview-container">
+                    <nb-card class="rounded-3 mb-0 preview-card">
+                        <nb-card-body>
+                            <markdown [data]="input" [disableSanitizer]="true" class="fs-6"></markdown>
+                        </nb-card-body>
+                        <nb-card-footer class="d-flex justify-content-end gap-2">
+                            <button *ngIf="isEditing" nbButton ghost title="בטל עריכה" shape="round" [size]="'small'"
+                                (click)="cancelEditing()" [disabled]="isSending">
+                                <ng-icon class="fs-5" [name]="'heroXMark'"></ng-icon>
+                                <span class="ms-2">בטל</span>
+                            </button>
+                            <button nbButton status="primary" [title]="getButtonText() + ' (Ctrl+Enter)'" shape="round"
+                                [size]="'small'" (click)="sendMessage()" [disabled]="isSending">
+                                <ng-icon class="fs-5" [name]="isEditing ? 'heroCheck' : 'heroPaperAirplane'"
+                                    [style]="isEditing ? '' : 'scale: -1 1'"></ng-icon>
+                                <span class="ms-2">{{ getButtonText() }}</span>
+                            </button>
+                        </nb-card-footer>
+                    </nb-card>
+                </div>
+
+                <div *ngIf="!showMarkdownPreview" class="input-container">
+                    <div class="d-flex flex-row border rounded-3 fs-5 align-items-center input-wrapper">
+                        <textarea #inputTextArea autosize nbInput fullWidth [placeholder]="getPlaceholderText()"
+                            [minRows]="1" [maxRows]="4" [maxlength]="maxMessageLength" [disabled]="isSending"
+                            class="bg-transparent border-0 flex-grow-1 fs-6 thread-textarea" [(ngModel)]="input"
+                            (input)="checkScrollbar()" style="resize: none"></textarea>
+                        <div class="d-flex flex-row align-self-end send-button-container gap-1">
+                            <button *ngIf="isEditing" nbButton ghost title="בטל עריכה" shape="round" [size]="'tiny'"
+                                (click)="cancelEditing()" [disabled]="isSending" class="cancel-button">
+                                <ng-icon class="fs-5" [name]="'heroXMark'"></ng-icon>
+                            </button>
+                            <button nbButton ghost [title]="getButtonText() + ' (Ctrl+Enter)'" shape="round"
+                                [size]="'tiny'" (click)="sendMessage()"
+                                [disabled]="isSending || (!input.trim() && !attachments.length)" class="send-button">
+                                <ng-icon class="fs-5" [name]="isEditing ? 'heroCheck' : 'heroPaperAirplane'"
+                                    [style]="isEditing ? '' : 'scale: -1 1'"></ng-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="character-counter" *ngIf="input.length > maxMessageLength * 0.8">
+            <small [class]="input.length > maxMessageLength ? 'text-danger' : 'text-warning'">
+                {{ input.length }} / {{ maxMessageLength }}
+            </small>
+        </div>
+    </div>
+</div>

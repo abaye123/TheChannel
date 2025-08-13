@@ -364,3 +364,69 @@ nb-icon {
 .thread-button:hover .thread-count {
   background: #5555ee;
 }
+
+// עיצוב כפתורי שרשור מתחת להודעה
+.thread-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  /* border-top: 1px solid rgba(102, 111, 255, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(102, 111, 255, 0.03));
+  border-radius: 0 0 12px 12px;
+  margin-top: 4px; */
+
+  .thread-replies-button,
+  .thread-reply-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px !important;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(102, 111, 255, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+    color: #666fff;
+
+    nb-icon {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: rgba(102, 111, 255, 0.1);
+      border-color: rgba(102, 111, 255, 0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(102, 111, 255, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .thread-replies-button {
+    .thread-count {
+      color: #666fff;
+      font-weight: 600;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .thread-actions {
+    padding: 6px 8px;
+    gap: 6px;
+
+    .thread-replies-button,
+    .thread-reply-button {
+      padding: 4px 8px !important;
+      font-size: 12px;
+
+      nb-icon {
+        font-size: 14px;
+      }
+    }
+  }
+}

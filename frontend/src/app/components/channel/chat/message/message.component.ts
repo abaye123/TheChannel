@@ -321,8 +321,21 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   // פונקציות שרשור חדשות
   openThread(message: ChatMessage) {
-    if (message.threadCount && message.threadCount > 0) {
+    console.log('Opening thread for message:', message);
+    if (message.id) {
       this.chatService.openThread(message);
+    } else {
+      console.warn('Cannot open thread: message has no ID');
+    }
+  }
+
+  startThread(message: ChatMessage) {
+    console.log('Starting thread for message:', message);
+    if (message.id) {
+      // פתח את הפאנל גם אם אין תגובות
+      this.chatService.openThread(message);
+    } else {
+      console.warn('Cannot start thread: message has no ID');
     }
   }
 

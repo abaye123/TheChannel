@@ -14,7 +14,7 @@ import { InputFormComponent } from "./chat/input-form/input-form.component";
 import { AuthService } from "../../services/auth.service";
 import { ChannelHeaderComponent } from "./channel-header/channel-header.component";
 import { ChatComponent } from "./chat/chat.component";
-import { ThreadPanelComponent } from "./thread-panel/thread-panel.component"; // תיקון נתיב
+import { ChatService } from '../../services/chat.service';
 import { User } from '../../models/user.model';
 
 @Component({
@@ -31,7 +31,6 @@ import { User } from '../../models/user.model';
     NbSidebarModule,
     NbListModule,
     ChatComponent,
-    ThreadPanelComponent,
   ],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
@@ -43,6 +42,7 @@ export class ChannelComponent implements OnInit {
     if (element) {
       setTimeout(() => {
         this.updateInputBottomOffset();
+        this.updateInputFormClass();
       }, 0);
     }
   }
@@ -51,7 +51,8 @@ export class ChannelComponent implements OnInit {
     private adsService: AdsService,
     private _authService: AuthService,
     private renderer: Renderer2,
-    private el: ElementRef
+    private el: ElementRef,
+    public chatService: ChatService
   ) { }
 
   ad: Ad = { src: '', width: 0 };
@@ -64,6 +65,13 @@ export class ChannelComponent implements OnInit {
     this._authService.loadUserInfo().then(res => {
       this.userInfo = res
     });
+
+    this.chatService.threadVisibleObservable.subscribe(() => {
+      setTimeout(() => {
+        this.updateInputFormClass();
+        this.updateLayoutClasses();
+      }, 0);
+    });
   }
 
   onInputHeightChanged() {
@@ -74,5 +82,37 @@ export class ChannelComponent implements OnInit {
     let inputForm = document.getElementById('inputForm');
     let h = inputForm?.clientHeight;
     this.renderer.setStyle(this.el.nativeElement, '--input-height', `${h}px`, RendererStyleFlags2.DashCase);
+  }
+
+  private updateInputFormClass() {
+    const inputForm = document.getElementById('inputForm');
+    if (inputForm) {
+      if (this.chatService.isThreadVisible()) {
+        inputForm.classList.add('with-thread');
+      } else {
+        inputForm.classList.remove('with-thread');
+      }
+    }
+  }
+
+  private updateLayoutClasses() {
+    const chatColumn = document.querySelector('.chat-column');
+    const adColumn = document.querySelector('.ad-column');
+
+    if (chatColumn) {
+      if (this.chatService.isThreadVisible()) {
+        chatColumn.classList.add('with-thread');
+      } else {
+        chatColumn.classList.remove('with-thread');
+      }
+    }
+
+    if (adColumn) {
+      if (this.chatService.isThreadVisible()) {
+        adColumn.classList.add('with-thread');
+      } else {
+        adColumn.classList.remove('with-thread');
+      }
+    }
   }
 }
