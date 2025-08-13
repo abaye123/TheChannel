@@ -22,11 +22,13 @@
     </div>
 
     <div class="chatfree-spacer"></div>
+    @if (chatService.channelInfo?.showCredit) {
     <div class="chatfree-branding">
         <a href="https://chatfree.app" target="_blank" class="chatfree-link">
             <img src="https://chatfree.app/ChatFreeLogoLink.png" alt="ChatFree" class="chatfree-logo">
         </a>
     </div>
+    }
 
     @if (userInfo) {
     <button nbButton shape="round" class="m-2"

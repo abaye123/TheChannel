@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -17,6 +18,7 @@ type Channel struct {
 	LoginDescription        string    `json:"login_description"`
 	CreatedAt               time.Time `json:"created_at"`
 	LogoUrl                 string    `json:"logoUrl"`
+	ShowCredit              bool      `json:"showCredit"`
 	Views                   int64     `json:"views"`
 	RequireAuthForViewFiles bool      `json:"require_auth_for_view_files"`
 	ThreadsEnabled 			bool      `json:"threads_enabled"`
@@ -49,6 +51,7 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.CreatedAt, _ = time.Parse(time.RFC3339, c["created_at"])
 	channel.Views = amount //strconv.Atoi(c["views"])
 	channel.LogoUrl = c["logoUrl"]
+	channel.ShowCredit = os.Getenv("SHOW_CREDIT") != "false"
 	channel.RequireAuthForViewFiles = settingConfig.RequireAuthForViewFiles
 	channel.ThreadsEnabled = settingConfig.ThreadsEnabled
 	channel.ContactUs = settingConfig.ContactUs
