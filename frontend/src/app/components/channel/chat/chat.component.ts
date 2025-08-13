@@ -42,7 +42,7 @@ import { User } from '../../../models/user.model';
 
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
-  
+
   private eventSource!: EventSource;
   messages: ChatMessage[] = [];
   userInfo?: User;
@@ -56,6 +56,8 @@ export class ChatComponent implements OnInit, OnDestroy {
   private lastHeartbeat: number = Date.now();
   private subLastHeartbeat: any;
   private subscriptions: Subscription[] = [];
+  public isLoadingOlder: boolean = false;
+  public isLoadingNewer: boolean = false;
 
   constructor(
     public chatService: ChatService,
@@ -236,14 +238,40 @@ export class ChatComponent implements OnInit, OnDestroy {
       });
   }
 
+  onChatContainerScroll(event: Event) {
+    if (this.chatService.isThreadVisible()) {
+      this.onListScroll();
+    }
+  }
+
   onListScroll() {
     const chatContainer = document.querySelector('.main-chat .messages-container');
     if (!chatContainer) return;
 
-    const distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+    let distanceFromBottom: number;
+    let distanceFromTop: number;
+
+    if (this.chatService.isThreadVisible()) {
+      distanceFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+      distanceFromTop = chatContainer.scrollTop;
+    } else {
+      distanceFromBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+      distanceFromTop = window.scrollY;
+    }
+
     this.showScrollToBottom = distanceFromBottom > 100;
     if (distanceFromBottom < 10) {
       this.thereNewMessages = false;
+    }
+
+    // טעינת הודעות ישנות יותר כשמגיעים לראש הרשימה
+    if (distanceFromTop < 300 && !this.isLoadingOlder && this.hasOldMessages) {
+      this.loadOlderMessages();
+    }
+
+    // טעינת הודעות חדשות יותר כשמגיעים לתחתית הרשימה
+    if (distanceFromBottom < 300 && !this.isLoadingNewer && this.hasNewMessages) {
+      this.loadNewerMessages();
     }
   }
 
@@ -252,9 +280,9 @@ export class ChatComponent implements OnInit, OnDestroy {
       if (this.chatService.isThreadVisible()) {
         const mainChatContainer = document.querySelector('.main-chat .messages-container');
         if (mainChatContainer) {
-          mainChatContainer.scrollTo({ 
-            top: mainChatContainer.scrollHeight, 
-            behavior: smooth ? 'smooth' : 'instant' 
+          mainChatContainer.scrollTo({
+            top: mainChatContainer.scrollHeight,
+            behavior: smooth ? 'smooth' : 'instant'
           });
         }
       } else {
@@ -262,6 +290,49 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     }, 0);
     this.thereNewMessages = false;
+  }
+
+  async loadOlderMessages() {
+    if (this.isLoadingOlder || !this.hasOldMessages) return;
+
+    this.isLoadingOlder = true;
+    const oldestId = Math.min(...this.messages.map(m => m.id!));
+
+    try {
+      const response = await firstValueFrom(this.chatService.getMessages(oldestId, this.limit, "desc"));
+      if (response && response.length > 0) {
+        this.messages.push(...response);
+        this.hasOldMessages = response.length >= this.limit;
+        this.offset = Math.min(...this.messages.map(m => m.id!));
+      } else {
+        this.hasOldMessages = false;
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינת הודעות ישנות:', error);
+    } finally {
+      this.isLoadingOlder = false;
+    }
+  }
+
+  async loadNewerMessages() {
+    if (this.isLoadingNewer || !this.hasNewMessages) return;
+
+    this.isLoadingNewer = true;
+    const newestId = Math.max(...this.messages.map(m => m.id!));
+
+    try {
+      const response = await firstValueFrom(this.chatService.getMessages(newestId, this.limit, "asc"));
+      if (response && response.length > 0) {
+        this.messages.unshift(...response.reverse());
+        this.hasNewMessages = response.length >= this.limit;
+      } else {
+        this.hasNewMessages = false;
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינת הודעות חדשות:', error);
+    } finally {
+      this.isLoadingNewer = false;
+    }
   }
 
   async loadMessages(scrollDown?: boolean, messageId?: number) {

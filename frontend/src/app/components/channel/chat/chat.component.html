@@ -1,8 +1,7 @@
 <div class="chat-container" [class.thread-open]="chatService.isThreadVisible()">
     <div class="main-chat" [class.with-thread]="chatService.isThreadVisible()">
-        <div nbInfiniteList (scroll)="onListScroll()" [threshold]="300" [throttleTime]="1000"
-            (topThreshold)="loadMessages()" (bottomThreshold)="loadMessages(true)" [listenWindowScroll]="false"
-            class="messages-container">
+        <div nbInfiniteList (scroll)="onChatContainerScroll($event)" [threshold]="300" [throttleTime]="500"
+            [listenWindowScroll]="false" class="messages-container">
             <nb-list class="flex-column-reverse">
 
                 <nb-list-item *ngFor="let message of messages">
@@ -16,7 +15,7 @@
                     </div>
                 </nb-list-item>
 
-                <nb-list-item *ngIf="isLoading" class="align-self-center loading-indicator">
+                <nb-list-item *ngIf="isLoading || isLoadingOlder" class="align-self-center loading-indicator">
                     <div class="align-self-center flex-grow-1">
                         <div class="spinner-border text-primary"></div>
                     </div>
