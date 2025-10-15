@@ -44,6 +44,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   private eventSource!: EventSource;
+  private messageIds = new Set<number>();
   messages: ChatMessage[] = [];
   userInfo?: User;
   isLoading: boolean = false;
@@ -58,6 +59,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   public isLoadingOlder: boolean = false;
   public isLoadingNewer: boolean = false;
+  private initialLoadComplete: boolean = false;
 
   constructor(
     public chatService: ChatService,
@@ -121,6 +123,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
 
     this.loadMessages().then(() => {
+      this.initialLoadComplete = true;
       this.scrollToBottom(false);
     });
 
@@ -173,13 +176,16 @@ export class ChatComponent implements OnInit, OnDestroy {
               }
             } else if (!message.message.isThread) {
               if (this.hasNewMessages) return;
-              this.messages.unshift(message.message);
-              const isMyMessage = message.message.author === this.userInfo?.username;
-              this.thereNewMessages = !isMyMessage;
+              if (message.message.id && !this.messageIds.has(message.message.id)) {
+                this.messages.unshift(message.message);
+                this.messageIds.add(message.message.id);
+                const isMyMessage = message.message.author === this.userInfo?.username;
+                this.thereNewMessages = !isMyMessage;
 
-              if (!isMyMessage) {
-                if (this.soundService.isInitialized()) {
-                  this.soundService.playNotificationSound();
+                if (!isMyMessage) {
+                  if (this.soundService.isInitialized()) {
+                    this.soundService.playNotificationSound();
+                  }
                 }
               }
             }
@@ -198,6 +204,9 @@ export class ChatComponent implements OnInit, OnDestroy {
           };
           this.zone.run(() => {
             this.messages = this.messages.filter(m => m.id !== message.message.id);
+            if (message.message.id) {
+              this.messageIds.delete(message.message.id);
+            }
           });
           break;
         case 'edit-message':
@@ -296,14 +305,31 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.isLoadingOlder || !this.hasOldMessages) return;
 
     this.isLoadingOlder = true;
-    const oldestId = Math.min(...this.messages.map(m => m.id!));
+    const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+    if (validIds.length === 0) {
+      this.isLoadingOlder = false;
+      return;
+    }
+    const oldestId = Math.min(...validIds);
 
     try {
       const response = await firstValueFrom(this.chatService.getMessages(oldestId, this.limit, "desc"));
       if (response && response.length > 0) {
-        this.messages.push(...response);
+        const newMessages = response.filter(msg => {
+          if (msg.id && !this.messageIds.has(msg.id)) {
+            this.messageIds.add(msg.id);
+            return true;
+          }
+          return false;
+        });
+
+        this.messages.push(...newMessages);
         this.hasOldMessages = response.length >= this.limit;
-        this.offset = Math.min(...this.messages.map(m => m.id!));
+
+        const updatedValidIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+        if (updatedValidIds.length > 0) {
+          this.offset = Math.min(...updatedValidIds);
+        }
       } else {
         this.hasOldMessages = false;
       }
@@ -318,12 +344,25 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.isLoadingNewer || !this.hasNewMessages) return;
 
     this.isLoadingNewer = true;
-    const newestId = Math.max(...this.messages.map(m => m.id!));
+    const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+    if (validIds.length === 0) {
+      this.isLoadingNewer = false;
+      return;
+    }
+    const newestId = Math.max(...validIds);
 
     try {
       const response = await firstValueFrom(this.chatService.getMessages(newestId, this.limit, "asc"));
       if (response && response.length > 0) {
-        this.messages.unshift(...response.reverse());
+        const newMessages = response.filter(msg => {
+          if (msg.id && !this.messageIds.has(msg.id)) {
+            this.messageIds.add(msg.id);
+            return true;
+          }
+          return false;
+        });
+
+        this.messages.unshift(...newMessages.reverse());
         this.hasNewMessages = response.length >= this.limit;
       } else {
         this.hasNewMessages = false;
@@ -336,13 +375,17 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async loadMessages(scrollDown?: boolean, messageId?: number) {
+    if (!this.initialLoadComplete && this.isLoading) return;
+
     if (this.isLoading || (scrollDown && !this.hasNewMessages) || (!scrollDown && !this.hasOldMessages)) return;
 
     let startId: number;
     let resetList: boolean = false;
     let direction: string = "desc";
 
-    const maxId = Math.max(...this.messages.map(m => m.id!));
+    const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+    const maxId = validIds.length > 0 ? Math.max(...validIds) : 0;
+
     if (scrollDown) {
       direction = "asc";
       startId = maxId;
@@ -370,7 +413,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           }
         }
       } else {
-        startId = this.offset;
+        startId = this.messages.length === 0 ? 0 : this.offset;
       }
     }
 
@@ -378,14 +421,34 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction))
       if (response) {
+        if (resetList) {
+          this.messageIds.clear();
+          response.forEach(msg => {
+            if (msg.id) this.messageIds.add(msg.id);
+          });
+        }
+
+        const newMessages = response.filter(msg => {
+          if (msg.id && !this.messageIds.has(msg.id)) {
+            this.messageIds.add(msg.id);
+            return true;
+          }
+          return false;
+        });
+
         if (scrollDown) {
-          resetList ? this.messages = response.reverse() : this.messages.unshift(...response.reverse());
+          resetList ? this.messages = newMessages.reverse() : this.messages.unshift(...newMessages.reverse());
           this.hasNewMessages = response.length >= this.limit;
         } else {
-          resetList ? this.messages = response : this.messages.push(...response);
+          resetList ? this.messages = newMessages : this.messages.push(...newMessages);
           this.hasOldMessages = response.length >= this.limit;
         }
-        this.offset = Math.min(...this.messages.map(m => m.id!));
+
+        const updatedValidIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+        if (updatedValidIds.length > 0) {
+          this.offset = Math.min(...updatedValidIds);
+        }
+
         setTimeout(() => {
           messageId && this.scrollToId(messageId);
         }, 300);
