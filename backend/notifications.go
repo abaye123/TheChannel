@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"slices"
 	"time"
 
@@ -41,6 +42,76 @@ type NotificationsConfig struct {
 	EnableNotifications bool           `json:"enableNotifications"`
 	VAPID               string         `json:"vapid"`
 	FirebaseConfig      FirebaseConfig `json:"firebaseConfig"`
+}
+
+func loadFCMConfigFromEnv() {
+	if vapid := os.Getenv("VAPID_KEY"); vapid != "" {
+		settingConfig.VAPID = vapid
+	}
+
+	if apiKey := os.Getenv("FCM_API_KEY"); apiKey != "" {
+		settingConfig.FcmApiKey = apiKey
+	}
+	if authDomain := os.Getenv("FCM_AUTH_DOMAIN"); authDomain != "" {
+		settingConfig.FcmAuthDomain = authDomain
+	}
+	if projectId := os.Getenv("FCM_PROJECT_ID"); projectId != "" {
+		settingConfig.FcmProjectId = projectId
+	}
+	if storageBucket := os.Getenv("FCM_STORAGE_BUCKET"); storageBucket != "" {
+		settingConfig.FcmStorageBucket = storageBucket
+	}
+	if messagingSenderId := os.Getenv("FCM_MESSAGING_SENDER_ID"); messagingSenderId != "" {
+		settingConfig.FcmMessagingSenderId = messagingSenderId
+	}
+	if appId := os.Getenv("FCM_APP_ID"); appId != "" {
+		settingConfig.FcmAppId = appId
+	}
+	if measurementId := os.Getenv("FCM_MEASUREMENT_ID"); measurementId != "" {
+		settingConfig.FcmMeasurementId = measurementId
+	}
+
+	if jsonType := os.Getenv("FCM_JSON_TYPE"); jsonType != "" {
+		settingConfig.FcmJson.Type = jsonType
+	}
+	if projectId := os.Getenv("FCM_JSON_PROJECT_ID"); projectId != "" {
+		settingConfig.FcmJson.ProjectId = projectId
+	}
+	if privateKeyId := os.Getenv("FCM_JSON_PRIVATE_KEY_ID"); privateKeyId != "" {
+		settingConfig.FcmJson.PrivateKeyId = privateKeyId
+	}
+	if privateKey := os.Getenv("FCM_JSON_PRIVATE_KEY"); privateKey != "" {
+		settingConfig.FcmJson.PrivateKey = privateKey
+	}
+	if clientEmail := os.Getenv("FCM_JSON_CLIENT_EMAIL"); clientEmail != "" {
+		settingConfig.FcmJson.ClientEmail = clientEmail
+	}
+	if clientId := os.Getenv("FCM_JSON_CLIENT_ID"); clientId != "" {
+		settingConfig.FcmJson.ClientId = clientId
+	}
+	if authUri := os.Getenv("FCM_JSON_AUTH_URI"); authUri != "" {
+		settingConfig.FcmJson.AuthUri = authUri
+	}
+	if tokenUri := os.Getenv("FCM_JSON_TOKEN_URI"); tokenUri != "" {
+		settingConfig.FcmJson.TokenUri = tokenUri
+	}
+	if authProviderCertUrl := os.Getenv("FCM_JSON_AUTH_PROVIDER_X509_CERT_URL"); authProviderCertUrl != "" {
+		settingConfig.FcmJson.AuthProviderX509CertUrl = authProviderCertUrl
+	}
+	if clientCertUrl := os.Getenv("FCM_JSON_CLIENT_X509_CERT_URL"); clientCertUrl != "" {
+		settingConfig.FcmJson.ClientX509CertUrl = clientCertUrl
+	}
+	if universeDomain := os.Getenv("FCM_JSON_UNIVERSE_DOMAIN"); universeDomain != "" {
+		settingConfig.FcmJson.UniverseDomain = universeDomain
+	}
+
+	if projectDomain := os.Getenv("PROJECT_DOMAIN"); projectDomain != "" {
+		settingConfig.ProjectDomain = projectDomain
+	}
+}
+
+func init() {
+	loadFCMConfigFromEnv()
 }
 
 func getNotificationsConfig(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +221,6 @@ func subscribeNotifications(w http.ResponseWriter, r *http.Request) {
 
 func pushFcmMessage(m Message) {
 	if !settingConfig.OnNotification {
-
 		return
 	}
 
