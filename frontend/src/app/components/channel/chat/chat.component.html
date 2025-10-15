@@ -22,13 +22,13 @@
                     </div>
                 </nb-list-item>
             </nb-list>
+        </div>
 
-            <div class="scroll-to-bottom-btn" *ngIf="showScrollToBottom">
-                <button nbButton status="primary" shape="round" class="shadow" (click)="scrollToBottom()">
-                    <nb-icon icon="arrow-downward-outline"></nb-icon>
-                </button>
-                <nb-badge *ngIf="thereNewMessages" [dotMode]="true" status="danger"></nb-badge>
-            </div>
+        <div class="scroll-to-bottom-btn" *ngIf="showScrollToBottom">
+            <button nbButton status="primary" shape="round" class="shadow" (click)="scrollToBottom()">
+                <nb-icon icon="arrow-downward-outline"></nb-icon>
+            </button>
+            <nb-badge *ngIf="thereNewMessages" [dotMode]="true" status="danger"></nb-badge>
         </div>
     </div>
 
