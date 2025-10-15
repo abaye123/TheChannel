@@ -57,6 +57,9 @@ export class MessageComponent implements OnInit, AfterViewInit {
   @Input()
   isInThread: boolean = false;
 
+  @Input()
+  isLastMessage: boolean = false;
+
   @ViewChild(NgbPopover) popover!: NgbPopover;
   @ViewChild('media') mediaContainer!: ElementRef;
 
@@ -257,9 +260,13 @@ export class MessageComponent implements OnInit, AfterViewInit {
   }
 
   getPopoverPlacement(): string {
-    const element = document.querySelector(`[data-message-id="${this.message?.id}"]`) as HTMLElement;
-    if (element) {
-      const rect = element.getBoundingClientRect();
+    if (this.isLastMessage) {
+      return 'top';
+    }
+
+    const messageElement = document.getElementById(this.message?.id?.toString() || '');
+    if (messageElement) {
+      const rect = messageElement.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
 

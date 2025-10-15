@@ -4,9 +4,10 @@
             [listenWindowScroll]="false" class="messages-container">
             <nb-list class="flex-column-reverse">
 
-                <nb-list-item *ngFor="let message of messages">
+                <nb-list-item *ngFor="let message of messages; let i = index">
                     <app-message class="overflow-auto" [message]="message" [allMessages]="messages"
-                        [userInfo]="userInfo" [id]="message.id"></app-message>
+                        [userInfo]="userInfo" [id]="message.id" [isLastMessage]="i === 0">
+                    </app-message>
                 </nb-list-item>
 
                 <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">
