@@ -23,7 +23,7 @@
     color: inherit;
     display: block;
     transition: all 0.3s ease;
-    
+
     &:hover {
         text-decoration: none;
         color: inherit;
@@ -34,23 +34,107 @@
     height: 45px;
     width: auto;
     transition: all 0.3s ease;
-    
+
     &:hover {
         filter: hue-rotate(15deg) brightness(1.1) saturate(1.2);
         transform: scale(1.05);
     }
 }
 
+// הסתרת אלמנטים במסכים בינוניים
 @media (max-width: 1124px) {
+
     .chatfree-spacer,
     .chatfree-branding {
         display: none !important;
     }
 }
 
-@media (max-width: 1124px) {
-    .chatfree-spacer,
-    .chatfree-branding {
+// התאמה למובייל - הסתרת כפתורים והצגתם בתפריט
+@media (max-width: 768px) {
+
+    // הסתר את הכפתורים במובייל
+    .desktop-buttons {
         display: none !important;
+    }
+
+    // הקטן את הלוגו
+    .img-circle {
+        height: 45px;
+        width: 45px;
+    }
+
+    .bg-light.rounded-circle {
+        width: 45px !important;
+        height: 45px !important;
+        margin: 0.5rem !important;
+    }
+
+    // התאם את גודל הטקסט
+    .fs-4 {
+        font-size: 1.1rem !important;
+        margin: 0.5rem 0 !important;
+    }
+
+    small {
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+
+    // צמצם את המרווחים
+    .d-flex.flex-column {
+        padding-right: 0.5rem;
+    }
+
+    nb-user {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    // כפתור התחברות
+    .login-button {
+        padding: 0.5rem 1rem !important;
+
+        .login-text {
+            display: none;
+        }
+    }
+}
+
+// התאמה למסכים ממש קטנים
+@media (max-width: 480px) {
+    .img-circle {
+        height: 40px;
+        width: 40px;
+    }
+
+    .bg-light.rounded-circle {
+        width: 40px !important;
+        height: 40px !important;
+        margin: 0.25rem 0.5rem !important;
+    }
+
+    .fs-4 {
+        font-size: 0.95rem !important;
+        margin: 0.25rem 0 !important;
+    }
+
+    small {
+        font-size: 0.7rem;
+        line-height: 1.2;
+    }
+
+    .mx-4 {
+        margin-left: 0.5rem !important;
+        margin-right: 0.5rem !important;
+    }
+}
+
+// במסכים גדולים - הצג את הכפתורים
+@media (min-width: 769px) {
+    .desktop-buttons {
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
     }
 }

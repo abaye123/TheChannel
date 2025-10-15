@@ -37,16 +37,7 @@ export class ChannelHeaderComponent implements OnInit {
   @Input()
   set userInfo(user: User | undefined) {
     this._userInfo = user;
-    this.userMenu = [
-      ...((user?.privileges?.['admin'] || user?.privileges?.['moderator']) ? [{
-        title: 'ניהול ערוץ',
-        icon: 'people-outline',
-      }] : []),
-      {
-        title: 'התנתק',
-        icon: 'log-out',
-      }
-    ];
+    this.updateUserMenu();
   }
 
   get userInfo() {
@@ -78,6 +69,7 @@ export class ChannelHeaderComponent implements OnInit {
   @HostListener('window:resize')
   onResize() {
     this.updateScreenSize();
+    this.updateUserMenu();
   }
 
   ngOnInit() {
@@ -87,16 +79,96 @@ export class ChannelHeaderComponent implements OnInit {
     this.contextMenuService.onItemClick()
       .pipe(filter(({ tag }) => tag === this.userMenuTag))
       .subscribe(value => {
-        switch (value.item.icon) {
-          case 'log-out':
-            this.logout();
-            break;
-          case 'people-outline':
-            this.dialogService.open(AdminPanelComponent, { closeOnBackdropClick: true });
-        }
+        this.handleMenuClick(value.item);
       });
 
     this.updateScreenSize();
+    this.updateUserMenu();
+  }
+
+  private updateUserMenu() {
+    const user = this._userInfo;
+    const baseMenu: NbMenuItem[] = [];
+
+    // במובייל - הוסף את הכפתורים לתפריט
+    if (this.isSmallScreen && user) {
+      // כפתור צלילים
+      baseMenu.push({
+        title: this.soundService.isEnabled() ? 'השתק צלילים' : 'הפעל צלילים',
+        icon: this.soundService.isEnabled() ? 'volume-up' : 'volume-off',
+        data: { action: 'toggle-sound' }
+      });
+
+      // כפתור התראות
+      if (this.notificationsService.initialized) {
+        baseMenu.push({
+          title: 'הגדרות התראות',
+          icon: 'bell',
+          data: { action: 'notifications' }
+        });
+      }
+
+      // כפתור צור קשר
+      if (this.chatService.channelInfo?.contact_us) {
+        baseMenu.push({
+          title: 'צור קשר',
+          icon: 'email-outline',
+          data: { action: 'contact-us' }
+        });
+      }
+
+      // מפריד
+      if (baseMenu.length > 0) {
+        baseMenu.push({
+          title: '',
+          icon: '',
+          data: { separator: true }
+        });
+      }
+    }
+
+    // ניהול ערוץ (רק למנהלים/מודים)
+    if (user?.privileges?.['admin'] || user?.privileges?.['moderator']) {
+      baseMenu.push({
+        title: 'ניהול ערוץ',
+        icon: 'people-outline',
+        data: { action: 'admin' }
+      });
+    }
+
+    // התנתק
+    if (user) {
+      baseMenu.push({
+        title: 'התנתק',
+        icon: 'log-out',
+        data: { action: 'logout' }
+      });
+    }
+
+    this.userMenu = baseMenu;
+  }
+
+  private handleMenuClick(item: NbMenuItem) {
+    const action = item.data?.action;
+
+    switch (action) {
+      case 'logout':
+        this.logout();
+        break;
+      case 'admin':
+        this.dialogService.open(AdminPanelComponent, { closeOnBackdropClick: true });
+        break;
+      case 'toggle-sound':
+        this.toggleSound();
+        this.updateUserMenu(); // עדכן את התפריט אחרי שינוי
+        break;
+      case 'notifications':
+        this.notificationsService.requestPermission();
+        break;
+      case 'contact-us':
+        this.openContactUs();
+        break;
+    }
   }
 
   googleLogin() {

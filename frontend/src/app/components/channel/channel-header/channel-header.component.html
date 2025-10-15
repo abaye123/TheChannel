@@ -30,26 +30,29 @@
     </div>
     }
 
-    @if (userInfo) {
-    <button nbButton shape="round" class="m-2"
-        [title]="soundService.isEnabled() ? 'בטל צלילי התראה' : 'הפעל צלילי התראה'"
-        [status]="soundService.isEnabled() ? 'success' : 'basic'" (click)="toggleSound()">
-        <nb-icon [icon]="soundService.isEnabled() ? 'volume-up' : 'volume-off'"></nb-icon>
-    </button>
-    }
+    <!-- כפתורים - מוצגים רק במסכים גדולים -->
+    <div class="desktop-buttons">
+        @if (userInfo) {
+        <button nbButton shape="round" class="m-2"
+            [title]="soundService.isEnabled() ? 'בטל צלילי התראה' : 'הפעל צלילי התראה'"
+            [status]="soundService.isEnabled() ? 'success' : 'basic'" (click)="toggleSound()">
+            <nb-icon [icon]="soundService.isEnabled() ? 'volume-up' : 'volume-off'"></nb-icon>
+        </button>
+        }
 
-    @if (chatService.channelInfo?.contact_us) {
-    <button nbButton shape="round" class="m-2" title="צור קשר" (click)="openContactUs()" status="info">
-        <nb-icon icon="email-outline"></nb-icon>
-    </button>
-    }
+        @if (chatService.channelInfo?.contact_us) {
+        <button nbButton shape="round" class="m-2" title="צור קשר" (click)="openContactUs()" status="info">
+            <nb-icon icon="email-outline"></nb-icon>
+        </button>
+        }
 
-    @if (notificationsService.initialized) {
-    <button nbButton shape="round" class="m-2" title="התראות" status="danger"
-        (click)="notificationsService.requestPermission()">
-        <nb-icon icon="bell"></nb-icon>
-    </button>
-    }
+        @if (notificationsService.initialized) {
+        <button nbButton shape="round" class="m-2" title="התראות" status="danger"
+            (click)="notificationsService.requestPermission()">
+            <nb-icon icon="bell"></nb-icon>
+        </button>
+        }
+    </div>
 
     @if (userInfo) {
     <nb-user [name]="userInfo.username" shape="round" [nbContextMenu]="userMenu" [nbContextMenuTag]="userMenuTag"
@@ -57,9 +60,9 @@
     </nb-user>
     } @else {
     <button nbButton shape="round" appearance="outline" title="התחבר באמצעות חשבון גוגל"
-        (click)="_authService.loginWithGoogle()">
+        (click)="_authService.loginWithGoogle()" class="login-button">
         <nb-icon icon="google"></nb-icon>
-        התחבר
+        <span class="login-text">התחבר</span>
     </button>
     }
 </div>
