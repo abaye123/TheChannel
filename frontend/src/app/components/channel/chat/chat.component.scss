@@ -41,7 +41,7 @@
   background: white;
   transition: all 0.3s ease;
   overflow: hidden;
-  
+
   height: calc(100vh - var(--nb-theme-header-height, 60px)) !important;
   top: var(--nb-theme-header-height, 60px) !important;
 
@@ -65,9 +65,9 @@ nb-list-item:first-child {
 }
 
 .scroll-to-bottom-btn {
-  position: absolute;
-  bottom: 25px;
-  left: 30px;
+  position: fixed;
+  bottom: 140px;
+  right: 15px;
   z-index: 1001;
 }
 
