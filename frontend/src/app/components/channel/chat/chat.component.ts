@@ -60,6 +60,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   public isLoadingOlder: boolean = false;
   public isLoadingNewer: boolean = false;
   private initialLoadComplete: boolean = false;
+  private isDialogOpen: boolean = false;
 
   constructor(
     public chatService: ChatService,
@@ -273,6 +274,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.thereNewMessages = false;
     }
 
+    // מניעת טעינת הודעות כשדיאלוג פתוח
+    if (this.isDialogOpen) {
+      return;
+    }
+
     // טעינת הודעות ישנות יותר כשמגיעים לראש הרשימה
     if (distanceFromTop < 300 && !this.isLoadingOlder && this.hasOldMessages) {
       this.loadOlderMessages();
@@ -282,6 +288,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (distanceFromBottom < 300 && !this.isLoadingNewer && this.hasNewMessages) {
       this.loadNewerMessages();
     }
+  }
+
+  setDialogOpen(isOpen: boolean) {
+    this.isDialogOpen = isOpen;
   }
 
   scrollToBottom(smooth: boolean = true) {

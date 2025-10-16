@@ -60,6 +60,9 @@ export class MessageComponent implements OnInit, AfterViewInit {
   @Input()
   isLastMessage: boolean = false;
 
+  @Input()
+  onDialogStateChange?: (isOpen: boolean) => void;
+
   @ViewChild(NgbPopover) popover!: NgbPopover;
   @ViewChild('media') mediaContainer!: ElementRef;
 
@@ -221,7 +224,23 @@ export class MessageComponent implements OnInit, AfterViewInit {
     if (target.tagName === 'IMG' || target.tagName === 'I') {
       const youtubeId = target.getAttribute('youtubeid');
       if (youtubeId) {
-        this.dialogService.open(YoutubePlayerComponent, { closeOnBackdropClick: true, context: { videoId: youtubeId } })
+        // עדכון שהדיאלוג פתוח
+        if (this.onDialogStateChange) {
+          this.onDialogStateChange(true);
+        }
+        
+        const dialogRef = this.dialogService.open(YoutubePlayerComponent, { 
+          closeOnBackdropClick: true, 
+          context: { videoId: youtubeId } 
+        });
+
+        // עדכון שהדיאלוג נסגר
+        dialogRef.onClose.subscribe(() => {
+          if (this.onDialogStateChange) {
+            this.onDialogStateChange(false);
+          }
+        });
+        
         return;
       }
       if (!this.v) {

@@ -6,7 +6,8 @@
 
                 <nb-list-item *ngFor="let message of messages; let i = index">
                     <app-message class="overflow-auto" [message]="message" [allMessages]="messages"
-                        [userInfo]="userInfo" [id]="message.id" [isLastMessage]="i === 0">
+                        [userInfo]="userInfo" [id]="message.id" [isLastMessage]="i === 0"
+                        [onDialogStateChange]="setDialogOpen.bind(this)">
                     </app-message>
                 </nb-list-item>
 
