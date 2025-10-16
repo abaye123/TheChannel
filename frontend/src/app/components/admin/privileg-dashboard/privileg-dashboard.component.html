@@ -3,11 +3,11 @@
         <span>ניהול הרשאות משתמשים</span>
 
         <div class="d-flex gap-2">
-            <button nbButton status="primary" (click)="saveChanges()"
+            <!--button nbButton status="primary" (click)="saveChanges()"
                 [disabled]="!authService.userInfo?.privileges?.['admin'] || !hasChanges" [nbSpinner]="isSaving">
                 <nb-icon *ngIf="!isSaving" icon="save-outline"></nb-icon>
                 {{ isSaving ? 'שומר...' : 'שמור שינויים' }}
-            </button>
+            </button-->
             <button nbButton status="success" *ngIf="!addingNewUser" (click)="addingNewUser = true">
                 <nb-icon icon="plus"></nb-icon>
                 הוסף מורשה
@@ -16,8 +16,9 @@
     </nb-card-header>
 
     <nb-card-body class="p-0">
-        <nb-alert *ngIf="hasChanges" status="warning" class="m-3 mb-0">
-            <strong>שים לב:</strong> יש שינויים שלא נשמרו. לחץ על "שמור שינויים" כדי לשמור את השינויים.
+        <nb-alert *ngIf="isSaving" status="info" class="m-3 mb-0">
+            <nb-icon icon="loader-outline" class="spinning"></nb-icon>
+            <strong>שומר שינויים...</strong>
         </nb-alert>
 
         <div class="search-section m-3">
@@ -50,11 +51,14 @@
 
             <div class="row g-2">
                 <div class="col-md-4">
-                    <input nbInput fullWidth type="email" [(ngModel)]="newUser.email" placeholder="כתובת מייל"
-                        size="small">
+                    <input nbInput fullWidth type="email" [(ngModel)]="newUser.email" placeholder="כתובת מייל (חובה)"
+                        size="small" [status]="newUser.email && !isValidEmail(newUser.email) ? 'danger' : 'basic'">
+                    <small *ngIf="newUser.email && !isValidEmail(newUser.email)" class="text-danger">
+                        כתובת מייל לא תקינה
+                    </small>
                 </div>
                 <div class="col-md-4">
-                    <input nbInput fullWidth type="text" [(ngModel)]="newUser.publicName" placeholder="שם ציבורי"
+                    <input nbInput fullWidth type="text" [(ngModel)]="newUser.publicName" placeholder="שם צבורי"
                         size="small">
                 </div>
                 <div class="col-md-2">
@@ -65,15 +69,11 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="d-flex gap-1">
-                        <button nbButton size="small" status="success" (click)="saveNewUser()"
-                            [disabled]="!newUser.email">
-                            <nb-icon icon="plus"></nb-icon>
-                        </button>
-                        <button nbButton size="small" ghost (click)="resetNewUser()">
-                            <nb-icon icon="close"></nb-icon>
-                        </button>
-                    </div>
+                    <button nbButton size="small" status="success" (click)="saveNewUser()"
+                        [disabled]="!newUser.email || !isValidEmail(newUser.email) || isSaving" [nbSpinner]="isSaving">
+                        <nb-icon *ngIf="!isSaving" icon="checkmark"></nb-icon>
+                        {{ isSaving ? 'מוסיף...' : 'הוסף' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -161,25 +161,25 @@
         </div>
     </nb-card-body>
 
-    <nb-card-footer class="d-flex justify-content-between align-items-center">
+    <!--nb-card-footer class="d-flex justify-content-between align-items-center">
         <div class="text-muted">
             <small>
                 סך הכל: <strong>{{ privilegeUsersList.length }}</strong> משתמשים מורשים
                 <span *ngIf="searchTerm" class="ms-2">
                     • מוצגים: <strong>{{ filteredPrivilegeUsersList.length }}</strong>
                 </span>
-                <span *ngIf="hasChanges" class="text-warning ms-2">
-                    • <strong>יש שינויים שלא נשמרו</strong>
+                <span *ngIf="isSaving" class="text-info ms-2">
+                    • <strong>שומר...</strong>
                 </span>
             </small>
         </div>
 
         <div class="d-flex gap-2">
-            <button nbButton ghost status="basic" (click)="resetChanges()" [disabled]="!hasChanges"
+            <button nbButton ghost status="basic" (click)="resetChanges()" [disabled]="!hasChanges || isSaving"
                 title="בטל את כל השינויים">
                 <nb-icon icon="refresh"></nb-icon>
                 איפוס
             </button>
         </div>
-    </nb-card-footer>
+    </nb-card-footer-->
 </nb-card>

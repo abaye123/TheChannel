@@ -90,9 +90,20 @@ export class PrivilegDashboardComponent implements OnInit {
     this.onSearchChange();
   }
 
+  private saveTimeout: any;
+
+  autoSaveDebounce() {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+
+    this.saveTimeout = setTimeout(() => {
+      this.saveChanges();
+    }, 2000);
+  }
+
   async saveChanges() {
     if (!this.hasChanges) {
-      this.tostService.info('', 'אין שינויים לשמירה');
       return;
     }
 
@@ -110,7 +121,50 @@ export class PrivilegDashboardComponent implements OnInit {
     }
   }
 
-  deleteUser(index: number) {
+  isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  async saveNewUser() {
+    if (!this.newUser.email?.trim()) {
+      this.tostService.warning('', 'יש להזין כתובת מייל');
+      return;
+    }
+
+    if (!this.isValidEmail(this.newUser.email)) {
+      this.tostService.warning('', 'כתובת המייל אינה תקינה');
+      return;
+    }
+
+    const existingUser = this.privilegeUsersList.find(
+      user => user.email.toLowerCase() === this.newUser.email.toLowerCase()
+    );
+
+    if (existingUser) {
+      this.tostService.warning('', 'משתמש עם מייל זה כבר קיים');
+      return;
+    }
+
+    this.privilegeUsersList.push({ ...this.newUser });
+
+    this.isSaving = true;
+    try {
+      await this.adminService.setPrivilegeUsers(this.privilegeUsersList);
+      this.originalPrivilegeUsersList = JSON.parse(JSON.stringify(this.privilegeUsersList));
+      this.hasChanges = false;
+      this.tostService.success('', 'משתמש חדש נוסף ונשמר בהצלחה');
+      this.resetNewUser();
+      this.onSearchChange();
+    } catch (error) {
+      this.tostService.danger('', 'שגיאה בשמירת המשתמש החדש');
+      this.privilegeUsersList = this.privilegeUsersList.filter(u => u.email !== this.newUser.email);
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  async deleteUser(index: number) {
     const userToDelete = this.filteredPrivilegeUsersList[index];
     const realIndex = this.privilegeUsersList.findIndex(user => user.email === userToDelete.email);
 
@@ -122,28 +176,20 @@ export class PrivilegDashboardComponent implements OnInit {
     }
 
     this.privilegeUsersList[realIndex].deleted = true;
-    this.markAsChanged();
-    this.onSearchChange();
-    this.saveChanges();
-  }
 
-  saveNewUser() {
-    if (!this.newUser.email) {
-      this.tostService.warning('', 'יש להזין כתובת מייל');
-      return;
+    this.isSaving = true;
+    try {
+      await this.adminService.setPrivilegeUsers(this.privilegeUsersList);
+      this.originalPrivilegeUsersList = JSON.parse(JSON.stringify(this.privilegeUsersList));
+      this.hasChanges = false;
+      this.onSearchChange();
+      this.tostService.success('', 'המשתמש נמחק בהצלחה');
+    } catch (error) {
+      this.tostService.danger('', 'שגיאה במחיקת המשתמש');
+      this.privilegeUsersList[realIndex].deleted = false;
+    } finally {
+      this.isSaving = false;
     }
-
-    const existingUser = this.privilegeUsersList.find(user => user.email === this.newUser.email);
-    if (existingUser) {
-      this.tostService.warning('', 'משתמש עם מייל זה כבר קיים');
-      return;
-    }
-
-    this.privilegeUsersList.push({ ...this.newUser });
-    this.resetNewUser();
-    this.markAsChanged();
-    this.onSearchChange();
-    this.tostService.success('', 'משתמש חדש נוסף בהצלחה');
   }
 
   resetNewUser() {
@@ -174,6 +220,10 @@ export class PrivilegDashboardComponent implements OnInit {
 
   markAsChanged() {
     this.hasChanges = !this.areArraysEqual(this.privilegeUsersList, this.originalPrivilegeUsersList);
+
+    if (this.hasChanges) {
+      this.autoSaveDebounce();
+    }
   }
 
   private areArraysEqual(arr1: PrivilegeUser[], arr2: PrivilegeUser[]): boolean {
