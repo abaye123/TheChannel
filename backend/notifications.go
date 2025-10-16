@@ -45,6 +45,10 @@ type NotificationsConfig struct {
 }
 
 func loadFCMConfigFromEnv() {
+	if settingConfig == nil {
+		return
+	}
+
 	if vapid := os.Getenv("VAPID_KEY"); vapid != "" {
 		settingConfig.VAPID = vapid
 	}
@@ -69,6 +73,10 @@ func loadFCMConfigFromEnv() {
 	}
 	if measurementId := os.Getenv("FCM_MEASUREMENT_ID"); measurementId != "" {
 		settingConfig.FcmMeasurementId = measurementId
+	}
+
+	if settingConfig.FcmJson == nil {
+		settingConfig.FcmJson = &FcmJsonConfing{}
 	}
 
 	if jsonType := os.Getenv("FCM_JSON_TYPE"); jsonType != "" {
@@ -110,9 +118,9 @@ func loadFCMConfigFromEnv() {
 	}
 }
 
-func init() {
-	loadFCMConfigFromEnv()
-}
+// func init() {
+// 	loadFCMConfigFromEnv()
+// }
 
 func getNotificationsConfig(w http.ResponseWriter, r *http.Request) {
 	response := NotificationsConfig{

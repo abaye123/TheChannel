@@ -40,6 +40,8 @@ func main() {
 	gob.Register(Session{})
 	initializePrivilegeUsers()
 
+	loadFCMConfigFromEnv()
+
 	var err error
 	store, err = redistore.NewRediStore(10, redisType, redisAddr, "", redisPass, []byte(secretKey))
 	if err != nil {
