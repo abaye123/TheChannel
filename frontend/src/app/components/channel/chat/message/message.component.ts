@@ -223,6 +223,8 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
     if (target.tagName === 'IMG' || target.tagName === 'I') {
       const youtubeId = target.getAttribute('youtubeid');
+      const isShorts = target.getAttribute('isshorts') === 'true';
+
       if (youtubeId) {
         // עדכון שהדיאלוג פתוח
         if (this.onDialogStateChange) {
@@ -231,7 +233,10 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
         const dialogRef = this.dialogService.open(YoutubePlayerComponent, {
           closeOnBackdropClick: true,
-          context: { videoId: youtubeId }
+          context: {
+            videoId: youtubeId,
+            isShorts: isShorts
+          }
         });
 
         // עדכון שהדיאלוג נסגר

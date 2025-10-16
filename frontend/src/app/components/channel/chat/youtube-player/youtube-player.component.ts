@@ -19,12 +19,20 @@ export class YoutubePlayerComponent implements OnInit {
   constructor(private dialogRef: NbDialogRef<YoutubePlayerComponent>) { }
 
   videoId: string = '';
+  isShorts: boolean = false;
   playerConfig = {
     autoplay: 1
   }
 
   ngOnInit(): void {
     this.videoId = this.dialogRef.componentRef.instance.videoId;
+    this.isShorts = this.dialogRef.componentRef.instance.isShorts || false;
+
+    if (this.isShorts) {
+      this.iframeHeight = this.iframeWidth * 16 / 9;
+      this.iframeWidth = Math.min(this.iframeWidth * 0.6, 400);
+      this.iframeHeight = this.iframeWidth * 16 / 9;
+    }
   }
 
   closeDialog() {
