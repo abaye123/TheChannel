@@ -29,6 +29,10 @@ func addNewPost(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	if settingConfig.MessageSignature != "" {
+		body.Text = body.Text + "\n\n---\n" + settingConfig.MessageSignature
+	}
+
 	message.ID = getMessageNextId(ctx)
 	message.Type = "md" //body.Type
 	message.Author = body.Author

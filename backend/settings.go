@@ -50,6 +50,7 @@ type SettingConfig struct {
 	CustomTitle               string
 	ContactUs                 string
 	ThreadsEnabled 			  bool
+	MessageSignature          string
 }
 
 type Setting struct {
@@ -86,6 +87,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 	config.MaxFileSize = 50
 	config.EditTimeLimit = 120
 	config.ThreadsEnabled = false
+	config.MessageSignature = ""
 
 	for _, setting := range *s {
 		switch setting.Key {
@@ -140,6 +142,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 					}
 				}
 			}
+
+		case "message_signature":
+			config.MessageSignature = setting.GetString()
 
 		case "on_notification":
 			config.OnNotification = setting.GetBool()

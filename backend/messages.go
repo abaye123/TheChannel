@@ -118,6 +118,10 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 		body.Text = t
 	}
 
+	if settingConfig.MessageSignature != "" {
+		body.Text = body.Text + "\n\n---\n" + settingConfig.MessageSignature
+	}
+
 	if body.ReplyTo > 0 {
     	replyToKey := fmt.Sprintf("messages:%d", body.ReplyTo)
     	exists, err := rdb.Exists(ctx, replyToKey).Result()
