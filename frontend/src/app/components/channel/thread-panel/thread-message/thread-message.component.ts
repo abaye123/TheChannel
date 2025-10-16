@@ -219,17 +219,24 @@ export class ThreadMessageComponent implements OnInit, AfterViewInit {
         if (target.tagName === 'IMG' || target.tagName === 'I') {
             const youtubeId = target.getAttribute('youtubeid');
             if (youtubeId) {
-                this.dialogService.open(YoutubePlayerComponent, { closeOnBackdropClick: true, context: { videoId: youtubeId } })
+                this.dialogService.open(YoutubePlayerComponent, {
+                    closeOnBackdropClick: true,
+                    context: { videoId: youtubeId }
+                });
                 return;
             }
-            if (!this.v) {
-                this.v = new Viewer(target, {
-                    toolbar: false,
-                    transition: true,
-                    navbar: false,
-                    title: false
-                });
+
+            if (this.v) {
+                this.v.destroy();
             }
+
+            this.v = new Viewer(target, {
+                toolbar: false,
+                transition: true,
+                navbar: false,
+                title: false
+            });
+
             this.v.show();
         }
     }

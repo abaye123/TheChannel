@@ -228,10 +228,10 @@ export class MessageComponent implements OnInit, AfterViewInit {
         if (this.onDialogStateChange) {
           this.onDialogStateChange(true);
         }
-        
-        const dialogRef = this.dialogService.open(YoutubePlayerComponent, { 
-          closeOnBackdropClick: true, 
-          context: { videoId: youtubeId } 
+
+        const dialogRef = this.dialogService.open(YoutubePlayerComponent, {
+          closeOnBackdropClick: true,
+          context: { videoId: youtubeId }
         });
 
         // עדכון שהדיאלוג נסגר
@@ -240,17 +240,21 @@ export class MessageComponent implements OnInit, AfterViewInit {
             this.onDialogStateChange(false);
           }
         });
-        
+
         return;
       }
-      if (!this.v) {
-        this.v = new Viewer(target, {
-          toolbar: false,
-          transition: true,
-          navbar: false,
-          title: false
-        });
+
+      if (this.v) {
+        this.v.destroy();
       }
+
+      this.v = new Viewer(target, {
+        toolbar: false,
+        transition: true,
+        navbar: false,
+        title: false
+      });
+
       this.v.show();
     }
   }
