@@ -26,8 +26,8 @@
                     size="tiny" (click)="editMessage(message)" title="ערוך הודעה">
                     <nb-icon icon="edit"></nb-icon>
                 </button>
-                <button *ngIf="canUserDeleteMessage(message)" class="thread-icon-button" nbButton ghost shape="round"
-                    size="tiny" (click)="deleteMessage(message)" title="מחק הודעה">
+                <button *ngIf="canUserDeleteMessage(message) && !message.deleted" class="thread-icon-button" nbButton
+                    ghost shape="round" size="tiny" (click)="deleteMessage(message)" title="מחק הודעה">
                     <nb-icon icon="trash-2"></nb-icon>
                 </button>
 

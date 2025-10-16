@@ -26,8 +26,8 @@
                 (click)="editMessage(message)" title="ערוך הודעה">
                 <nb-icon icon="edit"></nb-icon>
             </button>
-            <button *ngIf="canUserDeleteMessage(message)" class="icon-button" nbButton ghost shape="round" size="small"
-                (click)="deleteMessage(message)" title="מחק הודעה">
+            <button *ngIf="canUserDeleteMessage(message) && !message.deleted" class="icon-button" nbButton ghost
+                shape="round" size="small" (click)="deleteMessage(message)" title="מחק הודעה">
                 <nb-icon icon="trash-2"></nb-icon>
             </button>
             <button
@@ -88,7 +88,8 @@
             </div>
         </div>
 
-        <div *ngIf="chatService.channelInfo?.threads_enabled && !isInThread && !message.deleted && hasThreadReplies(message)" class="thread-actions">
+        <div *ngIf="chatService.channelInfo?.threads_enabled && !isInThread && !message.deleted && hasThreadReplies(message)"
+            class="thread-actions">
             <button *ngIf="hasThreadReplies(message)" class="thread-replies-button" nbButton ghost size="small"
                 (click)="openThread(message)" [title]="'פתח שרשור (' + message.threadCount + ' תגובות)'">
                 <nb-icon icon="message-square-outline"></nb-icon>
