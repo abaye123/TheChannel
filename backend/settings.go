@@ -23,6 +23,7 @@ type SettingConfig struct {
 	AdWidth                   int64
 	RequireAuth               bool
 	RequireAuthForViewFiles   bool
+	AllowOnlyExistingUsers    bool
 	RegexReplace              []*ReplaceRegex
 	WebhookURL                string
 	VerifyToken               string
@@ -88,6 +89,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 	config.EditTimeLimit = 120
 	config.ThreadsEnabled = false
 	config.MessageSignature = ""
+	config.AllowOnlyExistingUsers = false
 
 	for _, setting := range *s {
 		switch setting.Key {
@@ -99,6 +101,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "require_auth":
 			config.RequireAuth = setting.GetBool()
+
+		case "allow_only_existing_users":
+			config.AllowOnlyExistingUsers = setting.GetBool()
 			
 		case "require_auth_for_view_files":
 			config.RequireAuthForViewFiles = setting.GetBool()

@@ -35,8 +35,45 @@
     <div class="login-section">
       <h2>התחברות</h2>
 
-      <div *ngIf="status === 'failed'" class="error-message">
-        התחברות נכשלה. נסה שוב.
+      <div *ngIf="status === 'not-registered'" class="error-message error-not-registered">
+        <div class="error-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+        </div>
+        <div class="error-content">
+          <strong>גישה לערוץ מוגבלת</strong>
+          <p>הערוץ מאפשר כניסה רק למשתמשים רשומים מראש.</p>
+          <p class="error-hint">אם אתה אמור להיות רשום בערוץ זה, אנא פנה למנהל הערוץ.</p>
+        </div>
+      </div>
+
+      <div *ngIf="status === 'blocked'" class="error-message error-blocked">
+        <div class="error-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z" />
+          </svg>
+        </div>
+        <div class="error-content">
+          <strong>חשבון חסום</strong>
+          <p>הגישה שלך לערוץ זה נחסמה.</p>
+          <p class="error-hint">לפרטים נוספים, צור קשר עם מנהל הערוץ.</p>
+        </div>
+      </div>
+
+      <div *ngIf="status === 'failed'" class="error-message error-general">
+        <div class="error-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+        </div>
+        <div class="error-content">
+          <strong>התחברות נכשלה</strong>
+          <p>אירעה שגיאה בעת ההתחברות. אנא נסה שוב.</p>
+        </div>
       </div>
 
       <button *ngIf="!code && !checkUserInfo" class="login-button" (click)="login()">

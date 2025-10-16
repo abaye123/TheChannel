@@ -7,6 +7,8 @@ import { HttpClient } from '@angular/common/http';
 import { Channel } from '../../models/channel.model';
 import { firstValueFrom } from 'rxjs';
 
+type ErrorStatus = 'failed' | 'not-registered' | 'blocked' | null;
+
 @Component({
   selector: 'app-login',
   imports: [
@@ -19,7 +21,7 @@ import { firstValueFrom } from 'rxjs';
 export class LoginComponent implements OnInit {
   code: string = '';
   checkUserInfo: boolean = false;
-  status!: 'failed';
+  status: ErrorStatus = null;
   channelInfo?: Channel;
   loadingChannelInfo: boolean = true;
 
@@ -41,17 +43,31 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/']);
         return;
       }
-    } catch {
+    } catch (error: any) {
       this._route.queryParams.subscribe(params => {
         if (Object.keys(params).length > 0) {
           if (params['code'] && params['state'] === localStorage.getItem('google_oauth_state')) {
             this.code = params['code'];
             this._authService.login(this.code).then(() => {
               this.router.navigate(['/']);
-            }).catch(() => {
+            }).catch((error) => {
               this.code = '';
-              this.status = 'failed';
-              alert('התחברות נכשלה, נסה שוב');
+
+              if (error.status === 403) {
+                const errorMessage = error.error?.toLowerCase() || '';
+
+                if (errorMessage.includes('blocked')) {
+                  this.status = 'blocked';
+                } else if (errorMessage.includes('not registered') ||
+                  errorMessage.includes('access denied') ||
+                  errorMessage.includes('not allowed')) {
+                  this.status = 'not-registered';
+                } else {
+                  this.status = 'failed';
+                }
+              } else {
+                this.status = 'failed';
+              }
             });
           }
         }

@@ -110,6 +110,15 @@ func login(w http.ResponseWriter, r *http.Request) {
     }
 
     email, _ := dyno.GetString(claims["email"])
+
+	if settingConfig.AllowOnlyExistingUsers {
+		if _, ok := privilegesUsers.Load(email); !ok {
+			go saveLoginFailedLog("User not in system", errors.New("user "+email+" not allowed"))
+			http.Error(w, "Access denied - user not registered in system", http.StatusForbidden)
+			return
+		}
+	}
+
 	go registeringEmail(email)
 
     u, err := getUser(ctx, claims)
@@ -224,6 +233,10 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 		user = v.(User)
 		
 		if user.Deleted {
+			if settingConfig.AllowOnlyExistingUsers {
+				return nil, errors.New("user account was deleted and cannot be restored")
+			}
+			
 			privileges := Privileges{}
 			if settingConfig.AutoGrantWriterPrivilege {
 				privileges[Writer] = true
@@ -288,6 +301,10 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 			}
 		}
 	} else {
+		if settingConfig.AllowOnlyExistingUsers {
+			return nil, errors.New("user not registered in system")
+		}
+		
 		privileges := Privileges{}
 		if settingConfig.AutoGrantWriterPrivilege {
 			privileges[Writer] = true
