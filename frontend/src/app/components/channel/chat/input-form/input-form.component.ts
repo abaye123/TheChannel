@@ -78,6 +78,36 @@ export class InputFormComponent implements OnInit {
     }
   }
 
+  @HostListener('paste', ['$event'])
+  onPaste(event: ClipboardEvent) {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.type.indexOf('image') !== -1) {
+        event.preventDefault();
+
+        const file = item.getAsFile();
+        if (file) {
+          const newAttachment: Attachment = { file: file };
+          const index = this.attachments.push(newAttachment) - 1;
+
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = (e) => {
+            if (e.target) {
+              this.attachments[index].url = e.target.result as string;
+            }
+          };
+
+          this.uploadFile(this.attachments[index]);
+        }
+      }
+    }
+  }
+
   ngOnInit() {
     if (this.message) {
       this.input = this.message.text || '';
