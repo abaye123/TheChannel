@@ -70,3 +70,60 @@
         max-height: 100px;
     }
 }
+
+// הגבלת גובה התצוגה המקדימה
+.d-flex.flex-row {
+    .flex-grow-1.overflow-auto {
+        nb-card.rounded-3.mb-0 {
+            max-height: 45vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+
+            nb-card-body {
+                overflow-y: auto;
+                flex: 1;
+                min-height: 60px;
+            }
+
+            nb-card-footer {
+                flex-shrink: 0;
+                position: sticky;
+                bottom: 0;
+                background: white;
+                z-index: 10;
+            }
+
+            &::-webkit-scrollbar,
+            nb-card-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-track,
+            nb-card-body::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 3px;
+            }
+
+            &::-webkit-scrollbar-thumb,
+            nb-card-body::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+
+                &:hover {
+                    background: #a8a8a8;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .d-flex.flex-row {
+        .flex-grow-1.overflow-auto {
+            nb-card.rounded-3.mb-0 {
+                max-height: 40vh;
+            }
+        }
+    }
+}
