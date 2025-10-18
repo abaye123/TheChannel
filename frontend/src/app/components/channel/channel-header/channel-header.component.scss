@@ -1,32 +1,92 @@
-.img-circle {
-    height: 60px;
+.header-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    min-height: 70px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+// === לוגו ===
+.channel-logo {
+    flex-shrink: 0;
+}
+
+.logo-image,
+.logo-placeholder {
     width: 60px;
+    height: 60px;
+    border-radius: 50%;
     cursor: pointer;
 }
 
-.chatfree-spacer {
-    flex: 1;
-    min-width: 33.33vw;
-}
-
-.chatfree-branding {
+.logo-placeholder {
+    background-color: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
-    margin-left: 2rem;
-    margin-right: 2rem;
+    font-weight: bold;
+    color: #000;
+}
+
+// === מידע על הערוץ ===
+.channel-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // חשוב למניעת overflow
+    max-width: 400px; // מגביל לכ-6-7 מילים
+    flex-shrink: 1;
+}
+
+.channel-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-description {
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #666;
+}
+
+.channel-participants {
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0;
+}
+
+// === מרווח אמצעי ===
+.header-spacer {
+    flex: 1;
+    min-width: 2rem;
+}
+
+// === ברנדינג ChatFree ===
+.chatfree-branding {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    flex-shrink: 0;
 }
 
 .chatfree-link {
     text-decoration: none;
-    color: inherit;
     display: block;
     transition: all 0.3s ease;
 
     &:hover {
         text-decoration: none;
-        color: inherit;
     }
 }
 
@@ -41,100 +101,241 @@
     }
 }
 
-// הסתרת אלמנטים במסכים בינוניים
-@media (max-width: 1124px) {
+// === כפתורי פעולה ===
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
 
-    .chatfree-spacer,
-    .chatfree-branding {
-        display: none !important;
+.action-btn {
+    min-width: 40px;
+    height: 40px;
+}
+
+// === משתמש ===
+.user-section {
+    flex-shrink: 0;
+    padding-right: 0.5rem;
+}
+
+.login-button {
+    .login-text {
+        margin-right: 0.5rem;
     }
 }
 
-// התאמה למובייל - הסתרת כפתורים והצגתם בתפריט
-@media (max-width: 768px) {
+// ===================================
+// התאמות רספונסיביות
+// ===================================
 
-    // הסתר את הכפתורים במובייל
-    .desktop-buttons {
-        display: none !important;
+// מסכים גדולים מאוד (1400px+)
+@media (min-width: 1400px) {
+    .channel-info {
+        max-width: 500px;
+    }
+}
+
+// מסכים גדולים (1200px-1399px)
+@media (max-width: 1399px) {
+    .channel-info {
+        max-width: 400px;
+    }
+}
+
+// מסכים בינוניים-גדולים (1024px-1199px)
+@media (max-width: 1199px) {
+    .channel-info {
+        max-width: 350px;
+    }
+}
+
+// מחשבים ניידים 15.6" (992px-1023px)
+@media (max-width: 1023px) {
+    .header-spacer {
+        min-width: 1rem;
     }
 
-    // הקטן את הלוגו
-    .img-circle {
-        height: 45px;
-        width: 45px;
+    .channel-info {
+        max-width: 300px;
     }
 
-    .bg-light.rounded-circle {
-        width: 45px !important;
-        height: 45px !important;
-        margin: 0.5rem !important;
+    .channel-name {
+        font-size: 1.35rem;
+    }
+}
+
+// מחשבים ניידים 14" (900px-991px)
+@media (max-width: 991px) {
+    .header-container {
+        padding: 0.5rem 0.75rem;
     }
 
-    // התאם את גודל הטקסט
-    .fs-4 {
-        font-size: 1.1rem !important;
-        margin: 0.5rem 0 !important;
+    .channel-info {
+        max-width: 250px;
     }
 
-    small {
+    .channel-name {
+        font-size: 1.25rem;
+    }
+
+    .channel-description {
+        font-size: 0.813rem;
+    }
+
+    .chatfree-branding {
+        display: none;
+    }
+}
+
+// מחשבים ניידים 13" (800px-899px)
+@media (max-width: 899px) {
+    .action-buttons {
+        gap: 0.25rem;
+    }
+
+    .channel-info {
+        max-width: 220px;
+    }
+}
+
+// טאבלטים אופקיים / מחשבים ניידים 11" (768px-799px)
+@media (max-width: 799px) {
+
+    .logo-image,
+    .logo-placeholder {
+        width: 50px;
+        height: 50px;
+    }
+
+    .channel-info {
+        max-width: 200px;
+    }
+
+    .channel-name {
+        font-size: 1.15rem;
+    }
+
+    .channel-description {
         font-size: 0.75rem;
-        line-height: 1.3;
     }
 
-    // צמצם את המרווחים
-    .d-flex.flex-column {
-        padding-right: 0.5rem;
+    .channel-participants {
+        font-size: 0.7rem;
     }
 
-    nb-user {
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-    }
-
-    // כפתור התחברות
-    .login-button {
-        padding: 0.5rem 1rem !important;
-
-        .login-text {
+    // הסתר כפתורים מסוימים - יעברו לתפריט
+    .action-buttons {
+        button:not(:first-child) {
             display: none;
         }
     }
 }
 
-// התאמה למסכים ממש קטנים
-@media (max-width: 480px) {
-    .img-circle {
-        height: 40px;
-        width: 40px;
+// טאבלטים מאונכים (600px-767px)
+@media (max-width: 767px) {
+    .header-container {
+        gap: 0.75rem;
+        padding: 0.5rem;
     }
 
-    .bg-light.rounded-circle {
-        width: 40px !important;
-        height: 40px !important;
-        margin: 0.25rem 0.5rem !important;
+    .channel-info {
+        max-width: 180px;
     }
 
-    .fs-4 {
-        font-size: 0.95rem !important;
-        margin: 0.25rem 0 !important;
+    .channel-name {
+        font-size: 1.1rem;
     }
 
-    small {
-        font-size: 0.7rem;
-        line-height: 1.2;
+    .header-spacer {
+        /* display: none; */
     }
 
-    .mx-4 {
-        margin-left: 0.5rem !important;
-        margin-right: 0.5rem !important;
+    .user-section {
+        /* padding-right: 0; */
+        padding-right: 0.5rem;
+    }
+
+    .login-button .login-text {
+        /* display: none; */
     }
 }
 
-// במסכים גדולים - הצג את הכפתורים
-@media (min-width: 769px) {
-    .desktop-buttons {
-        display: flex !important;
-        align-items: center;
+// טלפונים גדולים אופקיים (480px-599px)
+@media (max-width: 599px) {
+
+    .logo-image,
+    .logo-placeholder {
+        width: 45px;
+        height: 45px;
+    }
+
+    .channel-info {
+        max-width: 150px;
+    }
+
+    .channel-name {
+        font-size: 1rem;
+    }
+
+    .channel-description {
+        display: none; // הסתר תיאור במסכים קטנים
+    }
+
+    .channel-participants {
+        font-size: 0.65rem;
+    }
+}
+
+// טלפונים מאונכים (320px-479px)
+@media (max-width: 479px) {
+    .header-container {
         gap: 0.5rem;
+        padding: 0.4rem;
+        min-height: 60px;
+    }
+
+    .logo-image,
+    .logo-placeholder {
+        width: 40px;
+        height: 40px;
+    }
+
+    .channel-info {
+        max-width: 120px;
+    }
+
+    .channel-name {
+        font-size: 0.95rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .channel-participants {
+        font-size: 0.6rem;
+    }
+
+    .action-btn {
+        min-width: 36px;
+        height: 36px;
+    }
+}
+
+// טלפונים קטנים מאוד (עד 360px)
+@media (max-width: 360px) {
+    .header-container {
+        gap: 0.35rem;
+    }
+
+    .channel-info {
+        max-width: 100px;
+    }
+
+    .channel-name {
+        font-size: 0.875rem;
+    }
+
+    .channel-participants {
+        font-size: 0.55rem;
     }
 }

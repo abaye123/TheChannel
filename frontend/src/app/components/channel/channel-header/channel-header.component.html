@@ -1,27 +1,26 @@
-<div class="d-flex flex-row gap-2 align-items-center justify-content-between">
-    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-4"
-        style="width: 60px; height: 60px">
+<div class="header-container">
+    <div class="channel-logo">
         @if (chatService.channelInfo?.logoUrl?.length) {
-        <img [src]="chatService.channelInfo?.logoUrl" class="rounded-circle img-circle"
-            (click)="viewLargeImage($event)">
+        <img [src]="chatService.channelInfo?.logoUrl" class="logo-image" (click)="viewLargeImage($event)">
         } @else {
-        <div class="bg-light text-black fw-bold rounded-circle img-circle d-flex align-items-center justify-content-center"
-            title="ללא תמונה">
+        <div class="logo-placeholder" title="ללא תמונה">
             {{ chatService.channelInfo?.name?.[0] || '?' }}
         </div>
         }
     </div>
-    <div class="d-flex flex-column flex-grow-1">
-        <span class="fs-4 my-2 fw-bold">{{ chatService.channelInfo?.name }}</span>
-        <small *ngIf="chatService.channelInfo?.description">
+
+    <div class="channel-info">
+        <h1 class="channel-name">{{ chatService.channelInfo?.name }}</h1>
+        <p class="channel-description" *ngIf="chatService.channelInfo?.description">
             {{ chatService.channelInfo?.description }}
-        </small>
-        <small>
+        </p>
+        <small class="channel-participants">
             {{ chatService.channelInfo?.views }} משתתפים
         </small>
     </div>
 
-    <div class="chatfree-spacer"></div>
+    <div class="header-spacer"></div>
+
     @if (chatService.channelInfo?.showCredit) {
     <div class="chatfree-branding">
         <a href="https://chatfree.app" target="_blank" class="chatfree-link">
@@ -30,10 +29,13 @@
     </div>
     }
 
-    <!-- כפתורים - מוצגים רק במסכים גדולים -->
-    <div class="desktop-buttons">
+    <div class="action-buttons">
+        <button nbButton shape="round" ghost class="action-btn" title="חיפוש" (click)="openSearch()">
+            <nb-icon icon="search-outline"></nb-icon>
+        </button>
+
         @if (userInfo) {
-        <button nbButton shape="round" class="m-2"
+        <button nbButton shape="round" ghost class="action-btn"
             [title]="soundService.isEnabled() ? 'בטל צלילי התראה' : 'הפעל צלילי התראה'"
             [status]="soundService.isEnabled() ? 'success' : 'basic'" (click)="toggleSound()">
             <nb-icon [icon]="soundService.isEnabled() ? 'volume-up' : 'volume-off'"></nb-icon>
@@ -41,28 +43,30 @@
         }
 
         @if (chatService.channelInfo?.contact_us) {
-        <button nbButton shape="round" class="m-2" title="צור קשר" (click)="openContactUs()" status="info">
+        <button nbButton shape="round" ghost class="action-btn" title="צור קשר" (click)="openContactUs()" status="info">
             <nb-icon icon="email-outline"></nb-icon>
         </button>
         }
 
         @if (notificationsService.initialized) {
-        <button nbButton shape="round" class="m-2" title="התראות" status="danger"
+        <button nbButton shape="round" ghost class="action-btn" title="התראות" status="danger"
             (click)="notificationsService.requestPermission()">
             <nb-icon icon="bell"></nb-icon>
         </button>
         }
     </div>
 
-    @if (userInfo) {
-    <nb-user [name]="userInfo.username" shape="round" [nbContextMenu]="userMenu" [nbContextMenuTag]="userMenuTag"
-        [picture]="userInfo.picture || ''" [onlyPicture]="isSmallScreen" class="font-bold px-3">
-    </nb-user>
-    } @else {
-    <button nbButton shape="round" appearance="outline" title="התחבר באמצעות חשבון גוגל"
-        (click)="_authService.loginWithGoogle()" class="login-button">
-        <nb-icon icon="google"></nb-icon>
-        <span class="login-text">התחבר</span>
-    </button>
-    }
+    <div class="user-section">
+        @if (userInfo) {
+        <nb-user [name]="userInfo.username" shape="round" [nbContextMenu]="userMenu" [nbContextMenuTag]="userMenuTag"
+            [picture]="userInfo.picture || ''" [onlyPicture]="isSmallScreen">
+        </nb-user>
+        } @else {
+        <button nbButton shape="round" outline class="login-button" title="התחבר באמצעות חשבון גוגל"
+            (click)="_authService.loginWithGoogle()">
+            <nb-icon icon="google"></nb-icon>
+            <span class="login-text">התחבר</span>
+        </button>
+        }
+    </div>
 </div>

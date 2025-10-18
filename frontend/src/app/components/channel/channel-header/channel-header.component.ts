@@ -90,9 +90,9 @@ export class ChannelHeaderComponent implements OnInit {
     const user = this._userInfo;
     const baseMenu: NbMenuItem[] = [];
 
-    // במובייל - הוסף את הכפתורים לתפריט
+    // במובייל - הוסף את כל הכפתורים לתפריט (מלבד חיפוש שתמיד נראה)
     if (this.isSmallScreen && user) {
-      // כפתור צלילים
+      // כפתור צליל
       baseMenu.push({
         title: this.soundService.isEnabled() ? 'השתק צלילים' : 'הפעל צלילים',
         icon: this.soundService.isEnabled() ? 'volume-up' : 'volume-off',
@@ -236,5 +236,12 @@ export class ChannelHeaderComponent implements OnInit {
 
   openContactUs() {
     window.open(this.chatService.channelInfo?.contact_us, '_blank');
+  }
+
+  openSearch() {
+    // TODO: פתח את תיבת החיפוש
+    // כאן נוסיף לוגיקה לפתיחת קומפוננט החיפוש
+    console.log('פתיחת חיפוש');
+    this.toastrService.info("", "חיפוש - בקרוב");
   }
 }
