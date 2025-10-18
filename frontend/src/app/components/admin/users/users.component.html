@@ -1,26 +1,16 @@
 <nb-card>
     <nb-card-header class="d-flex justify-content-between align-items-center">
         <span>ניהול משתמשים</span>
-        <!--div class="d-flex gap-2">
-            <nb-badge [text]="usersAmount.toString()" status="info" title="סך הכל משתמשים רשומים">
-                <nb-icon icon="people-outline"></nb-icon>
-            </nb-badge>
-            <nb-badge [text]="totalUsers.toString()" status="primary" title="משתמשים פעילים">
-                <nb-icon icon="person-outline"></nb-icon>
-            </nb-badge>
-            <nb-badge [text]="blockedCount.toString()" status="danger" title="משתמשים חסומים">
-                <nb-icon icon="slash-outline"></nb-icon>
-            </nb-badge>
-        </div-->
     </nb-card-header>
 
     <nb-card-body>
-        <!--There is a bug in the display-->
         <div class="mb-3">
-            <nb-alert status="info" size="small">
-                <strong>סך הכל משתמשים שהזדהו במערכת:</strong> {{usersAmount}} • <strong>משתמשים פעילים:</strong>
-                {{totalUsers - blockedCount}}<span *ngIf="blockedCount > 0"> • <strong>חסומים:</strong>
-                    {{blockedCount}}</span>
+            <nb-alert status="info">
+                <span class="d-inline">
+                    <strong>סך הכל משתמשים שהזדהו במערכת:</strong> {{usersAmount}} •
+                    <strong>משתמשים פעילים:</strong> {{totalUsers - blockedCount}}<span *ngIf="blockedCount > 0"> •
+                        <strong>חסומים:</strong> {{blockedCount}}</span>
+                </span>
             </nb-alert>
         </div>
 
@@ -31,6 +21,12 @@
             <button nbButton [status]="showOnlyBlocked ? 'danger' : 'basic'" (click)="toggleBlockedFilter()" outline>
                 <nb-icon icon="funnel-outline"></nb-icon>
                 {{ showOnlyBlocked ? 'חסומים בלבד' : 'כל המשתמשים' }}
+            </button>
+
+            <button nbButton status="success" (click)="exportToCSV()" [disabled]="loading || filteredUsers.length === 0"
+                outline>
+                <nb-icon icon="download-outline"></nb-icon>
+                ייצא
             </button>
 
             <button nbButton status="primary" (click)="loadUsers()" [disabled]="loading">
@@ -60,20 +56,6 @@
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <nb-user [name]="user.username || 'משתמש ללא שם'" [title]="user.email" size="medium">
                             </nb-user>
-
-                            <!--There is a bug in the display-->
-                            <!--div class="badges-container">
-                                <nb-badge *ngIf="user.isAdmin" text="מנהל ראשי" status="success" class="me-1">
-                                </nb-badge>
-                                <nb-badge *ngIf="user.blocked" text="חסום" status="danger" class="me-1">
-                                </nb-badge>
-                                <nb-badge *ngIf="user.privileges?.['moderator'] && !user.isAdmin" text="מנהל"
-                                    status="warning" class="me-1">
-                                </nb-badge>
-                                <nb-badge *ngIf="user.privileges?.['writer'] && !user.privileges?.['moderator']"
-                                    text="כותב" status="info" class="me-1">
-                                </nb-badge>
-                            </div-->
                         </div>
 
                         <div class="user-details">

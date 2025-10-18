@@ -106,6 +106,53 @@ export class UsersComponent implements OnInit {
     this.filterUsers();
   }
 
+  exportToCSV(): void {
+    try {
+      const headers = ['שם משתמש', 'אימייל', 'שם ציבורי', 'מנהל ראשי', 'חסום', 'הרשאות'];
+      
+      const rows = this.filteredUsers.map(user => {
+        const privileges = [];
+        if (user.privileges?.['moderator']) privileges.push('מנהל');
+        if (user.privileges?.['writer']) privileges.push('כותב');
+        
+        return [
+          user.username || '',
+          user.email,
+          user.publicName || '',
+          user.isAdmin ? 'כן' : 'לא',
+          user.blocked ? 'כן' : 'לא',
+          privileges.join(', ')
+        ];
+      });
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      const BOM = '\uFEFF';
+      const csvWithBOM = BOM + csvContent;
+
+      const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.setAttribute('href', url);
+      link.setAttribute('download', `users_${timestamp}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      this.toastrService.success('', 'הקובץ הורד בהצלחה');
+    } catch (error) {
+      this.toastrService.danger('', 'שגיאה בהורדת הקובץ');
+      console.error('Error exporting CSV:', error);
+    }
+  }
+
   async blockUser(user: Users): Promise<void> {
     if (user.isAdmin) {
       this.toastrService.warning('', 'לא ניתן לחסום משתמש מנהל');
