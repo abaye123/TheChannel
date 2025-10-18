@@ -33,13 +33,12 @@ import { AutosizeModule } from "ngx-autosize";
     NbProgressBarModule,
     NbCardModule,
     NbFormFieldModule,
-    // AngularEditorModule, // Corrected module name
     NbToggleModule,
     NbSpinnerModule,
     MarkdownComponent,
     NbTagModule,
     NbAlertModule,
-    NgIconsModule, // Use NgIconsModule directly, icons are configured in app.config.ts
+    NgIconsModule,
     AutosizeModule,
   ],
   templateUrl: './input-form.component.html',
@@ -57,6 +56,7 @@ export class InputFormComponent implements OnInit {
   isSending: boolean = false;
   showMarkdownPreview: boolean = false;
   hasScrollbar: boolean = false;
+  isDragging: boolean = false;
 
   replyToMessage?: ChatMessage;
 
@@ -86,25 +86,54 @@ export class InputFormComponent implements OnInit {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
-      if (item.type.indexOf('image') !== -1) {
+      if (item.type.indexOf('image') !== -1 ||
+        item.type.indexOf('video') !== -1 ||
+        item.type.indexOf('audio') !== -1) {
         event.preventDefault();
 
         const file = item.getAsFile();
         if (file) {
-          const newAttachment: Attachment = { file: file };
-          const index = this.attachments.push(newAttachment) - 1;
-
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = (e) => {
-            if (e.target) {
-              this.attachments[index].url = e.target.result as string;
-            }
-          };
-
-          this.uploadFile(this.attachments[index]);
+          this.handleFile(file);
         }
       }
+    }
+  }
+
+  @HostListener('dragover', ['$event'])
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  @HostListener('dragleave', ['$event'])
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    if (
+      event.clientX <= rect.left ||
+      event.clientX >= rect.right ||
+      event.clientY <= rect.top ||
+      event.clientY >= rect.bottom
+    ) {
+      this.isDragging = false;
+    }
+  }
+
+  @HostListener('drop', ['$event'])
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    const files = event.dataTransfer?.files;
+    if (!files) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      this.handleFile(file);
     }
   }
 
@@ -132,21 +161,28 @@ export class InputFormComponent implements OnInit {
     });
   }
 
+  handleFile(file: File) {
+    const newAttachment: Attachment = { file: file };
+    const index = this.attachments.push(newAttachment) - 1;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      if (e.target) {
+        this.attachments[index].url = e.target.result as string;
+      }
+    };
+
+    this.uploadFile(this.attachments[index]);
+  }
+
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files) {
-      let newAttachment: Attachment = { file: input.files[0] };
-      let i = this.attachments.push(newAttachment) - 1;
-
-      let reader = new FileReader();
-      reader.readAsDataURL(newAttachment.file);
-      reader.onload = (event) => {
-        if (event.target) {
-          this.attachments[i].url = event.target.result as string;
-        }
+      for (let i = 0; i < input.files.length; i++) {
+        this.handleFile(input.files[i]);
       }
-
-      this.uploadFile(this.attachments[i]);
+      input.value = '';
     }
   }
 
@@ -168,7 +204,7 @@ export class InputFormComponent implements OnInit {
 
             if (!uploadedFile) return;
             if (uploadedFile?.filetype === 'image') {
-              embedded = `[image-embedded#](${uploadedFile.url})`; //`![${uploadedFile.filename}](${uploadedFile.url})`;
+              embedded = `[image-embedded#](${uploadedFile.url})`;
 
             } else if (uploadedFile?.filetype === 'video') {
               embedded = `[video-embedded#](${uploadedFile.url})`;

@@ -88,7 +88,9 @@ export class ThreadInputComponent implements OnInit, OnDestroy {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
 
-            if (item.type.indexOf('image') !== -1) {
+            if (item.type.indexOf('image') !== -1 ||
+                item.type.indexOf('video') !== -1 ||
+                item.type.indexOf('audio') !== -1) {
                 event.preventDefault();
 
                 const file = item.getAsFile();

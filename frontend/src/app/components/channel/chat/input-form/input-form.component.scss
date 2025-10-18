@@ -3,6 +3,72 @@
     color: #333333;
 }
 
+// עיצוב לגרירת קבצים
+.input-form-container {
+    position: relative;
+    transition: opacity 0.2s ease;
+
+    &.dragging {
+        opacity: 0.6;
+    }
+}
+
+.drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 111, 255, 0.15) 0%, rgba(102, 111, 255, 0.05) 100%);
+    border: 3px dashed rgba(102, 111, 255, 0.6);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    animation: pulse 1.5s ease-in-out infinite;
+
+    .drag-content {
+        text-align: center;
+        pointer-events: none;
+
+        .drag-icon {
+            font-size: 3rem;
+            color: #666fff;
+            margin-bottom: 12px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        .drag-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #666fff;
+            margin: 0;
+        }
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        background: linear-gradient(135deg, rgba(102, 111, 255, 0.15) 0%, rgba(102, 111, 255, 0.05) 100%);
+        border-color: rgba(102, 111, 255, 0.6);
+    }
+    50% {
+        background: linear-gradient(135deg, rgba(102, 111, 255, 0.25) 0%, rgba(102, 111, 255, 0.1) 100%);
+        border-color: rgba(102, 111, 255, 0.8);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 // עיצוב תצוגת התגובה
 .reply-preview-section {
     margin-bottom: 8px;
