@@ -16,6 +16,9 @@ import { ChannelHeaderComponent } from "./channel-header/channel-header.componen
 import { ChatComponent } from "./chat/chat.component";
 import { ChatService } from '../../services/chat.service';
 import { User } from '../../models/user.model';
+import { SearchService } from '../../services/search.service';
+import { SearchHeaderComponent } from '../search/search-header/search-header.component';
+import { SearchResultsComponent } from '../search/search-results/search-results.component';
 
 @Component({
   selector: 'app-channel',
@@ -31,6 +34,8 @@ import { User } from '../../models/user.model';
     NbSidebarModule,
     NbListModule,
     ChatComponent,
+    SearchHeaderComponent,
+    SearchResultsComponent
   ],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
@@ -47,12 +52,15 @@ export class ChannelComponent implements OnInit {
     }
   }
 
+  isSearchVisible = false;
+
   constructor(
     private adsService: AdsService,
     private _authService: AuthService,
     private renderer: Renderer2,
     private el: ElementRef,
-    public chatService: ChatService
+    public chatService: ChatService,
+    private searchService: SearchService
   ) { }
 
   ad: Ad = { src: '', width: 0 };
@@ -72,6 +80,10 @@ export class ChannelComponent implements OnInit {
         this.updateLayoutClasses();
       }, 0);
     });
+
+    this.searchService.searchVisibleObservable.subscribe(
+      visible => this.isSearchVisible = visible
+    );
   }
 
   onInputHeightChanged() {

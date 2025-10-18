@@ -101,3 +101,16 @@ app-advertising {
     }
   }
 }
+
+nb-layout-column.search-column {
+  width: 100% !important;
+  padding: 0 !important;
+  height: calc(100vh - var(--nb-theme-header-height, 60px));
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  nb-layout-column.search-column {
+    height: calc(100vh - var(--nb-theme-header-height, 60px));
+  }
+}

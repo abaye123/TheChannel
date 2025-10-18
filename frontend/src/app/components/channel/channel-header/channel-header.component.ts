@@ -17,6 +17,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ChatService } from '../../../services/chat.service';
 import { NotificationsService } from '../../../services/notifications.service';
 import { SoundService } from '../../../services/sound.service';
+import { SearchService } from '../../../services/search.service';
 import { AdminPanelComponent } from "../../admin/admin-panel.component";
 import { User } from '../../../models/user.model';
 
@@ -62,6 +63,7 @@ export class ChannelHeaderComponent implements OnInit {
     public notificationsService: NotificationsService,
     private titleService: Title,
     public soundService: SoundService,
+    private searchService: SearchService,
     private dialogService: NbDialogService,
   ) {
   }
@@ -239,9 +241,6 @@ export class ChannelHeaderComponent implements OnInit {
   }
 
   openSearch() {
-    // TODO: פתח את תיבת החיפוש
-    // כאן נוסיף לוגיקה לפתיחת קומפוננט החיפוש
-    console.log('פתיחת חיפוש');
-    this.toastrService.info("", "חיפוש - בקרוב");
+    this.searchService.openSearch();
   }
 }

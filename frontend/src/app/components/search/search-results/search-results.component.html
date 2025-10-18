@@ -1,0 +1,87 @@
+<div class="search-results-container">
+    <!-- Loading State -->
+    <div *ngIf="isSearching" class="loading-state">
+        <nb-spinner size="large"></nb-spinner>
+        <p>מחפש...</p>
+    </div>
+
+    <!-- No Results State -->
+    <div *ngIf="!isSearching && searchResults && searchResults.results.length === 0" class="no-results-state">
+        <nb-icon icon="search-outline" class="no-results-icon"></nb-icon>
+        <h3>לא נמצאו תוצאות</h3>
+        <p>נסה לשנות את מילות החיפוש או את מצב החיפוש</p>
+    </div>
+
+    <!-- Results -->
+    <div *ngIf="!isSearching && searchResults && searchResults.results.length > 0" class="results-content">
+        <div class="results-header">
+            <div class="results-info">
+                <strong>{{ searchResults.total }}</strong>
+                <span> תוצאות עבור "</span>
+                <strong>{{ searchResults.query }}</strong>
+                <span>"</span>
+            </div>
+            <div class="results-meta">
+                <small class="text-muted">
+                    <nb-icon icon="clock-outline"></nb-icon>
+                    {{ searchResults.tookMs }}ms
+                </small>
+            </div>
+        </div>
+
+        <nb-list class="results-list">
+            <nb-list-item *ngFor="let message of searchResults.results; trackBy: trackByMessageId" class="result-item">
+                <app-message [message]="message" [userInfo]="authService.userInfo" [allMessages]="searchResults.results"
+                    [isInThread]="false"></app-message>
+            </nb-list-item>
+        </nb-list>
+
+        <!-- Pagination -->
+        <div class="pagination-controls" *ngIf="searchResults.total > pageSize">
+            <button nbButton ghost size="small" [disabled]="currentPage === 1 || loadingMore" (click)="previousPage()">
+                <nb-icon icon="arrow-forward-outline"></nb-icon>
+                הקודם
+            </button>
+
+            <div class="page-info">
+                <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+            </div>
+
+            <button nbButton ghost size="small" [disabled]="!searchResults.hasMore || loadingMore" (click)="nextPage()">
+                הבא
+                <nb-icon icon="arrow-back-outline"></nb-icon>
+            </button>
+        </div>
+
+        <nb-alert *ngIf="loadingMore" status="info" size="small" class="loading-more">
+            <nb-spinner size="tiny"></nb-spinner>
+            <span class="ms-2">טוען עמוד נוסף...</span>
+        </nb-alert>
+    </div>
+
+    <!-- Initial State -->
+    <div *ngIf="!isSearching && !searchResults" class="initial-state">
+        <nb-icon icon="search-outline" class="initial-icon"></nb-icon>
+        <h3>חיפוש הודעות</h3>
+        <div class="search-tips">
+            <h4>טיפים לחיפוש:</h4>
+            <ul>
+                <li><strong>חיפוש פשוט:</strong> הקלד מילות חיפוש רגילות</li>
+                <li><strong>חיפוש מתקדם:</strong> השתמש בביטויים רגולריים (Regex)</li>
+            </ul>
+            <div class="examples">
+                <p><strong>דוגמאות לחיפוש פשוט:</strong></p>
+                <ul>
+                    <li>"שלום עולם" - חיפוש שתי המילים</li>
+                    <li>"יוסי כהן" - חיפוש בשם משתמש</li>
+                </ul>
+                <p><strong>דוגמאות לחיפוש מתקדם:</strong></p>
+                <ul>
+                    <li>\bמילה\b - מילה מדויקת</li>
+                    <li>\d+ - חיפוש מספרים</li>
+                    <li>https?://[^\s]+ - חיפוש קישורים</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

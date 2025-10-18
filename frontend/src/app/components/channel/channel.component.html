@@ -1,17 +1,23 @@
 <nb-layout id="container">
     <nb-layout-header fixed>
-        <app-channel-header [(userInfo)]="userInfo" style="flex: auto;"></app-channel-header>
+        <app-search-header *ngIf="isSearchVisible" style="flex: auto;"></app-search-header>
+        <app-channel-header *ngIf="!isSearchVisible" [(userInfo)]="userInfo" style="flex: auto;"></app-channel-header>
     </nb-layout-header>
 
-    <nb-layout-column class="chat-column" [class.with-thread]="chatService.isThreadVisible()">
+    <nb-layout-column *ngIf="!isSearchVisible" class="chat-column" [class.with-thread]="chatService.isThreadVisible()">
         <app-chat class=""></app-chat>
     </nb-layout-column>
 
-    <nb-layout-column *ngIf="ad" class="ad-column d-none d-lg-flex" [class.with-thread]="chatService.isThreadVisible()">
+    <nb-layout-column *ngIf="isSearchVisible" class="search-column">
+        <app-search-results></app-search-results>
+    </nb-layout-column>
+
+    <nb-layout-column *ngIf="ad && !isSearchVisible" class="ad-column d-none d-lg-flex"
+        [class.with-thread]="chatService.isThreadVisible()">
         <app-advertising [ad]="ad"></app-advertising>
     </nb-layout-column>
 
-    @if (userInfo?.privileges?.['writer']) {
+    @if (userInfo?.privileges?.['writer'] && !isSearchVisible) {
     <nb-layout-footer #inputForm id="inputForm" class="fixed-footer"
         [class.with-thread]="chatService.isThreadVisible()">
         <app-input-form class="w-100" (inputHeightChanged)="onInputHeightChanged()"></app-input-form>

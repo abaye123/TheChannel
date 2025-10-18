@@ -1,0 +1,64 @@
+<div class="search-header-container">
+  <div class="search-input-wrapper">
+    <nb-icon icon="search-outline" class="search-icon"></nb-icon>
+    <input
+      nbInput
+      fullWidth
+      type="text"
+      [(ngModel)]="searchQuery"
+      [placeholder]="getPlaceholder()"
+      (keydown.enter)="performSearch()"
+      [disabled]="isSearching"
+      class="search-input"
+      #searchInput
+    />
+    <button
+      *ngIf="searchQuery"
+      nbButton
+      ghost
+      size="tiny"
+      (click)="clearSearch()"
+      class="clear-btn"
+      title="נקה"
+    >
+      <nb-icon icon="close-outline"></nb-icon>
+    </button>
+  </div>
+
+  <div class="search-controls">
+    <nb-select
+      [(ngModel)]="searchMode"
+      size="small"
+      [disabled]="isSearching"
+      class="mode-select"
+    >
+      <nb-option value="simple">חיפוש פשוט</nb-option>
+      <nb-option value="advanced">חיפוש מתקדם (Regex)</nb-option>
+    </nb-select>
+
+    <button
+      nbButton
+      status="primary"
+      size="small"
+      (click)="performSearch()"
+      [disabled]="!searchQuery.trim() || isSearching"
+      class="search-btn"
+    >
+      <nb-spinner *ngIf="isSearching" size="tiny" status="control"></nb-spinner>
+      <nb-icon *ngIf="!isSearching" icon="search-outline"></nb-icon>
+      <span *ngIf="!isSearching">חפש</span>
+    </button>
+
+    <button
+      nbButton
+      ghost
+      status="danger"
+      size="small"
+      (click)="closeSearch()"
+      class="close-search-btn"
+      title="סגור חיפוש"
+    >
+      <nb-icon icon="close-outline"></nb-icon>
+    </button>
+  </div>
+</div>
