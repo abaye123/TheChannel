@@ -1,7 +1,7 @@
 <nb-card>
     <nb-card-header class="d-flex justify-content-between align-items-center">
         <span>ניהול משתמשים</span>
-        <div class="d-flex gap-2">
+        <!--div class="d-flex gap-2">
             <nb-badge [text]="usersAmount.toString()" status="info" title="סך הכל משתמשים רשומים">
                 <nb-icon icon="people-outline"></nb-icon>
             </nb-badge>
@@ -11,16 +11,16 @@
             <nb-badge [text]="blockedCount.toString()" status="danger" title="משתמשים חסומים">
                 <nb-icon icon="slash-outline"></nb-icon>
             </nb-badge>
-        </div>
+        </div-->
     </nb-card-header>
 
     <nb-card-body>
         <!--There is a bug in the display-->
         <div class="mb-3">
             <nb-alert status="info" size="small">
-                <strong>סך הכל משתמשים שהזדהו במערכת:</strong> {{usersAmount}}
-                <span class="ms-3"><strong>משתמשים פעילים:</strong> {{totalUsers - blockedCount}}</span>
-                <span *ngIf="blockedCount > 0" class="ms-3"><strong>חסומים:</strong> {{blockedCount}}</span>
+                <strong>סך הכל משתמשים שהזדהו במערכת:</strong> {{usersAmount}} • <strong>משתמשים פעילים:</strong>
+                {{totalUsers - blockedCount}}<span *ngIf="blockedCount > 0"> • <strong>חסומים:</strong>
+                    {{blockedCount}}</span>
             </nb-alert>
         </div>
 
