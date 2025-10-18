@@ -87,6 +87,7 @@ func main() {
 			api.Get("/files/{fileid}", serveFile)
 			api.Get("/user-info", getUserInfo)
 			api.Get("/thread/{messageId}", getThreadRepliesHandler)
+			api.Post("/search", searchMessages)
 
 			api.Route("/admin", func(protected chi.Router) {
 				// ⚠️ WARNING: Route not check privilege use protectedWithPrivilege to check privilege.
