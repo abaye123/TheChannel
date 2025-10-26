@@ -11,6 +11,7 @@ import (
 	"github.com/boj/redistore"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/gorilla/sessions"
 )
 
 var rootStaticFolder = os.Getenv("ROOT_STATIC_FOLDER")
@@ -48,7 +49,25 @@ func main() {
 		panic(err)
 	}
 	store.SetMaxAge(60 * 60 * 24 * 30)
-	store.Options.HttpOnly = true
+	store.Options = &sessions.Options{
+		Path:     "/",
+		HttpOnly: true,
+	}
+
+	sameSitePolicy := settingConfig.SharingCookies
+
+	switch sameSitePolicy {
+	case "None":
+		log.Println("Setting cookie SameSite policy to 'None' for cross-domain usage.")
+		store.Options.SameSite = http.SameSiteNoneMode
+		store.Options.Secure = true
+	case "Strict":
+		log.Println("Setting cookie SameSite policy to 'Strict'.")
+		store.Options.SameSite = http.SameSiteStrictMode
+	default:
+		log.Println("Setting cookie SameSite policy to 'Lax' (default).")
+		store.Options.SameSite = http.SameSiteLaxMode
+	}
 	defer store.Close()
 
 	r := chi.NewRouter()
@@ -112,7 +131,7 @@ func main() {
 				protected.Get("/blocked-users/get-list", protectedWithPrivilege(Admin, getBlockedUsers))
 				protected.Get("/user-block-status", protectedWithPrivilege(Admin, getUserBlockStatus))
 
-			 	// temporary
+				// temporary
 				protected.Get("/users/get-list", protectedWithPrivilege(Admin, getAllUsers))
 			})
 		})
@@ -128,7 +147,6 @@ func main() {
 	}
 }
 
-		
 func serveSpaFile(w http.ResponseWriter, r *http.Request) {
 	htmlPath := filepath.Join(settingConfig.RootStaticFolder, "index.html")
 	content, err := os.ReadFile(htmlPath)

@@ -50,8 +50,9 @@ type SettingConfig struct {
 	EditTimeLimit             int64
 	CustomTitle               string
 	ContactUs                 string
-	ThreadsEnabled 			  bool
+	ThreadsEnabled            bool
 	MessageSignature          string
+	SharingCookies            string
 }
 
 type Setting struct {
@@ -104,7 +105,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "allow_only_existing_users":
 			config.AllowOnlyExistingUsers = setting.GetBool()
-			
+
 		case "require_auth_for_view_files":
 			config.RequireAuthForViewFiles = setting.GetBool()
 
@@ -134,7 +135,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "google_analytics_id":
 			config.GoogleAnalyticsID = setting.GetString()
-			
+
 		case "regex-replace":
 			if r := setting.GetString(); r != "" {
 				parts := strings.Split(r, "#")
@@ -207,7 +208,7 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "custom_title":
 			config.CustomTitle = setting.GetString()
-				case "fcm_json_type":
+		case "fcm_json_type":
 			config.FcmJson.Type = setting.GetString()
 
 		case "fcm_json_project_id":
@@ -245,6 +246,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "threads_enabled":
 			config.ThreadsEnabled = setting.GetBool()
+
+		case "sharing_cookies":
+			config.SharingCookies = setting.GetString()
 		}
 	}
 
