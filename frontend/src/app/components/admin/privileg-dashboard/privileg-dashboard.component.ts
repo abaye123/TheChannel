@@ -270,4 +270,132 @@ export class PrivilegDashboardComponent implements OnInit {
   trackByIndex(index: number): number {
     return index;
   }
+
+  // CSV Upload functionality
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.uploadCSV(file);
+    }
+  }
+
+  async uploadCSV(file: File) {
+    const reader = new FileReader();
+    reader.onload = async (e: any) => {
+      try {
+        const csvContent = e.target.result;
+        const users = this.parseCSV(csvContent);
+        
+        if (users.length === 0) {
+          this.tostService.warning('', 'לא נמצאו משתמשים תקינים בקובץ');
+          return;
+        }
+
+        // Merge with existing users
+        let addedCount = 0;
+        let updatedCount = 0;
+        
+        for (const newUser of users) {
+          const existingIndex = this.privilegeUsersList.findIndex(
+            u => u.email.toLowerCase() === newUser.email.toLowerCase()
+          );
+
+          if (existingIndex >= 0) {
+            // Update existing user
+            this.privilegeUsersList[existingIndex].privileges = { ...newUser.privileges };
+            updatedCount++;
+          } else {
+            // Add new user
+            this.privilegeUsersList.push(newUser);
+            addedCount++;
+          }
+        }
+
+        // Save changes
+        this.isSaving = true;
+        try {
+          await this.adminService.setPrivilegeUsers(this.privilegeUsersList);
+          this.originalPrivilegeUsersList = JSON.parse(JSON.stringify(this.privilegeUsersList));
+          this.hasChanges = false;
+          this.onSearchChange();
+          this.tostService.success(
+            '', 
+            `קובץ CSV נטען בהצלחה! נוספו ${addedCount} משתמשים, עודכנו ${updatedCount} משתמשים`
+          );
+        } catch (error) {
+          this.tostService.danger('', 'שגיאה בשמירת המשתמשים מהקובץ');
+        } finally {
+          this.isSaving = false;
+        }
+      } catch (error) {
+        this.tostService.danger('', 'שגיאה בקריאת הקובץ. ודא שהקובץ בפורמט תקין');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  parseCSV(csvContent: string): PrivilegeUser[] {
+    const users: PrivilegeUser[] = [];
+    const lines = csvContent.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      // Skip header row if it contains "email" or "כתובת"
+      if (i === 0 && (line.toLowerCase().includes('email') || line.includes('כתובת'))) {
+        continue;
+      }
+
+      const parts = line.split(',').map(p => p.trim().replace(/^["']|["']$/g, ''));
+      
+      if (parts.length < 2) continue;
+      
+      const email = parts[0];
+      const permissionLevel = parseInt(parts[1], 10);
+
+      // Validate email
+      if (!this.isValidEmail(email)) {
+        console.warn(`Invalid email on line ${i + 1}: ${email}`);
+        continue;
+      }
+
+      // Validate permission level
+      if (isNaN(permissionLevel) || permissionLevel < 0 || permissionLevel > 1) {
+        console.warn(`Invalid permission level on line ${i + 1}: ${parts[1]}`);
+        continue;
+      }
+
+      const user: PrivilegeUser = {
+        username: '',
+        publicName: '',
+        email: email,
+        privileges: {
+          admin: false,
+          moderator: false,
+          writer: permissionLevel === 1
+        }
+      };
+
+      users.push(user);
+    }
+
+    return users;
+  }
+
+  downloadTemplate() {
+    const csvContent = 'email,permission_level\nexample@domain.com,1\nuser@example.com,0\n';
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'privileges_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    this.tostService.success('', 'קובץ התבנית הורד בהצלחה');
+  }
 }

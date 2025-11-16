@@ -3,11 +3,15 @@
         <span>ניהול הרשאות משתמשים</span>
 
         <div class="d-flex gap-2">
-            <!--button nbButton status="primary" (click)="saveChanges()"
-                [disabled]="!authService.userInfo?.privileges?.['admin'] || !hasChanges" [nbSpinner]="isSaving">
-                <nb-icon *ngIf="!isSaving" icon="save-outline"></nb-icon>
-                {{ isSaving ? 'שומר...' : 'שמור שינויים' }}
-            </button-->
+            <button nbButton status="info" (click)="downloadTemplate()">
+                <nb-icon icon="download-outline"></nb-icon>
+                הורד תבנית CSV
+            </button>
+            <button nbButton status="primary" (click)="fileInput.click()" [disabled]="isSaving">
+                <nb-icon icon="upload-outline"></nb-icon>
+                העלה CSV
+            </button>
+            <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" style="display: none;">
             <button nbButton status="success" *ngIf="!addingNewUser" (click)="addingNewUser = true">
                 <nb-icon icon="plus"></nb-icon>
                 הוסף מורשה
