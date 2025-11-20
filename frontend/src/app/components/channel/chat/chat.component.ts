@@ -74,6 +74,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private initialLoadComplete: boolean = false;
   private isDialogOpen: boolean = false;
   lastReadMessageId: number = 0;
+  private intersectionObserver?: IntersectionObserver;
 
   constructor(
     public chatService: ChatService,
@@ -131,6 +132,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.initializeMessageListener();
     this.keepAliveSSE();
+    this.setupIntersectionObserver();
 
     this._authService.loadUserInfo().then((res) => {
       this.userInfo = res;
@@ -139,8 +141,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.loadMessages().then(() => {
       const lastReadMsg = Number(localStorage.getItem('lastReadMessage'));
-      const lastMsgId = this.messages[0].id!;
-      if (lastReadMsg && lastReadMsg < lastMsgId) {
+      const lastMsgId = this.messages[0]?.id;
+      if (lastReadMsg && lastMsgId && lastReadMsg < lastMsgId) {
         setTimeout(() => {
           this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
           this.lastReadMessageId = lastReadMsg;
@@ -149,8 +151,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.scrollToBottom(false);
       }
 
-      this.setLastReadMessage(lastMsgId.toString());
       this.initialLoadComplete = true;
+      setTimeout(() => this.observeMessages(), 500);
     });
 
     this.subscribeToThreadMessages();
@@ -211,7 +213,8 @@ export class ChatComponent implements OnInit, OnDestroy {
                 this.messageIds.add(message.message.id);
                 const isMyMessage = message.message.author === this.userInfo?.username;
                 this.thereNewMessages = !isMyMessage;
-                this.setLastReadMessage(message.message.id!.toString());
+
+                setTimeout(() => this.observeMessage(message.message.id!), 100);
 
                 if (!isMyMessage) {
                   if (this.soundService.isInitialized()) {
@@ -265,6 +268,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chatService.sseClose();
     clearInterval(this.subLastHeartbeat);
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.intersectionObserver?.disconnect();
   }
 
   async keepAliveSSE() {
@@ -370,6 +374,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         if (updatedValidIds.length > 0) {
           this.offset = Math.min(...updatedValidIds);
         }
+
+        setTimeout(() => {
+          newMessages.forEach(msg => {
+            if (msg.id) this.observeMessage(msg.id);
+          });
+        }, 200);
       } else {
         this.hasOldMessages = false;
       }
@@ -404,6 +414,12 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         this.messages.unshift(...newMessages.reverse());
         this.hasNewMessages = response.length >= this.limit;
+
+        setTimeout(() => {
+          newMessages.forEach(msg => {
+            if (msg.id) this.observeMessage(msg.id);
+          });
+        }, 200);
       } else {
         this.hasNewMessages = false;
       }
@@ -526,5 +542,48 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   getMainChatClass(): string {
     return this.isThreadOpen() ? 'main-chat with-thread' : 'main-chat';
+  }
+
+  private setupIntersectionObserver() {
+    const options = {
+      root: null, // viewport
+      rootMargin: '0px',
+      threshold: 0.5
+    };
+
+    this.intersectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const messageId = Number(entry.target.id);
+          if (messageId) {
+            const currentLastRead = Number(localStorage.getItem('lastReadMessage')) || 0;
+            if (messageId > currentLastRead) {
+              this.setLastReadMessage(messageId.toString());
+            }
+          }
+        }
+      });
+    }, options);
+  }
+
+  private observeMessages() {
+    if (!this.intersectionObserver) return;
+    
+    this.messages.forEach(message => {
+      if (message.id) {
+        this.observeMessage(message.id);
+      }
+    });
+  }
+
+  private observeMessage(messageId: number) {
+    if (!this.intersectionObserver) return;
+    
+    setTimeout(() => {
+      const element = document.getElementById(messageId.toString());
+      if (element) {
+        this.intersectionObserver!.observe(element);
+      }
+    }, 100);
   }
 }
