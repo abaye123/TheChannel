@@ -51,14 +51,25 @@ const customEmbedExtension = {
           const imgStyle = isShorts
             ? 'width: 100%; aspect-ratio: 9/16; object-fit: cover;'
             : 'width: 100%;';
-          const iconStyle = isShorts
-            ? 'position: absolute; place-self: anchor-center; color: red; font-size: 50px;'
-            : 'position: absolute; place-self: anchor-center; color: red; font-size: 70px;';
-
-          return `<div style="${containerStyle}">
-            <img youtubeid="${id}" ${isShorts ? 'isshorts="true"' : ''} src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" class="img-fluid" style="${imgStyle}">
-            <i class="bi bi-youtube" youtubeid="${id}" ${isShorts ? 'isshorts="true"' : ''} style="${iconStyle}"></i>
-          </div>`;
+          
+          // Different icons for Shorts vs regular videos
+          if (isShorts) {
+            // YouTube Shorts icon (custom SVG)
+            return `<div style="${containerStyle}">
+              <img youtubeid="${id}" isshorts="true" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" class="img-fluid" style="${imgStyle}">
+              <svg youtubeid="${id}" isshorts="true" style="position: absolute; place-self: anchor-center; width: 50px; height: 50px; cursor: pointer;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5" y="3" width="14" height="18" rx="3" fill="#FF0000"/>
+                <path d="M10 8.5L15 12L10 15.5V8.5Z" fill="white"/>
+              </svg>
+            </div>`;
+          } else {
+            // Regular YouTube icon
+            const iconStyle = 'position: absolute; place-self: anchor-center; color: red; font-size: 70px;';
+            return `<div style="${containerStyle}">
+              <img youtubeid="${id}" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" class="img-fluid" style="${imgStyle}">
+              <i class="bi bi-youtube" youtubeid="${id}" style="${iconStyle}"></i>
+            </div>`;
+          }
         default:
           return '';
       }
@@ -68,7 +79,7 @@ const customEmbedExtension = {
 
 const renderer = new MarkedRenderer();
 
-renderer.link = ({ href, title, text }) => {
+renderer.link = ({ href, title, text }: { href: string; title?: string | null; text: string }) => {
   const titleAttr = title ? ` title="${title}"` : '';
   return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
 };
