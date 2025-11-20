@@ -33,13 +33,15 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated := false
 	isAdmin := false
 	isModerator := false
-	
+	userId := ""
+
 	session, err := store.Get(r, cookieName)
 	if err == nil {
 		if userSession, ok := session.Values["user"].(Session); ok {
 			isAuthenticated = true
 			isAdmin = userSession.Privileges[Admin]
 			isModerator = userSession.Privileges[Moderator]
+			userId = userSession.ID
 		}
 	}
 
@@ -53,7 +55,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
 
-	addViewsToMessages(ctx, messages)
+	addViewsToMessages(ctx, messages, userId)
 }
 
 func getThreadRepliesHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,12 +72,14 @@ func getThreadRepliesHandler(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated := false
 	isAdmin := false
 	isModerator := false
+	userId := ""
 	session, err := store.Get(r, cookieName)
 	if err == nil {
 		if userSession, ok := session.Values["user"].(Session); ok {
 			isAuthenticated = true
 			isAdmin = userSession.Privileges[Admin]
 			isModerator = userSession.Privileges[Moderator]
+			userId = userSession.ID
 		}
 	}
 
@@ -88,6 +92,8 @@ func getThreadRepliesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(replies)
+
+	addViewsToMessages(ctx, replies, userId)
 }
 
 func addMessage(w http.ResponseWriter, r *http.Request) {
@@ -123,13 +129,13 @@ func addMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if body.ReplyTo > 0 {
-    	replyToKey := fmt.Sprintf("messages:%d", body.ReplyTo)
-    	exists, err := rdb.Exists(ctx, replyToKey).Result()
-    	if err != nil || exists == 0 {
-    	    log.Printf("Referenced message %d does not exist", body.ReplyTo)
-        	http.Error(w, "Referenced message not found", http.StatusBadRequest)
-        	return
-    	}
+		replyToKey := fmt.Sprintf("messages:%d", body.ReplyTo)
+		exists, err := rdb.Exists(ctx, replyToKey).Result()
+		if err != nil || exists == 0 {
+			log.Printf("Referenced message %d does not exist", body.ReplyTo)
+			http.Error(w, "Referenced message not found", http.StatusBadRequest)
+			return
+		}
 	}
 
 	message.ID = getMessageNextId(ctx)

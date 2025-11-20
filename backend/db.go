@@ -19,21 +19,21 @@ var redisPass = os.Getenv("REDIS_PASSWORD")
 var rdb *redis.Client
 
 type Message struct {
-	ID        int          		`json:"id" redis:"id"`
-	Type      string       		`json:"type" redis:"type"`
-	Text      string       		`json:"text" redis:"text"`
-	Author    string       		`json:"author" redis:"author"`
-	AuthorId  string       		`json:"authorId" redis:"authorId"`
-	Timestamp time.Time    		`json:"timestamp" redis:"timestamp"`
-	LastEdit  time.Time    		`json:"last_edit" redis:"last_edit"`
-	File      FileResponse 		`json:"file" redis:"-"`
-	Deleted   bool         		`json:"deleted" redis:"deleted"`
-	Views     int          		`json:"views" redis:"views"`
-	Reactions Reactions    		`json:"reactions" redis:"reactions"`
-	ReplyTo   int          		`json:"replyTo,omitempty" redis:"reply_to"`
-	IsThread  bool         		`json:"isThread" redis:"is_thread"`
-	OriginalMessage *Message	`json:"originalMessage,omitempty" redis:"-"`
-	ThreadCount     int     	`json:"threadCount,omitempty" redis:"-"`
+	ID              int          `json:"id" redis:"id"`
+	Type            string       `json:"type" redis:"type"`
+	Text            string       `json:"text" redis:"text"`
+	Author          string       `json:"author" redis:"author"`
+	AuthorId        string       `json:"authorId" redis:"authorId"`
+	Timestamp       time.Time    `json:"timestamp" redis:"timestamp"`
+	LastEdit        time.Time    `json:"last_edit" redis:"last_edit"`
+	File            FileResponse `json:"file" redis:"-"`
+	Deleted         bool         `json:"deleted" redis:"deleted"`
+	Views           int          `json:"views" redis:"views"`
+	Reactions       Reactions    `json:"reactions" redis:"reactions"`
+	ReplyTo         int          `json:"replyTo,omitempty" redis:"reply_to"`
+	IsThread        bool         `json:"isThread" redis:"is_thread"`
+	OriginalMessage *Message     `json:"originalMessage,omitempty" redis:"-"`
+	ThreadCount     int          `json:"threadCount,omitempty" redis:"-"`
 }
 
 type User struct {
@@ -350,8 +350,8 @@ var getMessageRange = redis.NewScript(`
 func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool, isModerator bool, direction string) ([]Message, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
 	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{
-		strconv.FormatInt(stop, 10), 
-		strconv.FormatBool(isAdmin), 
+		strconv.FormatInt(stop, 10),
+		strconv.FormatBool(isAdmin),
 		strconv.FormatBool(countViews),
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
@@ -454,11 +454,28 @@ func funcDeleteMessage(ctx context.Context, id string) error {
 	return nil
 }
 
-func addViewsToMessages(ctx context.Context, messages []Message) {
+func addViewsToMessages(ctx context.Context, messages []Message, userId string) {
 	if !settingConfig.CountViews {
 		return
 	}
+
+	// Don't track views for guests (empty userId)
+	if userId == "" {
+		return
+	}
+
 	for _, m := range messages {
+		viewedByKey := fmt.Sprintf("message:%d:viewed_by", m.ID)
+
+		isViewed, err := rdb.SIsMember(ctx, viewedByKey, userId).Result()
+		if err != nil || isViewed {
+			continue
+		}
+
+		if err := rdb.SAdd(ctx, viewedByKey, userId).Err(); err != nil {
+			continue
+		}
+
 		rdb.HIncrBy(ctx, fmt.Sprintf("messages:%d", m.ID), "views", 1)
 	}
 }
@@ -617,7 +634,7 @@ func syncOldUsersToUsersList(ctx context.Context) error {
 				ID:         "", // נעדכן כשהמשתמש יתחבר שוב
 				Username:   "", // יעודכן בהתחברות הבאה
 				Email:      email,
-				PublicName: "", // יעודכן בהתחברות הבאה
+				PublicName: "",           // יעודכן בהתחברות הבאה
 				Privileges: Privileges{}, // ללא הרשאות
 				Blocked:    false,
 				Deleted:    false,
@@ -728,7 +745,7 @@ var getThreadRepliesScript = redis.NewScript(`
 func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, countViews, isAuthenticated bool, isModerator bool) ([]Message, error) {
 	res, err := getThreadRepliesScript.Run(ctx, rdb, []string{}, []string{
 		strconv.Itoa(parentMessageId),
-		strconv.FormatBool(isAdmin), 
+		strconv.FormatBool(isAdmin),
 		strconv.FormatBool(countViews),
 		strconv.FormatBool(isAuthenticated),
 		strconv.FormatBool(settingConfig.ShowAuthorToAuthenticated),
@@ -751,7 +768,6 @@ func funcGetThreadReplies(ctx context.Context, parentMessageId int, isAdmin, cou
 
 	return messages, nil
 }
-
 
 func getReportNextID(ctx context.Context) (int64, error) {
 	return rdb.Incr(ctx, "report:next_id").Result()
