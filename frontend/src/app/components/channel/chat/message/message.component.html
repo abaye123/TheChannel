@@ -90,18 +90,20 @@
 
         <div *ngIf="chatService.channelInfo?.threads_enabled && !isInThread && !message.deleted && hasThreadReplies(message)"
             class="thread-actions">
-            <button *ngIf="hasThreadReplies(message)" class="thread-replies-button" nbButton ghost size="small"
-                (click)="openThread(message)" [title]="'פתח שרשור (' + message.threadCount + ' תגובות)'">
+            <button *ngIf="hasThreadReplies(message)" 
+                class="thread-replies-button" 
+                [class.unread]="hasUnreadThreadMessages(message)"
+                nbButton ghost size="small"
+                (click)="openThread(message)" 
+                [title]="'פתח שרשור (' + message.threadCount + ' תגובות)'">
                 <nb-icon icon="message-square-outline"></nb-icon>
-                <span class="thread-count">{{ message.threadCount }} תגובות</span>
+                <span class="thread-count">
+                    {{ message.threadCount }} תגובות
+                    <span *ngIf="hasUnreadThreadMessages(message)" class="unread-badge">
+                        {{ getUnreadThreadCount(message) }}
+                    </span>
+                </span>
             </button>
-
-            <!--button *ngIf="!hasThreadReplies(message) && _authService?.userInfo?.privileges?.['writer']" 
-                class="thread-start-button" nbButton ghost size="small" (click)="startThread(message)"
-                title="התחל שרשור">
-                <nb-icon icon="message-square-outline"></nb-icon>
-                <span>התחל שרשור</span>
-            </button-->
         </div>
     </div>
 </div>

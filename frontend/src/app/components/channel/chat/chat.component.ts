@@ -200,11 +200,11 @@ export class ChatComponent implements OnInit, OnDestroy {
               const currentThread = this.chatService.getCurrentThreadMessage();
               if (currentThread && currentThread.id === message.message.replyTo) {
                 this.chatService.addThreadMessage(message.message);
-
-                const mainMessage = this.messages.find(m => m.id === message.message.replyTo);
-                if (mainMessage) {
-                  mainMessage.threadCount = (mainMessage.threadCount || 0) + 1;
-                }
+              }
+              
+              const mainMessage = this.messages.find(m => m.id === message.message.replyTo);
+              if (mainMessage) {
+                mainMessage.threadCount = (mainMessage.threadCount || 0) + 1;
               }
             } else if (!message.message.isThread) {
               if (this.hasNewMessages) return;

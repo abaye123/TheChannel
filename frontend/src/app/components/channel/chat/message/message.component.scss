@@ -410,7 +410,46 @@ nb-icon {
     .thread-count {
       color: #666fff;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+
+    &.unread {
+      background: rgba(102, 111, 255, 0.15);
+      border-color: rgba(102, 111, 255, 0.5);
+      animation: pulseUnread 2s ease-in-out infinite;
+
+      .thread-count {
+        font-weight: 700;
+        color: #5555ee;
+      }
+    }
+
+    .unread-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ff4444;
+      color: white;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      box-shadow: 0 2px 4px rgba(255, 68, 68, 0.3);
+      animation: bounceIn 0.4s ease-out;
+    }
+  }
+}
+
+@keyframes pulseUnread {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(102, 111, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(102, 111, 255, 0.4);
   }
 }
 

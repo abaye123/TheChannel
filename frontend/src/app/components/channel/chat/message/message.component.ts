@@ -19,6 +19,7 @@ import { AdminService } from '../../../../services/admin.service';
 import { AuthService } from '../../../../services/auth.service';
 import { User } from '../../../../models/user.model';
 import { ReportComponent } from './report/report.component';
+import { ThreadReadStatusService } from '../../../../services/thread-read-status.service';
 
 @Component({
   selector: 'app-message',
@@ -72,6 +73,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
     protected chatService: ChatService,
     private toastrService: NbToastrService,
     public _authService: AuthService,
+    private threadReadStatusService: ThreadReadStatusService,
   ) { }
 
   reacts: string[] = [];
@@ -384,5 +386,19 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   hasThreadReplies(message: ChatMessage): boolean {
     return !!(message.threadCount && message.threadCount > 0);
+  }
+
+  hasUnreadThreadMessages(message: ChatMessage): boolean {
+    if (!message.id || !message.threadCount) {
+      return false;
+    }
+    return this.threadReadStatusService.hasUnreadMessages(message.id, message.threadCount);
+  }
+
+  getUnreadThreadCount(message: ChatMessage): number {
+    if (!message.id || !message.threadCount) {
+      return 0;
+    }
+    return this.threadReadStatusService.getUnreadCount(message.id, message.threadCount);
   }
 }

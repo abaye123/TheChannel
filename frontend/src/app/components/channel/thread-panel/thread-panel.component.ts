@@ -14,6 +14,7 @@ import { ThreadMessageComponent } from './thread-message/thread-message.componen
 import { ThreadInputComponent } from './thread-input/thread-input.component';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { ThreadReadStatusService } from '../../../services/thread-read-status.service';
 
 @Component({
   selector: 'app-thread-panel',
@@ -45,7 +46,8 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
   constructor(
     public chatService: ChatService,
     public authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private threadReadStatusService: ThreadReadStatusService
   ) { }
 
   ngOnInit() {
@@ -74,9 +76,16 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
       this.chatService.threadMessagesObservable.subscribe((messages: ChatMessage[]) => {
         console.log('Thread replies updated:', messages);
         this.threadReplies = messages;
+        this.markThreadAsReadIfVisible();
         this.cdr.detectChanges();
       })
     );
+  }
+
+  private markThreadAsReadIfVisible(): void {
+    if (this.isVisible && this.threadMessage?.id && this.threadReplies.length > 0) {
+      this.threadReadStatusService.markThreadAsRead(this.threadMessage.id, this.threadReplies.length);
+    }
   }
 
   ngOnDestroy() {
