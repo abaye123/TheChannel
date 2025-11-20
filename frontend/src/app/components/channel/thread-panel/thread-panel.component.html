@@ -5,7 +5,7 @@
     <button nbButton ghost size="small" (click)="toggleFollowing()" class="follow-btn"
       [title]="isFollowingThread() ? 'בטל מעקב' : 'הוסף למעקב'">
       <nb-icon [icon]="isFollowingThread() ? 'bell' : 'bell-off-outline'"></nb-icon>
-      <span>{{ isFollowingThread() ? 'במעקב' : 'בטל מעקב' }}</span>
+      <span>{{ isFollowingThread() ? 'במעקב' : 'לא במעקב' }}</span>
     </button>
     <button nbButton ghost shape="round" size="small" (click)="closeThread()" class="close-btn">
       <nb-icon icon="close-outline"></nb-icon>
