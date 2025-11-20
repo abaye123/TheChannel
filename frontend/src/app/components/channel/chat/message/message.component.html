@@ -93,14 +93,15 @@
             <button *ngIf="hasThreadReplies(message)" 
                 class="thread-replies-button" 
                 [class.unread]="hasUnreadThreadMessages(message)"
+                [class.read]="!hasUnreadThreadMessages(message)"
                 nbButton ghost size="small"
                 (click)="openThread(message)" 
                 [title]="'פתח שרשור (' + message.threadCount + ' תגובות)'">
                 <nb-icon icon="message-square-outline"></nb-icon>
-                <span class="thread-count">
+                <span class="thread-count" [class.read-count]="!hasUnreadThreadMessages(message)">
                     {{ message.threadCount }} תגובות
                     <span *ngIf="hasUnreadThreadMessages(message)" class="unread-badge">
-                        {{ getUnreadThreadCount(message) }}
+                        {{ getUnreadThreadCount(message) }} חדשות
                     </span>
                 </span>
             </button>

@@ -413,6 +413,11 @@ nb-icon {
       display: flex;
       align-items: center;
       gap: 6px;
+
+      &.read-count {
+        color: #999;
+        font-weight: 500;
+      }
     }
 
     &.unread {
@@ -423,6 +428,15 @@ nb-icon {
       .thread-count {
         font-weight: 700;
         color: #5555ee;
+      }
+    }
+
+    &.read {
+      background: rgba(255, 255, 255, 0.7);
+      border-color: rgba(0, 0, 0, 0.1);
+
+      nb-icon {
+        color: #999;
       }
     }
 
