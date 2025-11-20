@@ -3,8 +3,8 @@
 
   <div class="thread-header-controls" *ngIf="threadMessage">
     <div class="message-number">
-      <span class="message-number-label">הודעה #</span>
-      <span class="message-number-value">{{ threadMessage.id }}</span>
+      <span class="message-number-label">הודעה</span>
+      <span class="message-number-value">#{{ threadMessage.id }}</span>
     </div>
     <div class="header-buttons">
       <button nbButton ghost size="small" (click)="toggleFollowing()" class="follow-btn"
