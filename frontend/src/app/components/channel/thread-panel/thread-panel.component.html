@@ -20,10 +20,10 @@
 
   <div class="thread-content">
     <div class="original-message" *ngIf="threadMessage">
-      <div class="original-message-label">
+      <!--div class="original-message-label">
         <nb-icon icon="corner-up-right-outline"></nb-icon>
         <span>הודעה מקורית</span>
-      </div>
+      </div-->
       <div class="original-message-content">
         <app-message [message]="threadMessage" [userInfo]="authService.userInfo" [allMessages]="[]" [isInThread]="true">
         </app-message>
