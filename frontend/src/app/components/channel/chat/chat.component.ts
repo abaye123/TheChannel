@@ -20,6 +20,18 @@ import { ActivatedRoute } from '@angular/router';
 import { NotificationsService } from '../../../services/notifications.service';
 import { User } from '../../../models/user.model';
 
+type LoadMsgOpt = {
+  scrollDown?: boolean;
+  messageId?: number;
+  mark?: boolean;
+}
+
+type ScrollOpt = {
+  messageId: number;
+  smooth?: boolean;
+  mark?: boolean;
+}
+
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -61,6 +73,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   public isLoadingNewer: boolean = false;
   private initialLoadComplete: boolean = false;
   private isDialogOpen: boolean = false;
+  lastReadMessageId: number = 0;
 
   constructor(
     public chatService: ChatService,
@@ -84,12 +97,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.removeMsgMarked();
   }
 
-  async scrollToId(messageId: number) {
-    const element = document.getElementById(messageId.toString());
+  scrollToId(opt: ScrollOpt) {
+    const element = document.getElementById(opt.messageId.toString());
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.scrollIntoView({ behavior: opt.smooth ? 'smooth' : 'instant', block: 'center' });
       this.removeMsgMarked();
-      element.classList.add('mark_message');
+      opt.mark && element.classList.add('mark_message');
+    } else {
+      this.loadMessages({ scrollDown: false, messageId: opt.messageId, mark: opt.mark });
     }
   }
 
@@ -105,8 +120,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         if (fragment) {
           const messageId = Number(fragment);
           if (!Number.isInteger(messageId)) return;
-          const findId = this.messages.some(m => m.id === messageId);
-          findId ? this.scrollToId(messageId) : this.loadMessages(false, messageId);
+          this.scrollToId({ messageId: messageId, mark: true });
         }
       });
     }, 800);
@@ -124,11 +138,26 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
 
     this.loadMessages().then(() => {
+      const lastReadMsg = Number(localStorage.getItem('lastReadMessage'));
+      const lastMsgId = this.messages[0].id!;
+      if (lastReadMsg && lastReadMsg < lastMsgId) {
+        setTimeout(() => {
+          this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
+          this.lastReadMessageId = lastReadMsg;
+        }, 200);
+      } else {
+        this.scrollToBottom(false);
+      }
+
+      this.setLastReadMessage(lastMsgId.toString());
       this.initialLoadComplete = true;
-      this.scrollToBottom(false);
     });
 
     this.subscribeToThreadMessages();
+  }
+
+  async setLastReadMessage(id: string) {
+    localStorage.setItem('lastReadMessage', id);
   }
 
   private subscribeToThreadMessages() {
@@ -182,6 +211,7 @@ export class ChatComponent implements OnInit, OnDestroy {
                 this.messageIds.add(message.message.id);
                 const isMyMessage = message.message.author === this.userInfo?.username;
                 this.thereNewMessages = !isMyMessage;
+                this.setLastReadMessage(message.message.id!.toString());
 
                 if (!isMyMessage) {
                   if (this.soundService.isInitialized()) {
@@ -384,10 +414,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  async loadMessages(scrollDown?: boolean, messageId?: number) {
+  async loadMessages(opt: LoadMsgOpt = {}) {
     if (!this.initialLoadComplete && this.isLoading) return;
 
-    if (this.isLoading || (scrollDown && !this.hasNewMessages) || (!scrollDown && !this.hasOldMessages)) return;
+    if (this.isLoading || (opt.scrollDown && !this.hasNewMessages) || (!opt.scrollDown && !this.hasOldMessages)) return;
 
     let startId: number;
     let resetList: boolean = false;
@@ -396,28 +426,28 @@ export class ChatComponent implements OnInit, OnDestroy {
     const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
     const maxId = validIds.length > 0 ? Math.max(...validIds) : 0;
 
-    if (scrollDown) {
+    if (opt.scrollDown) {
       direction = "asc";
       startId = maxId;
     } else {
-      if (messageId) {
-        if (messageId > maxId + this.limit) {
+      if (opt.messageId) {
+        if (opt.messageId > maxId + this.limit) {
           resetList = true;
           this.hasNewMessages = true;
           this.hasOldMessages = true;
-          startId = messageId + 10;
+          startId = opt.messageId + 10;
           direction = "asc";
-          scrollDown = true;
-        } else if (messageId > maxId) {
+          opt.scrollDown = true;
+        } else if (opt.messageId > maxId) {
           startId = maxId;
           direction = "asc";
-          scrollDown = true;
+          opt.scrollDown = true;
         } else {
-          if (messageId < this.offset - this.limit) {
+          if (opt.messageId < this.offset - this.limit) {
             resetList = true;
             this.hasNewMessages = true;
             this.hasOldMessages = true;
-            startId = messageId + 10;
+            startId = opt.messageId + 10;
           } else {
             startId = this.offset;
           }
@@ -446,7 +476,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           return false;
         });
 
-        if (scrollDown) {
+        if (opt.scrollDown) {
           resetList ? this.messages = newMessages.reverse() : this.messages.unshift(...newMessages.reverse());
           this.hasNewMessages = response.length >= this.limit;
         } else {
@@ -460,7 +490,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
 
         setTimeout(() => {
-          messageId && this.scrollToId(messageId);
+          opt.messageId && this.scrollToId({ messageId: opt.messageId, smooth: false, mark: opt.mark });
         }, 300);
       }
     } catch (error) {

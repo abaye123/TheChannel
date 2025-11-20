@@ -4,11 +4,19 @@
             [listenWindowScroll]="false" class="messages-container">
             <nb-list class="flex-column-reverse">
 
-                <nb-list-item *ngFor="let message of messages; let i = index">
+                <nb-list-item *ngFor="let message of messages; let i = index" class="d-flex flex-column align-items-start">
                     <app-message class="overflow-auto" [message]="message" [allMessages]="messages"
                         [userInfo]="userInfo" [id]="message.id" [isLastMessage]="i === 0"
                         [onDialogStateChange]="setDialogOpen.bind(this)">
                     </app-message>
+                    <!-- last read indicator -->
+                    @if (message.id === lastReadMessageId + 1) {
+                    <div class="last-read-indicator">
+                        <div class="line"></div>
+                        <div class="last-read-indicator-text">הודעות שלא נקראו</div>
+                        <div class="line"></div>
+                    </div>
+                    }
                 </nb-list-item>
 
                 <nb-list-item *ngIf="messages.length === 0" class="flex-fill align-self-center">
