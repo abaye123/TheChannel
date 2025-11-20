@@ -51,9 +51,11 @@
 
 .thread-content {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   padding: 0;
   min-height: 0;
+  overflow: hidden;
 
   .thread-panel-container.has-input.in-chat-area & {
     height: calc(100% - 138px - var(--input-height, 60px));
@@ -70,8 +72,9 @@
   border-bottom: 2px solid #e8ecf0;
   background: #f8f9fa;
   flex-shrink: 0;
-  margin-bottom: 22px;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 15;
 
   .close-btn {
     position: absolute;
@@ -92,14 +95,51 @@
   .original-message-label {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
-    padding: 0.75rem 4rem 0.5rem 1.5rem;
+    padding: 0.75rem 1.5rem 0.5rem 1.5rem;
     font-size: 0.875rem;
     font-weight: 600;
     color: #6c757d;
 
-    nb-icon {
+    > nb-icon {
       font-size: 1rem;
+      margin-left: 0.5rem;
+    }
+
+    .label-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .follow-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem !important;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border-radius: 6px;
+      border: 1px solid rgba(102, 111, 255, 0.2);
+      background: rgba(102, 111, 255, 0.05);
+      color: #666fff;
+      transition: all 0.2s ease;
+
+      nb-icon {
+        font-size: 1rem;
+      }
+
+      &:hover {
+        background: rgba(102, 111, 255, 0.1);
+        border-color: rgba(102, 111, 255, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(102, 111, 255, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
     }
   }
 
@@ -110,7 +150,7 @@
 
 .thread-replies {
   flex: 1;
-  padding: 0 1rem;
+  padding: 1.5rem 1rem;
   min-height: 0;
   overflow-y: auto;
 }

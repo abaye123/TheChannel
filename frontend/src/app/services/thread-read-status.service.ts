@@ -4,6 +4,7 @@ export interface ThreadReadStatus {
   messageId: number;
   lastReadCount: number;
   lastReadTimestamp: number;
+  isFollowing?: boolean;
 }
 
 @Injectable({
@@ -41,10 +42,12 @@ export class ThreadReadStatusService {
   }
 
   markThreadAsRead(messageId: number, currentCount: number): void {
+    const existingStatus = this.threadStatusMap.get(messageId);
     const status: ThreadReadStatus = {
       messageId,
       lastReadCount: currentCount,
-      lastReadTimestamp: Date.now()
+      lastReadTimestamp: Date.now(),
+      isFollowing: existingStatus?.isFollowing ?? true
     };
     this.threadStatusMap.set(messageId, status);
     this.saveToStorage();
@@ -54,6 +57,9 @@ export class ThreadReadStatusService {
     const status = this.threadStatusMap.get(messageId);
     if (!status) {
       return currentCount > 0;
+    }
+    if (status.isFollowing === false) {
+      return false;
     }
     return currentCount > status.lastReadCount;
   }
@@ -86,6 +92,28 @@ export class ThreadReadStatusService {
     if (hasChanges) {
       this.saveToStorage();
     }
+  }
+
+  toggleFollowing(messageId: number, currentCount: number): boolean {
+    const status = this.threadStatusMap.get(messageId);
+    const newFollowingState = !(status?.isFollowing ?? true);
+    
+    const updatedStatus: ThreadReadStatus = {
+      messageId,
+      lastReadCount: status?.lastReadCount ?? currentCount,
+      lastReadTimestamp: status?.lastReadTimestamp ?? Date.now(),
+      isFollowing: newFollowingState
+    };
+    
+    this.threadStatusMap.set(messageId, updatedStatus);
+    this.saveToStorage();
+    
+    return newFollowingState;
+  }
+
+  isFollowing(messageId: number): boolean {
+    const status = this.threadStatusMap.get(messageId);
+    return status?.isFollowing ?? true;
   }
 
   clearAll(): void {

@@ -128,6 +128,21 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleFollowing(): void {
+    if (this.threadMessage?.id) {
+      const newState = this.threadReadStatusService.toggleFollowing(this.threadMessage.id, this.threadReplies.length);
+      console.log(`Thread ${this.threadMessage.id} following state changed to: ${newState}`);
+      this.cdr.detectChanges();
+    }
+  }
+
+  isFollowingThread(): boolean {
+    if (!this.threadMessage?.id) {
+      return true;
+    }
+    return this.threadReadStatusService.isFollowing(this.threadMessage.id);
+  }
+
   trackByMessageId(index: number, message: ChatMessage): number | undefined {
     return message.id;
   }

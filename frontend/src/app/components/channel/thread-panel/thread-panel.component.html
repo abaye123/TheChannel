@@ -6,9 +6,16 @@
       <div class="original-message-label">
         <nb-icon icon="corner-up-right-outline"></nb-icon>
         <span>הודעה מקורית</span>
-        <button nbButton ghost shape="round" size="small" (click)="closeThread()" class="close-btn">
-          <nb-icon icon="close-outline"></nb-icon>
-        </button>
+        <div class="label-actions">
+          <button nbButton ghost size="small" (click)="toggleFollowing()" class="follow-btn"
+            [title]="isFollowingThread() ? 'בטל מעקב' : 'הוסף למעקב'">
+            <nb-icon [icon]="isFollowingThread() ? 'bell' : 'bell-off-outline'"></nb-icon>
+            <span>{{ isFollowingThread() ? 'במעקב' : 'בטל מעקב' }}</span>
+          </button>
+          <button nbButton ghost shape="round" size="small" (click)="closeThread()" class="close-btn">
+            <nb-icon icon="close-outline"></nb-icon>
+          </button>
+        </div>
       </div>
       <div class="original-message-content">
         <app-message [message]="threadMessage" [userInfo]="authService.userInfo" [allMessages]="[]" [isInThread]="true">
