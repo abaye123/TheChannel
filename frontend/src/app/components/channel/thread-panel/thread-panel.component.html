@@ -2,14 +2,20 @@
   [class.has-input]="authService.userInfo?.privileges?.['writer'] && chatService.channelInfo?.threads_enabled">
 
   <div class="thread-header-controls" *ngIf="threadMessage">
-    <button nbButton ghost size="small" (click)="toggleFollowing()" class="follow-btn"
-      [title]="isFollowingThread() ? 'בטל מעקב' : 'הוסף למעקב'">
-      <nb-icon [icon]="isFollowingThread() ? 'bell' : 'bell-off-outline'"></nb-icon>
-      <span>{{ isFollowingThread() ? 'במעקב' : 'לא במעקב' }}</span>
-    </button>
-    <button nbButton ghost shape="round" size="small" (click)="closeThread()" class="close-btn">
-      <nb-icon icon="close-outline"></nb-icon>
-    </button>
+    <div class="message-number">
+      <span class="message-number-label">הודעה #</span>
+      <span class="message-number-value">{{ threadMessage.id }}</span>
+    </div>
+    <div class="header-buttons">
+      <button nbButton ghost size="small" (click)="toggleFollowing()" class="follow-btn"
+        [title]="isFollowingThread() ? 'בטל מעקב' : 'הוסף למעקב'">
+        <nb-icon [icon]="isFollowingThread() ? 'bell' : 'bell-off-outline'"></nb-icon>
+        <span>{{ isFollowingThread() ? 'במעקב' : 'לא במעקב' }}</span>
+      </button>
+      <button nbButton ghost shape="round" size="small" (click)="closeThread()" class="close-btn">
+        <nb-icon icon="close-outline"></nb-icon>
+      </button>
+    </div>
   </div>
 
   <div class="thread-content">

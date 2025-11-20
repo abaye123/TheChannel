@@ -16,7 +16,7 @@
 
 .thread-header-controls {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
@@ -26,6 +26,36 @@
   position: sticky;
   top: 0;
   z-index: 20;
+
+  .message-number {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    background: rgba(108, 117, 125, 0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(108, 117, 125, 0.15);
+
+    .message-number-label {
+      color: #6c757d;
+    }
+
+    .message-number-value {
+      color: #495057;
+      font-weight: 600;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+  }
+
+  .header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
   .follow-btn {
     display: flex;
