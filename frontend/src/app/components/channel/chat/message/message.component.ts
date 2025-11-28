@@ -80,6 +80,8 @@ export class MessageComponent implements OnInit, AfterViewInit {
   private closeEmojiMenuTimeout: any;
   replyToMessage?: ChatMessage;
   editTimeLimit: number = 120;
+  mediaLoadingStates: Map<string, boolean> = new Map();
+  hasMediaContent: boolean = false;
 
   get userPrivilege() {
     return this._authService.userInfo?.privileges || this.userInfo?.privileges;
@@ -97,6 +99,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
     }
 
     this.loadEditTimeLimit();
+    this.detectMediaInMessage();
   }
 
   async loadEditTimeLimit() {
@@ -110,6 +113,12 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
+      // Setup media load handlers first
+      if (this.hasMediaContent) {
+        this.setupMediaLoadHandlers();
+      }
+
+      // Then apply auth overlay if needed
       const media = this.mediaContainer?.nativeElement.querySelectorAll('img, video');
       media?.forEach((item: HTMLMediaElement) => {
         if (this.chatService.channelInfo?.require_auth_for_view_files && !this._authService.userInfo) {
@@ -148,7 +157,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
           }
         }
       });
-    }, 1000);
+    }, 100);
   }
 
   editMessage(message: ChatMessage) {
@@ -400,5 +409,78 @@ export class MessageComponent implements OnInit, AfterViewInit {
       return 0;
     }
     return this.threadReadStatusService.getUnreadCount(message.id, message.threadCount);
+  }
+
+  // Media detection and loading functions
+  detectMediaInMessage() {
+    if (!this.message?.text) return;
+    
+    // Check for image markdown patterns: ![alt](url)
+    const imagePattern = /!\[.*?\]\((.*?)\)/g;
+    // Check for video markdown or HTML video tags
+    const videoPattern = /<video.*?src=["'](.*?)["'].*?>|!\[.*?\]\((.*?\.(mp4|webm|ogg))\)/gi;
+    
+    const hasImages = imagePattern.test(this.message.text);
+    const hasVideos = videoPattern.test(this.message.text);
+    
+    this.hasMediaContent = hasImages || hasVideos;
+    
+    if (this.hasMediaContent) {
+      // Initialize loading states for detected media
+      setTimeout(() => this.setupMediaLoadHandlers(), 100);
+    }
+  }
+
+  setupMediaLoadHandlers() {
+    if (!this.mediaContainer) return;
+    
+    const media = this.mediaContainer.nativeElement.querySelectorAll('img, video');
+    media?.forEach((item: HTMLImageElement | HTMLVideoElement, index: number) => {
+      const mediaId = `${this.message?.id}-media-${index}`;
+      
+      // Set initial loading state
+      this.mediaLoadingStates.set(mediaId, true);
+      
+      // Add loading class to show skeleton
+      item.classList.add('media-loading');
+      
+      if (item.tagName === 'IMG') {
+        const img = item as HTMLImageElement;
+        
+        if (img.complete && img.naturalHeight !== 0) {
+          // Image already loaded
+          this.onMediaLoaded(mediaId, img);
+        } else {
+          img.addEventListener('load', () => this.onMediaLoaded(mediaId, img));
+          img.addEventListener('error', () => this.onMediaError(mediaId, img));
+        }
+      } else if (item.tagName === 'VIDEO') {
+        const video = item as HTMLVideoElement;
+        
+        if (video.readyState >= 2) {
+          // Video metadata already loaded
+          this.onMediaLoaded(mediaId, video);
+        } else {
+          video.addEventListener('loadedmetadata', () => this.onMediaLoaded(mediaId, video));
+          video.addEventListener('error', () => this.onMediaError(mediaId, video));
+        }
+      }
+    });
+  }
+
+  onMediaLoaded(mediaId: string, element: HTMLImageElement | HTMLVideoElement) {
+    this.mediaLoadingStates.set(mediaId, false);
+    element.classList.remove('media-loading');
+    element.classList.add('media-loaded');
+  }
+
+  onMediaError(mediaId: string, element: HTMLImageElement | HTMLVideoElement) {
+    this.mediaLoadingStates.set(mediaId, false);
+    element.classList.remove('media-loading');
+    element.classList.add('media-error');
+  }
+
+  isMediaLoading(mediaId: string): boolean {
+    return this.mediaLoadingStates.get(mediaId) || false;
   }
 }
