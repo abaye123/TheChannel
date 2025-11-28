@@ -10,4 +10,5 @@ export interface Channel {
   require_auth_for_view_files?: boolean;
   contact_us?: string;
   threads_enabled?: boolean;
+  google_analytics_id?: string;
 }

@@ -21,8 +21,9 @@ type Channel struct {
 	ShowCredit              bool      `json:"showCredit"`
 	Views                   int64     `json:"views"`
 	RequireAuthForViewFiles bool      `json:"require_auth_for_view_files"`
-	ThreadsEnabled 			bool      `json:"threads_enabled"`
+	ThreadsEnabled          bool      `json:"threads_enabled"`
 	ContactUs               string    `json:"contact_us"`
+	GoogleAnalyticsId       string    `json:"google_analytics_id"`
 }
 
 func getChannelInfo(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +56,7 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.RequireAuthForViewFiles = settingConfig.RequireAuthForViewFiles
 	channel.ThreadsEnabled = settingConfig.ThreadsEnabled
 	channel.ContactUs = settingConfig.ContactUs
+	channel.GoogleAnalyticsId = settingConfig.GoogleAnalyticsID
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(channel)

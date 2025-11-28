@@ -70,9 +70,13 @@ export class ChannelComponent implements OnInit {
     this.adsService.getAds().then(ad => {
       this.ad = ad;
     });
-    this._authService.loadUserInfo().then(res => {
-      this.userInfo = res
-    });
+    this._authService.loadUserInfo()
+      .then(res => {
+        this.userInfo = res;
+      })
+      .catch(() => {
+        this.userInfo = undefined;
+      });
 
     this.chatService.threadVisibleObservable.subscribe(() => {
       setTimeout(() => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AdminService } from './admin.service';
+import { ChatService } from './chat.service';
 
 declare let gtag: Function;
 
@@ -10,15 +10,18 @@ export class GoogleAnalyticsService {
   private isInitialized = false;
   private googleAnalyticsId: string = '';
 
-  constructor(private adminService: AdminService) {}
+  constructor(private chatService: ChatService) {}
 
   async init(): Promise<void> {
     try {
-      const settings = await this.adminService.getSettings();
-      const gaSetting = settings.find(s => s.key === 'google_analytics_id');
+      if (!this.chatService.channelInfo) {
+        await this.chatService.updateChannelInfo();
+      }
       
-      if (gaSetting && gaSetting.value && gaSetting.value.toString().trim() !== '') {
-        this.googleAnalyticsId = gaSetting.value.toString();
+      const googleAnalyticsId = this.chatService.channelInfo?.google_analytics_id;
+      
+      if (googleAnalyticsId && googleAnalyticsId.trim() !== '') {
+        this.googleAnalyticsId = googleAnalyticsId;
         await this.loadGoogleAnalytics();
         this.isInitialized = true;
         console.log('Google Analytics initialized with ID:', this.googleAnalyticsId);

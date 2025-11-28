@@ -144,10 +144,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.subscribeToOptimisticMessages();
     this.subscribeToConnectionStatus();
 
-    this._authService.loadUserInfo().then((res) => {
-      this.userInfo = res;
-      this.notificationService.init();
-    });
+    this._authService.loadUserInfo()
+      .then((res) => {
+        this.userInfo = res;
+        this.notificationService.init();
+      })
+      .catch(() => {
+        this.userInfo = undefined;
+      });
 
     this.loadMessages().then(() => {
       const lastReadMsg = Number(localStorage.getItem('lastReadMessage'));
