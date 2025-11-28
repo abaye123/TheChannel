@@ -156,11 +156,42 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.loadMessages().then(() => {
       const lastReadMsg = Number(localStorage.getItem('lastReadMessage'));
       const lastMsgId = this.messages[0]?.id;
+      
+      if (this.messages.length === 0) {
+        console.warn('No messages loaded on initial load');
+        this.initialLoadComplete = true;
+        return;
+      }
+      
       if (lastReadMsg && lastMsgId && lastReadMsg < lastMsgId) {
-        setTimeout(() => {
-          this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
-          this.lastReadMessageId = lastReadMsg;
-        }, 200);
+        const oldestMsgId = this.messages[this.messages.length - 1]?.id || 0;
+        
+        if (lastReadMsg >= oldestMsgId && lastReadMsg < lastMsgId) {
+          setTimeout(() => {
+            this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
+            this.lastReadMessageId = lastReadMsg;
+          }, 200);
+        } else if (lastReadMsg < oldestMsgId) {
+          setTimeout(() => {
+            const element = document.getElementById(lastReadMsg.toString());
+            if (!element) {
+              console.warn(`Last read message ${lastReadMsg} not found, scrolling to bottom instead`);
+              this.scrollToBottom(false);
+              if (lastMsgId) {
+                this.lastReadMessageId = lastMsgId;
+                this.setLastReadMessage(lastMsgId.toString());
+              }
+            } else {
+              this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
+              this.lastReadMessageId = lastReadMsg;
+            }
+          }, 200);
+        } else {
+          this.scrollToBottom(false);
+          if (lastReadMsg) {
+            this.lastReadMessageId = lastReadMsg;
+          }
+        }
       } else {
         this.scrollToBottom(false);
         if (lastReadMsg) {
@@ -585,6 +616,29 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction))
       if (response) {
+        if (resetList && response.length === 0) {
+          console.warn('Attempted to reset message list but received 0 messages. Keeping existing messages.');
+          if (this.messages.length === 0) {
+            const fallbackResponse = await firstValueFrom(this.chatService.getMessages(0, this.limit, 'desc'));
+            if (fallbackResponse && fallbackResponse.length > 0) {
+              this.messageIds.clear();
+              fallbackResponse.forEach(msg => {
+                if (msg.id) this.messageIds.add(msg.id);
+              });
+              this.messages = fallbackResponse;
+              const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+              if (validIds.length > 0) {
+                this.offset = Math.min(...validIds);
+              }
+              this.hasOldMessages = fallbackResponse.length >= this.limit;
+              this.hasNewMessages = false;
+              setTimeout(() => this.scrollToBottom(false), 300);
+            }
+          }
+
+          return;
+        }
+
         if (resetList) {
           this.messageIds.clear();
           response.forEach(msg => {
