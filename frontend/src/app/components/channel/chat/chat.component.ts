@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, NgZone, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  NbAlertModule,
   NbBadgeModule,
   NbButtonModule,
   NbCardModule,
@@ -12,6 +13,7 @@ import {
 } from "@nebular/theme";
 import { MessageComponent } from "./message/message.component";
 import { ThreadPanelComponent } from "../thread-panel/thread-panel.component";
+import { ConnectionBannerComponent } from "./connection-banner/connection-banner.component";
 import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { ChatMessage, ChatService } from '../../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
@@ -45,8 +47,10 @@ type ScrollOpt = {
     NbButtonModule,
     NbListModule,
     NbBadgeModule,
+    NbAlertModule,
     MessageComponent,
     ThreadPanelComponent,
+    ConnectionBannerComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
@@ -75,6 +79,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   private isDialogOpen: boolean = false;
   lastReadMessageId: number = 0;
   private intersectionObserver?: IntersectionObserver;
+  public isSSEConnected: boolean = true;
+  public showReconnectBanner: boolean = false;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
 
   constructor(
     public chatService: ChatService,
@@ -133,6 +141,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.initializeMessageListener();
     this.keepAliveSSE();
     this.setupIntersectionObserver();
+    this.subscribeToOptimisticMessages();
+    this.subscribeToConnectionStatus();
 
     this._authService.loadUserInfo().then((res) => {
       this.userInfo = res;
@@ -159,6 +169,80 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
 
     this.subscribeToThreadMessages();
+  }
+
+  private subscribeToOptimisticMessages() {
+    this.subscriptions.push(
+      this.chatService.optimisticMessageObservable.subscribe((message: ChatMessage) => {
+        this.zone.run(() => {
+          if (message.id && !this.messageIds.has(message.id)) {
+            this.messages.unshift(message);
+            this.messageIds.add(message.id);
+            
+            if (!this.showScrollToBottom && message.id) {
+              this.lastReadMessageId = message.id;
+              this.setLastReadMessage(message.id.toString());
+            }
+
+            setTimeout(() => this.observeMessage(message.id!), 100);
+            
+            // Always scroll to bottom for own optimistic messages
+            this.scrollToBottom(true);
+
+            // Verify message was received via SSE after 3 seconds
+            setTimeout(() => {
+              this.verifyMessageReceived(message.id!);
+            }, 3000);
+          }
+        });
+      })
+    );
+  }
+
+  private subscribeToConnectionStatus() {
+    this.subscriptions.push(
+      this.chatService.sseConnectedObservable.subscribe((connected: boolean) => {
+        this.zone.run(() => {
+          this.isSSEConnected = connected;
+          this.showReconnectBanner = !connected;
+          
+          if (!connected) {
+            console.warn('SSE connection lost');
+          } else {
+            console.log('SSE connection restored');
+            this.reconnectAttempts = 0;
+          }
+        });
+      })
+    );
+  }
+
+  private verifyMessageReceived(messageId: number) {
+    // Check if message with this ID exists in the list (it would be updated by SSE)
+    const messageExists = this.messages.some(m => m.id === messageId);
+    if (!messageExists && !this.isSSEConnected) {
+      // Message was not received via SSE, show warning
+      console.warn('Message may not have been broadcasted due to SSE disconnection');
+    }
+  }
+
+  reconnectSSE() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('Max reconnection attempts reached');
+      return;
+    }
+
+    this.reconnectAttempts++;
+    console.log(`Attempting to reconnect SSE (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+    
+    this.chatService.sseClose();
+    setTimeout(() => {
+      this.initializeMessageListener();
+    }, 1000 * this.reconnectAttempts); // Exponential backoff
+  }
+
+  refreshPage() {
+    window.location.reload();
   }
 
   async setLastReadMessage(id: string) {
@@ -278,6 +362,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           break;
         case 'heartbeat':
           this.lastHeartbeat = Date.now();
+          this.chatService.updateHeartbeat();
           break;
       }
     };

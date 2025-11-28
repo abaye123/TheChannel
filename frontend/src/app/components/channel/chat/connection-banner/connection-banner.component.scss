@@ -1,0 +1,105 @@
+.connection-banner {
+  position: fixed;
+  bottom: var(--input-height, 0px);
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border-top: 1px solid #f0b429;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  animation: slideUp 0.3s ease-out;
+  transition: bottom 0.3s ease;
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .banner-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #856404;
+
+    nb-icon {
+      font-size: 1.25rem;
+      color: #f39c12;
+    }
+
+    span {
+      white-space: nowrap;
+    }
+  }
+
+  .banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    button {
+      white-space: nowrap;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      height: auto;
+      min-height: 28px;
+
+      &:last-child {
+        padding: 0.25rem;
+        width: 28px;
+        
+        nb-icon {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .connection-banner {
+    .banner-content {
+      padding: 0.5rem 1rem;
+      gap: 0.5rem;
+    }
+
+    .banner-message {
+      gap: 0.5rem;
+      font-size: 0.85rem;
+
+      nb-icon {
+        font-size: 1.1rem;
+      }
+    }
+
+    .banner-actions {
+      gap: 0.25rem;
+
+      button {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.5rem;
+        min-height: 26px;
+
+        &:last-child {
+          width: 26px;
+        }
+      }
+    }
+  }
+}

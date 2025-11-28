@@ -1,3 +1,10 @@
+<app-connection-banner 
+    [isConnected]="isSSEConnected" 
+    (reconnect)="reconnectSSE()" 
+    (refresh)="refreshPage()"
+    (close)="showReconnectBanner = false">
+</app-connection-banner>
+
 <div class="chat-container" [class.thread-open]="chatService.isThreadVisible()">
     <div class="main-chat" [class.with-thread]="chatService.isThreadVisible()">
         <div nbInfiniteList (scroll)="onChatContainerScroll($event)" [threshold]="300" [throttleTime]="500"

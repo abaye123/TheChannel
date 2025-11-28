@@ -67,6 +67,16 @@ export class ChatService {
   private threadMessageEdit = new BehaviorSubject<ChatMessage | undefined>(undefined);
   threadMessageEditObservable = this.threadMessageEdit.asObservable();
 
+  // Optimistic UI support
+  private lastSentMessage: ChatMessage | null = null;
+  private optimisticMessage = new Subject<ChatMessage>();
+  optimisticMessageObservable = this.optimisticMessage.asObservable();
+
+  // SSE connection status
+  private sseConnected = new BehaviorSubject<boolean>(true);
+  sseConnectedObservable = this.sseConnected.asObservable();
+  private lastHeartbeatTime: number = Date.now();
+
   constructor(private http: HttpClient) { }
 
   async updateChannelInfo() {
@@ -116,10 +126,13 @@ export class ChatService {
 
     this.eventSource.onopen = () => {
       console.log('Connection opened');
+      this.sseConnected.next(true);
+      this.lastHeartbeatTime = Date.now();
     };
 
     this.eventSource.onerror = (error) => {
       console.error('EventSource failed:', error);
+      this.sseConnected.next(false);
     };
 
     return this.eventSource;
@@ -253,5 +266,38 @@ export class ChatService {
     const currentMessages = this.threadMessages.value;
     const updatedMessages = currentMessages.filter(m => m.id !== messageId);
     this.threadMessages.next(updatedMessages);
+  }
+
+  // Optimistic UI methods
+  setLastSentMessage(message: ChatMessage) {
+    this.lastSentMessage = message;
+  }
+
+  getLastSentMessage(): ChatMessage | null {
+    return this.lastSentMessage;
+  }
+
+  addOptimisticMessage(message: ChatMessage) {
+    this.optimisticMessage.next(message);
+  }
+
+  // SSE connection methods
+  updateHeartbeat() {
+    this.lastHeartbeatTime = Date.now();
+    if (!this.sseConnected.value) {
+      this.sseConnected.next(true);
+    }
+  }
+
+  getLastHeartbeatTime(): number {
+    return this.lastHeartbeatTime;
+  }
+
+  setConnectionStatus(connected: boolean) {
+    this.sseConnected.next(connected);
+  }
+
+  isConnected(): boolean {
+    return this.sseConnected.value;
   }
 }

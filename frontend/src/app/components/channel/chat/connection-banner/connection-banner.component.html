@@ -1,0 +1,19 @@
+<div class="connection-banner" *ngIf="!isConnected">
+    <div class="banner-content">
+        <div class="banner-message">
+            <nb-icon icon="alert-triangle-outline"></nb-icon>
+            <span>החיבור לשרת התנתק</span>
+        </div>
+        <div class="banner-actions">
+            <button nbButton size="tiny" status="warning" outline (click)="onReconnect()">
+                התחבר מחדש
+            </button>
+            <button nbButton size="tiny" status="basic" outline (click)="onRefresh()">
+                רענן
+            </button>
+            <button nbButton size="tiny" status="basic" ghost (click)="onClose()">
+                <nb-icon icon="close-outline"></nb-icon>
+            </button>
+        </div>
+    </div>
+</div>
