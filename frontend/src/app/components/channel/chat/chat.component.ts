@@ -215,6 +215,8 @@ export class ChatComponent implements OnInit, OnDestroy {
                 this.messages.unshift(message.message);
                 this.messageIds.add(message.message.id);
                 const isMyMessage = message.message.author === this.userInfo?.username;
+                const wasAtBottom = !this.showScrollToBottom;
+                
                 this.thereNewMessages = !isMyMessage;
 
                 if (!this.showScrollToBottom && message.message.id) {
@@ -228,6 +230,15 @@ export class ChatComponent implements OnInit, OnDestroy {
                   if (this.soundService.isInitialized()) {
                     this.soundService.playNotificationSound();
                   }
+                }
+
+                // Scroll behavior based on message author and current scroll position
+                if (isMyMessage) {
+                  // Always scroll to bottom for own messages
+                  this.scrollToBottom(true);
+                } else if (wasAtBottom) {
+                  // Scroll to bottom for other messages only if already at bottom
+                  this.scrollToBottom(true);
                 }
               }
             }

@@ -251,6 +251,11 @@ export class InputFormComponent implements OnInit {
         throw new Error();
       }
 
+      // Add optimistic message display
+      if (!this.message && this.chatService.getLastSentMessage()) {
+        this.chatService.addOptimisticMessage(this.chatService.getLastSentMessage()!);
+      }
+
       this.toastrService.success("", "הודעה פורסמה בהצלחה");
       this.clearInputs();
       this.showMarkdownPreview = false;
@@ -290,6 +295,9 @@ export class InputFormComponent implements OnInit {
     if (!this.message) {
       throw new Error();
     }
+
+    // Store last sent message for optimistic UI
+    this.chatService.setLastSentMessage(this.message);
 
     return true;
   }
