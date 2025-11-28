@@ -495,6 +495,21 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
     const oldestId = Math.min(...validIds);
 
+    let previousScrollHeight: number;
+    let previousScrollTop: number;
+    let chatContainer: Element | null = null;
+
+    if (this.chatService.isThreadVisible()) {
+      chatContainer = document.querySelector('.main-chat .messages-container');
+      if (chatContainer) {
+        previousScrollHeight = chatContainer.scrollHeight;
+        previousScrollTop = chatContainer.scrollTop;
+      }
+    } else {
+      previousScrollHeight = document.documentElement.scrollHeight;
+      previousScrollTop = window.scrollY;
+    }
+
     try {
       const response = await firstValueFrom(this.chatService.getMessages(oldestId, this.limit, "desc"));
       if (response && response.length > 0) {
@@ -515,10 +530,20 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
 
         setTimeout(() => {
+          if (this.chatService.isThreadVisible() && chatContainer) {
+            const newScrollHeight = chatContainer.scrollHeight;
+            const scrollDiff = newScrollHeight - previousScrollHeight;
+            chatContainer.scrollTop = previousScrollTop + scrollDiff;
+          } else {
+            const newScrollHeight = document.documentElement.scrollHeight;
+            const scrollDiff = newScrollHeight - previousScrollHeight;
+            window.scrollTo(0, previousScrollTop + scrollDiff);
+          }
+
           newMessages.forEach(msg => {
             if (msg.id) this.observeMessage(msg.id);
           });
-        }, 200);
+        }, 0);
       } else {
         this.hasOldMessages = false;
       }
