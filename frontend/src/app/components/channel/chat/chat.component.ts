@@ -149,6 +149,9 @@ export class ChatComponent implements OnInit, OnDestroy {
         }, 200);
       } else {
         this.scrollToBottom(false);
+        if (lastReadMsg) {
+          this.lastReadMessageId = lastReadMsg;
+        }
       }
 
       this.initialLoadComplete = true;
@@ -213,6 +216,11 @@ export class ChatComponent implements OnInit, OnDestroy {
                 this.messageIds.add(message.message.id);
                 const isMyMessage = message.message.author === this.userInfo?.username;
                 this.thereNewMessages = !isMyMessage;
+
+                if (!this.showScrollToBottom && message.message.id) {
+                  this.lastReadMessageId = message.message.id;
+                  this.setLastReadMessage(message.message.id.toString());
+                }
 
                 setTimeout(() => this.observeMessage(message.message.id!), 100);
 

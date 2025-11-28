@@ -10,7 +10,7 @@
                         [onDialogStateChange]="setDialogOpen.bind(this)">
                     </app-message>
                     <!-- last read indicator -->
-                    @if (message.id === lastReadMessageId + 1) {
+                    @if (message.id && messages.length > 0 && message.id === lastReadMessageId + 1 && messages[0].id && message.id < messages[0].id) {
                     <div class="last-read-indicator">
                         <div class="line"></div>
                         <div class="last-read-indicator-text">הודעות שלא נקראו</div>
