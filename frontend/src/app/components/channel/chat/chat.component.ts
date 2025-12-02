@@ -103,6 +103,8 @@ export class ChatComponent implements OnInit, OnDestroy {
   private messageRanges: MessageRange[] = [];
   public messageGaps: MessageGap[] = [];
   private gapLoadingStates: Map<string, boolean> = new Map();
+  public isLoadingSpecificMessage: boolean = false;
+  public loadingMessageId?: number;
 
   constructor(
     public chatService: ChatService,
@@ -731,6 +733,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (attempts >= this.maxLoadAttempts) {
       console.warn(`Max attempts reached for loading message ${messageId}. Scrolling to bottom instead.`);
       this.loadMessageAttempts.delete(messageId);
+      this.isLoadingSpecificMessage = false;
+      this.loadingMessageId = undefined;
       this.scrollToBottom(false);
       const latestMsgId = this.messages[0]?.id;
       if (latestMsgId) {
@@ -742,6 +746,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.loadMessageAttempts.set(messageId, attempts + 1);
     this.isLoading = true;
+    this.isLoadingSpecificMessage = true;
+    this.loadingMessageId = messageId;
 
     try {
       // Load messages centered around the target message
@@ -788,6 +794,11 @@ export class ChatComponent implements OnInit, OnDestroy {
           if (messageLoaded) {
             this.scrollToId({ messageId: messageId, smooth: false, mark: mark });
             this.loadMessageAttempts.delete(messageId);
+            // Hide loading overlay after successful scroll
+            setTimeout(() => {
+              this.isLoadingSpecificMessage = false;
+              this.loadingMessageId = undefined;
+            }, 500);
           } else {
             console.warn(`Message ${messageId} still not found after centered load`);
             // Try again with adjusted range
@@ -796,10 +807,14 @@ export class ChatComponent implements OnInit, OnDestroy {
         }, 300);
       } else {
         console.warn(`No messages returned for centered load around ${messageId}`);
+        this.isLoadingSpecificMessage = false;
+        this.loadingMessageId = undefined;
         this.scrollToBottom(false);
       }
     } catch (error) {
       console.error('שגיאה בטעינה ממוקדת:', error);
+      this.isLoadingSpecificMessage = false;
+      this.loadingMessageId = undefined;
       this.scrollToBottom(false);
     } finally {
       this.isLoading = false;

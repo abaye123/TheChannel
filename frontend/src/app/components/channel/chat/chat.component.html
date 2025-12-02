@@ -5,6 +5,14 @@
     (close)="showReconnectBanner = false">
 </app-connection-banner>
 
+<!-- Loading specific message overlay -->
+<div class="loading-message-overlay" *ngIf="isLoadingSpecificMessage">
+    <div class="loading-message-content">
+        <div class="spinner-border text-primary"></div>
+        <span class="loading-text">עובר להודעה #{{ loadingMessageId }}...</span>
+    </div>
+</div>
+
 <div class="chat-container" [class.thread-open]="chatService.isThreadVisible()">
     <div class="main-chat" [class.with-thread]="chatService.isThreadVisible()">
         <div nbInfiniteList (scroll)="onChatContainerScroll($event)" [threshold]="300" [throttleTime]="500"
