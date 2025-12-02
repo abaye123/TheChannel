@@ -77,6 +77,10 @@ export class ChatService {
   sseConnectedObservable = this.sseConnected.asObservable();
   private lastHeartbeatTime: number = Date.now();
 
+  // Scroll to message request
+  private scrollToMessageRequest = new Subject<{ messageId: number, highlight: boolean }>();
+  scrollToMessageRequestObservable = this.scrollToMessageRequest.asObservable();
+
   constructor(private http: HttpClient) { }
 
   async updateChannelInfo() {
@@ -299,5 +303,9 @@ export class ChatService {
 
   isConnected(): boolean {
     return this.sseConnected.value;
+  }
+
+  requestScrollToMessage(messageId: number, highlight: boolean = false) {
+    this.scrollToMessageRequest.next({ messageId, highlight });
   }
 }

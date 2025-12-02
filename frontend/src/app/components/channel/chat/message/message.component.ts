@@ -355,6 +355,10 @@ export class MessageComponent implements OnInit, AfterViewInit {
       setTimeout(() => {
         element.classList.remove('highlighted-message');
       }, 3000);
+    } else {
+      // Message not found in DOM - need to load it
+      console.log(`Message ${messageId} not found, requesting load from chat service`);
+      this.chatService.requestScrollToMessage(messageId, true);
     }
   }
 

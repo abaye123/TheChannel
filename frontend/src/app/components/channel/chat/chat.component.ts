@@ -14,6 +14,7 @@ import {
 import { MessageComponent } from "./message/message.component";
 import { ThreadPanelComponent } from "../thread-panel/thread-panel.component";
 import { ConnectionBannerComponent } from "./connection-banner/connection-banner.component";
+import { MessageGapIndicatorComponent } from "./message-gap-indicator/message-gap-indicator.component";
 import { firstValueFrom, interval, Subscription } from 'rxjs';
 import { ChatMessage, ChatService } from '../../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
@@ -34,6 +35,19 @@ type ScrollOpt = {
   mark?: boolean;
 }
 
+interface MessageRange {
+  start: number;  // First message ID in range
+  end: number;    // Last message ID in range
+}
+
+interface MessageGap {
+  id: string;
+  startId: number;  // Message ID before gap
+  endId: number;    // Message ID after gap
+  estimatedCount: number;
+  isLoading: boolean;
+}
+
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -51,6 +65,7 @@ type ScrollOpt = {
     MessageComponent,
     ThreadPanelComponent,
     ConnectionBannerComponent,
+    MessageGapIndicatorComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
@@ -83,6 +98,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   public showReconnectBanner: boolean = false;
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
+  private loadMessageAttempts: Map<number, number> = new Map();
+  private readonly maxLoadAttempts: number = 3;
+  private messageRanges: MessageRange[] = [];
+  public messageGaps: MessageGap[] = [];
+  private gapLoadingStates: Map<string, boolean> = new Map();
 
   constructor(
     public chatService: ChatService,
@@ -112,7 +132,26 @@ export class ChatComponent implements OnInit, OnDestroy {
       element.scrollIntoView({ behavior: opt.smooth ? 'smooth' : 'instant', block: 'center' });
       this.removeMsgMarked();
       opt.mark && element.classList.add('mark_message');
+      // Reset attempts counter on success
+      this.loadMessageAttempts.delete(opt.messageId);
     } else {
+      // Check if we've exceeded max attempts for this message
+      const attempts = this.loadMessageAttempts.get(opt.messageId) || 0;
+      if (attempts >= this.maxLoadAttempts) {
+        console.warn(`Max attempts reached for loading message ${opt.messageId}. Scrolling to bottom instead.`);
+        this.loadMessageAttempts.delete(opt.messageId);
+        this.scrollToBottom(false);
+        // Update lastReadMessage to the latest message
+        const latestMsgId = this.messages[0]?.id;
+        if (latestMsgId) {
+          this.lastReadMessageId = latestMsgId;
+          this.setLastReadMessage(latestMsgId.toString());
+        }
+        return;
+      }
+      
+      // Increment attempts counter
+      this.loadMessageAttempts.set(opt.messageId, attempts + 1);
       this.loadMessages({ scrollDown: false, messageId: opt.messageId, mark: opt.mark });
     }
   }
@@ -167,26 +206,20 @@ export class ChatComponent implements OnInit, OnDestroy {
         const oldestMsgId = this.messages[this.messages.length - 1]?.id || 0;
         
         if (lastReadMsg >= oldestMsgId && lastReadMsg < lastMsgId) {
+          // Message is in the loaded range
           setTimeout(() => {
             this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
             this.lastReadMessageId = lastReadMsg;
           }, 200);
         } else if (lastReadMsg < oldestMsgId) {
+          // Message is older than the loaded range - attempt to load it
+          console.log(`Last read message ${lastReadMsg} is older than loaded range. Attempting to load...`);
           setTimeout(() => {
-            const element = document.getElementById(lastReadMsg.toString());
-            if (!element) {
-              console.warn(`Last read message ${lastReadMsg} not found, scrolling to bottom instead`);
-              this.scrollToBottom(false);
-              if (lastMsgId) {
-                this.lastReadMessageId = lastMsgId;
-                this.setLastReadMessage(lastMsgId.toString());
-              }
-            } else {
-              this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
-              this.lastReadMessageId = lastReadMsg;
-            }
+            this.scrollToId({ messageId: lastReadMsg, smooth: false, mark: false });
+            this.lastReadMessageId = lastReadMsg;
           }, 200);
         } else {
+          // Message is newer (shouldn't happen, but handle gracefully)
           this.scrollToBottom(false);
           if (lastReadMsg) {
             this.lastReadMessageId = lastReadMsg;
@@ -204,6 +237,17 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
 
     this.subscribeToThreadMessages();
+    this.subscribeToScrollRequests();
+  }
+
+  private subscribeToScrollRequests() {
+    this.subscriptions.push(
+      this.chatService.scrollToMessageRequestObservable.subscribe(({ messageId, highlight }) => {
+        this.zone.run(() => {
+          this.scrollToId({ messageId, smooth: true, mark: highlight });
+        });
+      })
+    );
   }
 
   private subscribeToOptimisticMessages() {
@@ -597,10 +641,15 @@ export class ChatComponent implements OnInit, OnDestroy {
   async loadMessages(opt: LoadMsgOpt = {}) {
     if (!this.initialLoadComplete && this.isLoading) return;
 
+    // Load centered around specific message
+    if (opt.messageId && !this.isMessageInLoadedRanges(opt.messageId)) {
+      return this.loadMessagesCentered(opt.messageId, opt.mark);
+    }
+
+    // Regular loading (top/bottom)
     if (this.isLoading || (opt.scrollDown && !this.hasNewMessages) || (!opt.scrollDown && !this.hasOldMessages)) return;
 
     let startId: number;
-    let resetList: boolean = false;
     let direction: string = "desc";
 
     const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
@@ -610,67 +659,14 @@ export class ChatComponent implements OnInit, OnDestroy {
       direction = "asc";
       startId = maxId;
     } else {
-      if (opt.messageId) {
-        if (opt.messageId > maxId + this.limit) {
-          resetList = true;
-          this.hasNewMessages = true;
-          this.hasOldMessages = true;
-          startId = opt.messageId + 10;
-          direction = "asc";
-          opt.scrollDown = true;
-        } else if (opt.messageId > maxId) {
-          startId = maxId;
-          direction = "asc";
-          opt.scrollDown = true;
-        } else {
-          if (opt.messageId < this.offset - this.limit) {
-            resetList = true;
-            this.hasNewMessages = true;
-            this.hasOldMessages = true;
-            startId = opt.messageId + 10;
-          } else {
-            startId = this.offset;
-          }
-        }
-      } else {
-        startId = this.messages.length === 0 ? 0 : this.offset;
-      }
+      startId = this.messages.length === 0 ? 0 : this.offset;
     }
 
     try {
       this.isLoading = true;
-      const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction))
-      if (response) {
-        if (resetList && response.length === 0) {
-          console.warn('Attempted to reset message list but received 0 messages. Keeping existing messages.');
-          if (this.messages.length === 0) {
-            const fallbackResponse = await firstValueFrom(this.chatService.getMessages(0, this.limit, 'desc'));
-            if (fallbackResponse && fallbackResponse.length > 0) {
-              this.messageIds.clear();
-              fallbackResponse.forEach(msg => {
-                if (msg.id) this.messageIds.add(msg.id);
-              });
-              this.messages = fallbackResponse;
-              const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
-              if (validIds.length > 0) {
-                this.offset = Math.min(...validIds);
-              }
-              this.hasOldMessages = fallbackResponse.length >= this.limit;
-              this.hasNewMessages = false;
-              setTimeout(() => this.scrollToBottom(false), 300);
-            }
-          }
-
-          return;
-        }
-
-        if (resetList) {
-          this.messageIds.clear();
-          response.forEach(msg => {
-            if (msg.id) this.messageIds.add(msg.id);
-          });
-        }
-
+      const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction));
+      
+      if (response && response.length > 0) {
         const newMessages = response.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
@@ -680,10 +676,15 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         if (opt.scrollDown) {
-          resetList ? this.messages = newMessages.reverse() : this.messages.unshift(...newMessages.reverse());
+          this.messages.unshift(...newMessages.reverse());
           this.hasNewMessages = response.length >= this.limit;
         } else {
-          resetList ? this.messages = newMessages : this.messages.push(...newMessages);
+          if (this.messages.length === 0 && response.length > 0) {
+            // Initial load
+            this.messages = newMessages;
+          } else {
+            this.messages.push(...newMessages);
+          }
           this.hasOldMessages = response.length >= this.limit;
         }
 
@@ -692,14 +693,231 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.offset = Math.min(...updatedValidIds);
         }
 
-        setTimeout(() => {
-          opt.messageId && this.scrollToId({ messageId: opt.messageId, smooth: false, mark: opt.mark });
-        }, 300);
+        this.updateMessageRanges();
+        this.detectAndCreateGaps();
+      } else if (this.messages.length === 0) {
+        // Fallback for empty initial load
+        const fallbackResponse = await firstValueFrom(this.chatService.getMessages(0, this.limit, 'desc'));
+        if (fallbackResponse && fallbackResponse.length > 0) {
+          this.messageIds.clear();
+          fallbackResponse.forEach(msg => {
+            if (msg.id) this.messageIds.add(msg.id);
+          });
+          this.messages = fallbackResponse;
+          const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+          if (validIds.length > 0) {
+            this.offset = Math.min(...validIds);
+          }
+          this.hasOldMessages = fallbackResponse.length >= this.limit;
+          this.hasNewMessages = false;
+          this.updateMessageRanges();
+        }
+      } else {
+        if (opt.scrollDown) {
+          this.hasNewMessages = false;
+        } else {
+          this.hasOldMessages = false;
+        }
       }
     } catch (error) {
       console.error('שגיאה בטעינת הודעות:', error);
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  private async loadMessagesCentered(messageId: number, mark?: boolean) {
+    const attempts = this.loadMessageAttempts.get(messageId) || 0;
+    if (attempts >= this.maxLoadAttempts) {
+      console.warn(`Max attempts reached for loading message ${messageId}. Scrolling to bottom instead.`);
+      this.loadMessageAttempts.delete(messageId);
+      this.scrollToBottom(false);
+      const latestMsgId = this.messages[0]?.id;
+      if (latestMsgId) {
+        this.lastReadMessageId = latestMsgId;
+        this.setLastReadMessage(latestMsgId.toString());
+      }
+      return;
+    }
+
+    this.loadMessageAttempts.set(messageId, attempts + 1);
+    this.isLoading = true;
+
+    try {
+      // Load messages centered around the target message
+      // Request from messageId + 10 to get messages around it
+      const response = await firstValueFrom(
+        this.chatService.getMessages(messageId + Math.floor(this.limit / 2), this.limit, "asc")
+      );
+
+      if (response && response.length > 0) {
+        // Clear existing messages if loading a completely new range
+        const shouldReset = this.messages.length === 0 || 
+                           !this.isMessageInLoadedRanges(messageId);
+
+        if (shouldReset) {
+          this.messageIds.clear();
+          this.messages = [];
+        }
+
+        // Add new messages
+        response.forEach(msg => {
+          if (msg.id && !this.messageIds.has(msg.id)) {
+            this.messageIds.add(msg.id);
+            this.messages.push(msg);
+          }
+        });
+
+        // Sort messages by ID (descending - newest first)
+        this.messages.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+        const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
+        if (validIds.length > 0) {
+          this.offset = Math.min(...validIds);
+        }
+
+        // Set flags for infinite scroll
+        this.hasNewMessages = true;
+        this.hasOldMessages = true;
+
+        this.updateMessageRanges();
+        this.detectAndCreateGaps();
+
+        setTimeout(() => {
+          const messageLoaded = this.messages.some(m => m.id === messageId);
+          if (messageLoaded) {
+            this.scrollToId({ messageId: messageId, smooth: false, mark: mark });
+            this.loadMessageAttempts.delete(messageId);
+          } else {
+            console.warn(`Message ${messageId} still not found after centered load`);
+            // Try again with adjusted range
+            this.loadMessagesCentered(messageId, mark);
+          }
+        }, 300);
+      } else {
+        console.warn(`No messages returned for centered load around ${messageId}`);
+        this.scrollToBottom(false);
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינה ממוקדת:', error);
+      this.scrollToBottom(false);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private isMessageInLoadedRanges(messageId: number): boolean {
+    return this.messageRanges.some(range => 
+      messageId >= range.end && messageId <= range.start
+    );
+  }
+
+  private updateMessageRanges() {
+    if (this.messages.length === 0) {
+      this.messageRanges = [];
+      return;
+    }
+
+    const validIds = this.messages
+      .map(m => m.id)
+      .filter(id => id !== undefined) as number[];
+    
+    if (validIds.length === 0) return;
+
+    validIds.sort((a, b) => b - a); // Sort descending
+
+    // Create ranges from consecutive IDs
+    const ranges: MessageRange[] = [];
+    let currentRange: MessageRange | null = null;
+
+    for (let i = 0; i < validIds.length; i++) {
+      const id = validIds[i];
+      
+      if (!currentRange) {
+        currentRange = { start: id, end: id };
+      } else if (currentRange.end - id === 1) {
+        // Consecutive ID
+        currentRange.end = id;
+      } else {
+        // Gap found, save current range and start new one
+        ranges.push(currentRange);
+        currentRange = { start: id, end: id };
+      }
+    }
+
+    if (currentRange) {
+      ranges.push(currentRange);
+    }
+
+    this.messageRanges = ranges;
+  }
+
+  private detectAndCreateGaps() {
+    this.messageGaps = [];
+
+    if (this.messageRanges.length <= 1) return;
+
+    // Sort ranges by start (descending)
+    const sortedRanges = [...this.messageRanges].sort((a, b) => b.start - a.start);
+
+    for (let i = 0; i < sortedRanges.length - 1; i++) {
+      const currentRange = sortedRanges[i];
+      const nextRange = sortedRanges[i + 1];
+
+      const gapSize = currentRange.end - nextRange.start - 1;
+
+      if (gapSize > 0) {
+        const gapId = `gap-${nextRange.start}-${currentRange.end}`;
+        this.messageGaps.push({
+          id: gapId,
+          startId: nextRange.start,
+          endId: currentRange.end,
+          estimatedCount: gapSize,
+          isLoading: this.gapLoadingStates.get(gapId) || false
+        });
+      }
+    }
+  }
+
+  hasGapAfterMessage(messageId: number | undefined): MessageGap | null {
+    if (!messageId) return null;
+    return this.messageGaps.find(gap => gap.startId === messageId) || null;
+  }
+
+  async loadGapMessages(gap: MessageGap) {
+    if (gap.isLoading) return;
+
+    this.gapLoadingStates.set(gap.id, true);
+    gap.isLoading = true;
+
+    try {
+      // Load messages in the gap
+      const middlePoint = gap.startId + Math.floor((gap.endId - gap.startId) / 2);
+      const response = await firstValueFrom(
+        this.chatService.getMessages(middlePoint + Math.floor(this.limit / 2), this.limit, "asc")
+      );
+
+      if (response && response.length > 0) {
+        response.forEach(msg => {
+          if (msg.id && !this.messageIds.has(msg.id)) {
+            this.messageIds.add(msg.id);
+            this.messages.push(msg);
+          }
+        });
+
+        // Sort messages
+        this.messages.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+        this.updateMessageRanges();
+        this.detectAndCreateGaps();
+
+        setTimeout(() => this.observeMessages(), 300);
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינת הודעות בפער:', error);
+    } finally {
+      this.gapLoadingStates.set(gap.id, false);
+      gap.isLoading = false;
     }
   }
 
