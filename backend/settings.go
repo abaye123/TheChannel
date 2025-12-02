@@ -19,40 +19,41 @@ type ReplaceRegex struct {
 }
 
 type SettingConfig struct {
-	AdSrc                     string
-	AdWidth                   int64
-	RequireAuth               bool
-	RequireAuthForViewFiles   bool
-	AllowOnlyExistingUsers    bool
-	RegexReplace              []*ReplaceRegex
-	WebhookURL                string
-	VerifyToken               string
-	ApiSecretKey              string
-	RootStaticFolder          string
-	CountViews                bool
-	HideCountViewsForUsers    bool
-	ShowAuthorToAuthenticated bool
-	AutoGrantWriterPrivilege  bool
-	GoogleAnalyticsID         string
-	HideEditTime              bool
-	OnNotification            bool
-	VAPID                     string
-	FcmApiKey                 string
-	FcmAuthDomain             string
-	FcmProjectId              string
-	FcmStorageBucket          string
-	FcmMessagingSenderId      string
-	FcmAppId                  string
-	FcmMeasurementId          string
-	ProjectDomain             string
-	FcmJson                   *FcmJsonConfing
-	MaxFileSize               int64
-	EditTimeLimit             int64
-	CustomTitle               string
-	ContactUs                 string
-	ThreadsEnabled            bool
-	MessageSignature          string
-	SharingCookies            string
+	AdSrc                       string
+	AdWidth                     int64
+	RequireAuth                 bool
+	RequireAuthForViewFiles     bool
+	AllowOnlyExistingUsers      bool
+	RegexReplace                []*ReplaceRegex
+	WebhookURL                  string
+	VerifyToken                 string
+	ApiSecretKey                string
+	RootStaticFolder            string
+	CountViews                  bool
+	HideCountViewsForUsers      bool
+	ShowAuthorToAuthenticated   bool
+	AutoGrantWriterPrivilege    bool
+	GoogleAnalyticsID           string
+	HideEditTime                bool
+	OnNotification              bool
+	VAPID                       string
+	FcmApiKey                   string
+	FcmAuthDomain               string
+	FcmProjectId                string
+	FcmStorageBucket            string
+	FcmMessagingSenderId        string
+	FcmAppId                    string
+	FcmMeasurementId            string
+	ProjectDomain               string
+	FcmJson                     *FcmJsonConfing
+	MaxFileSize                 int64
+	EditTimeLimit               int64
+	CustomTitle                 string
+	ContactUs                   string
+	ThreadsEnabled              bool
+	MessageSignature            string
+	SharingCookies              string
+	HideMemberCountForNonAdmins bool
 }
 
 type Setting struct {
@@ -249,6 +250,9 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "sharing_cookies":
 			config.SharingCookies = setting.GetString()
+
+		case "hide_member_count_for_non_admins":
+			config.HideMemberCountForNonAdmins = setting.GetBool()
 		}
 	}
 

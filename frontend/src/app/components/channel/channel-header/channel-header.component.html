@@ -14,7 +14,7 @@
         <p class="channel-description" *ngIf="chatService.channelInfo?.description">
             {{ chatService.channelInfo?.description }}
         </p>
-        <small class="channel-participants">
+        <small class="channel-participants" *ngIf="chatService.channelInfo?.views">
             {{ chatService.channelInfo?.views }} משתתפים
         </small>
     </div>

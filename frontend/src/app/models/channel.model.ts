@@ -11,4 +11,5 @@ export interface Channel {
   contact_us?: string;
   threads_enabled?: boolean;
   google_analytics_id?: string;
+  hide_member_count_for_non_admins?: boolean;
 }
