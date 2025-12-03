@@ -28,7 +28,6 @@ nb-layout-column.ad-column {
   justify-content: flex-end;
   transition: width 0.3s ease;
   margin-left: var(--ad-margin, 0px);
-  margin-right: var(--ad-margin, 0px);
 
   &.with-thread {
     width: 33.333% !important;
@@ -54,7 +53,7 @@ app-advertising {
   align-items: center;
   justify-content: center;
   //noinspection CssInvalidPropertyValue
-  height: calc(100vh - nb-theme(header-height) - var(--input-height, 0px)) !important;
+  height: calc(90vh - nb-theme(header-height) - var(--input-height, 0px)) !important;
 }
 
 ::ng-deep {
