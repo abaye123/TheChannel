@@ -9,7 +9,7 @@
     box-sizing: border-box;
 }
 
-// === לוגו ===
+// === logo ===
 .channel-logo {
     flex-shrink: 0;
 }
@@ -31,12 +31,12 @@
     color: #000;
 }
 
-// === מידע על הערוץ ===
+// === Channel information ===
 .channel-info {
     display: flex;
     flex-direction: column;
-    min-width: 0; // חשוב למניעת overflow
-    max-width: 400px; // מגביל לכ-6-7 מילים
+    min-width: 0; // Important to prevent overflow
+    max-width: 400px; // Limits to about 6-7 words
     flex-shrink: 1;
 }
 
@@ -61,18 +61,18 @@
 }
 
 .channel-participants {
-    font-size: 0.75rem;
+    font-size: 0.75 rem;
     color: #888;
     margin: 0;
 }
 
-// === מרווח אמצעי ===
+// === middle interval ===
 .header-spacer {
     flex: 1;
     min-width: 2rem;
 }
 
-// === ברנדינג ChatFree ===
+// === ChatFree branding ===
 .chatfree-branding {
     display: flex;
     align-items: center;
@@ -101,7 +101,7 @@
     }
 }
 
-// === כפתורי פעולה ===
+// === action buttons ===
 .action-buttons {
     display: flex;
     align-items: center;
@@ -114,7 +114,7 @@
     height: 40px;
 }
 
-// === משתמש ===
+// === user ===
 .user-section {
     flex-shrink: 0;
     padding-right: 0.5rem;
@@ -126,32 +126,55 @@
     }
 }
 
-// ===================================
-// התאמות רספונסיביות
-// ===================================
+// === View versions ===
+.version-info {
+    flex-shrink: 0;
+    padding: 0 0.5rem;
 
-// מסכים גדולים מאוד (1400px+)
+    .version-text {
+        color: #888;
+        font-size: 0.75rem;
+        white-space: nowrap;
+
+        span {
+            cursor: help;
+        }
+
+        .version-separator {
+            margin: 0 0.25rem;
+            color: #ccc;
+        }
+    }
+}
+
+// =========================================
+// Responsive adjustments
+// ===========================================
+
+// Very large screens (1400px+)
 @media (min-width: 1400px) {
+
     .channel-info {
         max-width: 500px;
     }
 }
 
-// מסכים גדולים (1200px-1399px)
+// Large screens (1200px-1399px)
 @media (max-width: 1399px) {
+
     .channel-info {
         max-width: 400px;
     }
 }
 
-// מסכים בינוניים-גדולים (1024px-1199px)
+// Medium-Large Screens (1024px-1199px)
 @media (max-width: 1199px) {
     .channel-info {
         max-width: 350px;
     }
 }
 
-// מחשבים ניידים 15.6" (992px-1023px)
+// 15.6" Laptops (992px-1023px)
 @media (max-width: 1023px) {
     .header-spacer {
         min-width: 1rem;
@@ -166,7 +189,7 @@
     }
 }
 
-// מחשבים ניידים 14" (900px-991px)
+// 14" Laptops (900px-991px)
 @media (max-width: 991px) {
     .header-container {
         padding: 0.5rem 0.75rem;
@@ -189,7 +212,7 @@
     }
 }
 
-// מחשבים ניידים 13" (800px-899px)
+// 13" Laptops (800px-899px)
 @media (max-width: 899px) {
     .action-buttons {
         gap: 0.25rem;
@@ -200,7 +223,7 @@
     }
 }
 
-// טאבלטים אופקיים / מחשבים ניידים 11" (768px-799px)
+// 11" Horizontal Tablets / Laptops (768px-799px)
 @media (max-width: 799px) {
 
     .logo-image,
@@ -225,15 +248,16 @@
         font-size: 0.7rem;
     }
 
-    // הסתר כפתורים מסוימים - יעברו לתפריט
+    // Hide some buttons - will go to menu
     .action-buttons {
         button:not(:first-child) {
             display: none;
         }
     }
+
 }
 
-// טאבלטים מאונכים (600px-767px)
+// Vertical tablets (600px-767px)
 @media (max-width: 767px) {
     .header-container {
         gap: 0.75rem;
@@ -260,9 +284,10 @@
     .login-button .login-text {
         /* display: none; */
     }
+
 }
 
-// טלפונים גדולים אופקיים (480px-599px)
+// Large phones horizontally (480px-599px)
 @media (max-width: 599px) {
 
     .logo-image,
@@ -280,7 +305,7 @@
     }
 
     .channel-description {
-        display: none; // הסתר תיאור במסכים קטנים
+        display: none; // Hide description on small screens
     }
 
     .channel-participants {
@@ -288,7 +313,7 @@
     }
 }
 
-// טלפונים מאונכים (320px-479px)
+// Vertical phones (320px-479px)
 @media (max-width: 479px) {
     .header-container {
         gap: 0.5rem;
@@ -321,7 +346,7 @@
     }
 }
 
-// טלפונים קטנים מאוד (עד 360px)
+// Very small phones (up to 360px)
 @media (max-width: 360px) {
     .header-container {
         gap: 0.35rem;

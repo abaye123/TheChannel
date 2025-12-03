@@ -84,6 +84,7 @@ func main() {
 	r.Post("/auth/logout", logout)
 	r.Get("/assets/favicon.ico", getFavicon)
 	r.Get("/favicon.ico", getFavicon)
+	r.Get("/api/version", getVersion)
 	r.Get("/api/channel/info-public", getChannelInfoPublic)
 	r.Get("/api/files/{fileid}", serveFilePublic)
 

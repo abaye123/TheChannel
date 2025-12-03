@@ -69,4 +69,12 @@
         </button>
         }
     </div>
+
+    <div class="version-info" *ngIf="versionInfo.frontend && versionInfo.backend">
+        <small class="version-text">
+            <span title="גרסה">FE: v{{ versionInfo.frontend }}</span>
+            <span class="version-separator">|</span>
+            <span title="גרסת שרת">BE: v{{ versionInfo.backend }}</span>
+        </small>
+    </div>
 </div>

@@ -16,6 +16,21 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// VersionInfo represents the version information
+type VersionInfo struct {
+	Version string `json:"version"`
+}
+
+// getVersion returns the current backend version
+func getVersion(w http.ResponseWriter, r *http.Request) {
+	versionInfo := VersionInfo{
+		Version: Version,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(versionInfo)
+}
+
 func addNewPost(w http.ResponseWriter, r *http.Request) {
 	key := r.Header.Get("X-API-Key")
 	if key != settingConfig.ApiSecretKey {
