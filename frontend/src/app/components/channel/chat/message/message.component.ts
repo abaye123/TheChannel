@@ -371,7 +371,6 @@ export class MessageComponent implements OnInit, AfterViewInit {
 
   // פונקציות שרשור חדשות
   openThread(message: ChatMessage) {
-    console.log('Opening thread for message:', message);
     if (message.id) {
       this.chatService.openThread(message);
     } else {
@@ -380,9 +379,7 @@ export class MessageComponent implements OnInit, AfterViewInit {
   }
 
   startThread(message: ChatMessage) {
-    console.log('Starting thread for message:', message);
     if (message.id) {
-      // פתח את הפאנל גם אם אין תגובות
       this.chatService.openThread(message);
     } else {
       console.warn('Cannot start thread: message has no ID');

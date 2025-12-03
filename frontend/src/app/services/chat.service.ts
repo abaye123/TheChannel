@@ -209,7 +209,6 @@ export class ChatService {
   openThread(message: ChatMessage) {
     this.currentThreadMessage.next(message);
     this.threadVisible.next(true);
-    this.loadThreadMessages(message.id!);
   }
 
   closeThread() {
