@@ -105,6 +105,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private gapLoadingStates: Map<string, boolean> = new Map();
   public isLoadingSpecificMessage: boolean = false;
   public loadingMessageId?: number;
+  private scannedRanges: Array<{minId: number, maxId: number}> = [];
 
   constructor(
     public chatService: ChatService,
@@ -558,8 +559,13 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(this.chatService.getMessages(oldestId, this.limit, "desc"));
-      if (response && response.length > 0) {
-        const newMessages = response.filter(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        // Save scanned range from metadata
+        if (response.metadata?.scannedRange) {
+          this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
+        }
+
+        const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             return true;
@@ -568,7 +574,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.messages.push(...newMessages);
-        this.hasOldMessages = response.length >= this.limit;
+        this.hasOldMessages = response.messages.length >= this.limit;
 
         const updatedValidIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
         if (updatedValidIds.length > 0) {
@@ -613,8 +619,13 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(this.chatService.getMessages(newestId, this.limit, "asc"));
-      if (response && response.length > 0) {
-        const newMessages = response.filter(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        // Save scanned range from metadata
+        if (response.metadata?.scannedRange) {
+          this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
+        }
+
+        const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             return true;
@@ -623,7 +634,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.messages.unshift(...newMessages.reverse());
-        this.hasNewMessages = response.length >= this.limit;
+        this.hasNewMessages = response.messages.length >= this.limit;
 
         setTimeout(() => {
           newMessages.forEach(msg => {
@@ -668,8 +679,13 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction));
       
-      if (response && response.length > 0) {
-        const newMessages = response.filter(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        // Save scanned range from metadata
+        if (response.metadata?.scannedRange) {
+          this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
+        }
+
+        const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             return true;
@@ -679,15 +695,15 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         if (opt.scrollDown) {
           this.messages.unshift(...newMessages.reverse());
-          this.hasNewMessages = response.length >= this.limit;
+          this.hasNewMessages = response.messages.length >= this.limit;
         } else {
-          if (this.messages.length === 0 && response.length > 0) {
+          if (this.messages.length === 0 && response.messages.length > 0) {
             // Initial load
             this.messages = newMessages;
           } else {
             this.messages.push(...newMessages);
           }
-          this.hasOldMessages = response.length >= this.limit;
+          this.hasOldMessages = response.messages.length >= this.limit;
         }
 
         const updatedValidIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
@@ -700,17 +716,17 @@ export class ChatComponent implements OnInit, OnDestroy {
       } else if (this.messages.length === 0) {
         // Fallback for empty initial load
         const fallbackResponse = await firstValueFrom(this.chatService.getMessages(0, this.limit, 'desc'));
-        if (fallbackResponse && fallbackResponse.length > 0) {
+        if (fallbackResponse && fallbackResponse.messages && fallbackResponse.messages.length > 0) {
           this.messageIds.clear();
-          fallbackResponse.forEach(msg => {
+          fallbackResponse.messages.forEach(msg => {
             if (msg.id) this.messageIds.add(msg.id);
           });
-          this.messages = fallbackResponse;
+          this.messages = fallbackResponse.messages;
           const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
           if (validIds.length > 0) {
             this.offset = Math.min(...validIds);
           }
-          this.hasOldMessages = fallbackResponse.length >= this.limit;
+          this.hasOldMessages = fallbackResponse.messages.length >= this.limit;
           this.hasNewMessages = false;
           this.updateMessageRanges();
         }
@@ -756,7 +772,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.chatService.getMessages(messageId + Math.floor(this.limit / 2), this.limit, "asc")
       );
 
-      if (response && response.length > 0) {
+      if (response && response.messages && response.messages.length > 0) {
+        // Save scanned range from metadata
+        if (response.metadata?.scannedRange) {
+          this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
+        }
+
         // Clear existing messages if loading a completely new range
         const shouldReset = this.messages.length === 0 || 
                            !this.isMessageInLoadedRanges(messageId);
@@ -767,7 +788,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
 
         // Add new messages
-        response.forEach(msg => {
+        response.messages.forEach(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             this.messages.push(msg);
@@ -867,6 +888,53 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.messageRanges = ranges;
   }
 
+  private addScannedRange(minId: number, maxId: number) {
+    // Add new scanned range and merge overlapping ranges
+    const newRange = { minId, maxId };
+    
+    // Check if this range overlaps with existing ranges
+    let merged = false;
+    for (let i = 0; i < this.scannedRanges.length; i++) {
+      const existing = this.scannedRanges[i];
+      
+      // Check if ranges overlap or are adjacent
+      if (maxId >= existing.minId - 1 && minId <= existing.maxId + 1) {
+        // Merge ranges
+        this.scannedRanges[i] = {
+          minId: Math.min(minId, existing.minId),
+          maxId: Math.max(maxId, existing.maxId)
+        };
+        merged = true;
+        break;
+      }
+    }
+    
+    if (!merged) {
+      this.scannedRanges.push(newRange);
+    }
+    
+    // Merge any now-overlapping ranges
+    this.scannedRanges.sort((a, b) => a.minId - b.minId);
+    for (let i = 0; i < this.scannedRanges.length - 1; i++) {
+      const current = this.scannedRanges[i];
+      const next = this.scannedRanges[i + 1];
+      
+      if (current.maxId >= next.minId - 1) {
+        // Merge
+        this.scannedRanges[i] = {
+          minId: current.minId,
+          maxId: Math.max(current.maxId, next.maxId)
+        };
+        this.scannedRanges.splice(i + 1, 1);
+        i--; // Check again from same position
+      }
+    }
+  }
+
+  private isIdInScannedRange(id: number): boolean {
+    return this.scannedRanges.some(range => id >= range.minId && id <= range.maxId);
+  }
+
   private detectAndCreateGaps() {
     this.messageGaps = [];
 
@@ -879,17 +947,34 @@ export class ChatComponent implements OnInit, OnDestroy {
       const currentRange = sortedRanges[i];
       const nextRange = sortedRanges[i + 1];
 
-      const gapSize = currentRange.end - nextRange.start - 1;
+      const gapStart = nextRange.start;
+      const gapEnd = currentRange.end;
+      const gapSize = gapEnd - gapStart - 1;
 
       if (gapSize > 0) {
-        const gapId = `gap-${nextRange.start}-${currentRange.end}`;
-        this.messageGaps.push({
-          id: gapId,
-          startId: nextRange.start,
-          endId: currentRange.end,
-          estimatedCount: gapSize,
-          isLoading: this.gapLoadingStates.get(gapId) || false
-        });
+        // Check if this gap was actually scanned by the server
+        // If all IDs in the gap are within scanned ranges, it's not a real gap
+        let isRealGap = false;
+        
+        for (let id = gapStart + 1; id < gapEnd; id++) {
+          if (!this.isIdInScannedRange(id)) {
+            // This ID was never scanned by the server, so it's a real gap
+            isRealGap = true;
+            break;
+          }
+        }
+
+        // Only show gap if it's a real gap (some IDs were never scanned)
+        if (isRealGap) {
+          const gapId = `gap-${gapStart}-${gapEnd}`;
+          this.messageGaps.push({
+            id: gapId,
+            startId: gapStart,
+            endId: gapEnd,
+            estimatedCount: gapSize,
+            isLoading: this.gapLoadingStates.get(gapId) || false
+          });
+        }
       }
     }
   }
@@ -912,8 +997,13 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.chatService.getMessages(middlePoint + Math.floor(this.limit / 2), this.limit, "asc")
       );
 
-      if (response && response.length > 0) {
-        response.forEach(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        // Save scanned range from metadata
+        if (response.metadata?.scannedRange) {
+          this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
+        }
+
+        response.messages.forEach(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             this.messages.push(msg);
