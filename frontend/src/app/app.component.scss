@@ -1,0 +1,36 @@
+.version-display {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 9999;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #666;
+  pointer-events: none;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    span {
+      opacity: 0.8;
+    }
+    
+    .separator {
+      opacity: 0.5;
+    }
+  }
+}
+
+// התאמה לערכת צבעים כהה
+@media (prefers-color-scheme: dark) {
+  .version-display {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #aaa;
+  }
+}

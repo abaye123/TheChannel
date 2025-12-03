@@ -20,7 +20,6 @@ import { SoundService } from '../../../services/sound.service';
 import { SearchService } from '../../../services/search.service';
 import { AdminPanelComponent } from "../../admin/admin-panel.component";
 import { User } from '../../../models/user.model';
-import { VersionService } from '../../../services/version.service';
 
 @Component({
   selector: 'app-channel-header',
@@ -54,7 +53,6 @@ export class ChannelHeaderComponent implements OnInit {
   userMenuTag = 'user-menu';
   userMenu: NbMenuItem[] = [];
   isSmallScreen = false;
-  versionInfo: { frontend: string; backend: string } = { frontend: '', backend: '' };
 
   constructor(
     public chatService: ChatService,
@@ -67,7 +65,6 @@ export class ChannelHeaderComponent implements OnInit {
     public soundService: SoundService,
     private searchService: SearchService,
     private dialogService: NbDialogService,
-    private versionService: VersionService,
   ) {
   }
 
@@ -86,10 +83,6 @@ export class ChannelHeaderComponent implements OnInit {
       .subscribe(value => {
         this.handleMenuClick(value.item);
       });
-
-    this.versionService.getVersionInfo().subscribe(info => {
-      this.versionInfo = info;
-    });
 
     this.updateScreenSize();
     this.updateUserMenu();

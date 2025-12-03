@@ -1,1 +1,9 @@
 <router-outlet></router-outlet>
+
+<div class="version-display" *ngIf="versionInfo.frontend && versionInfo.backend">
+    <small>
+        <span title="גרסה">FE: v{{ versionInfo.frontend }}</span>
+        <span class="separator">|</span>
+        <span title="גרסת שרת">BE: v{{ versionInfo.backend }}</span>
+    </small>
+</div>

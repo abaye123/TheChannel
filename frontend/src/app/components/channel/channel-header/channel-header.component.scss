@@ -126,27 +126,6 @@
     }
 }
 
-// === View versions ===
-.version-info {
-    flex-shrink: 0;
-    padding: 0 0.5rem;
-
-    .version-text {
-        color: #888;
-        font-size: 0.75rem;
-        white-space: nowrap;
-
-        span {
-            cursor: help;
-        }
-
-        .version-separator {
-            margin: 0 0.25rem;
-            color: #ccc;
-        }
-    }
-}
-
 // =========================================
 // Responsive adjustments
 // ===========================================
