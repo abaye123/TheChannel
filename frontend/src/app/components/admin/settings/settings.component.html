@@ -4,27 +4,34 @@
     </nb-card-header>
 
     <nb-card-body>
-        <div *ngFor="let setting of settings; let i = index" class="d-flex gap-2 mb-2">
-            <input nbInput fieldSize="small" type="text" [(ngModel)]="setting.key" placeholder="הגדרה">
-            <input nbInput fullWidth fieldSize="small" type="text" [(ngModel)]="setting.value" placeholder="ערך">
-
-            <button nbButton status="danger" size="small" (click)="removeSetting(i)">
-                <nb-icon icon="close"></nb-icon>
-                מחק
-            </button>
+        <div *ngIf="isLoading" class="text-center p-4">
+            <nb-spinner size="large" status="primary"></nb-spinner>
+            <p class="mt-2">טוען הגדרות...</p>
         </div>
-        <div>
-            <button nbButton size="small" status="primary" (click)="settings.push({ key: '', value: '' })">
-                <nb-icon icon="plus"></nb-icon>
-                הוסף הגדרה
-            </button>
 
+        <div *ngIf="!isLoading">
+            <div *ngFor="let setting of settings; let i = index" class="d-flex gap-2 mb-2">
+                <input nbInput fieldSize="small" type="text" [(ngModel)]="setting.key" placeholder="הגדרה" [disabled]="setInProgress">
+                <input nbInput fullWidth fieldSize="small" type="text" [(ngModel)]="setting.value" placeholder="ערך" [disabled]="setInProgress">
+
+                <button nbButton status="danger" size="small" (click)="removeSetting(i)" [disabled]="setInProgress">
+                    <nb-icon icon="close"></nb-icon>
+                    מחק
+                </button>
+            </div>
+            <div>
+                <button nbButton size="small" status="primary" (click)="settings.push({ key: '', value: '' })" [disabled]="setInProgress">
+                    <nb-icon icon="plus"></nb-icon>
+                    הוסף הגדרה
+                </button>
+            </div>
         </div>
     </nb-card-body>
 
     <nb-card-footer>
-        <button nbButton status="primary" (click)="saveSettings()" [disabled]="setInProgress">
-            שמור
+        <button nbButton status="primary" (click)="saveSettings()" [disabled]="isLoading || setInProgress">
+            <span *ngIf="!setInProgress">שמור</span>
+            <span *ngIf="setInProgress">שומר...</span>
         </button>
     </nb-card-footer>
 </nb-card>
