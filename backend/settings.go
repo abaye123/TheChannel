@@ -57,6 +57,9 @@ type SettingConfig struct {
 	AllowApiFileUpload          bool
 	ApiMaxFilesPerMessage       int64
 	ApiMaxFileSizePerFile       int64
+	GoogleChatWebhookEnabled    bool
+	GoogleChatWebhookURL        string
+	GoogleChatWebhookBaseURL    string
 }
 
 type Setting struct {
@@ -277,6 +280,15 @@ func (s *Settings) ToConfig() *SettingConfig {
 
 		case "hide_member_count_for_non_admins":
 			config.HideMemberCountForNonAdmins = setting.GetBool()
+
+		case "google_chat_webhook_enabled":
+			config.GoogleChatWebhookEnabled = setting.GetBool()
+
+		case "google_chat_webhook_url":
+			config.GoogleChatWebhookURL = setting.GetString()
+
+		case "google_chat_webhook_base_url":
+			config.GoogleChatWebhookBaseURL = setting.GetString()
 		}
 	}
 
