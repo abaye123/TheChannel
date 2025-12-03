@@ -117,8 +117,13 @@ export class ThreadInputComponent implements OnInit, OnDestroy {
             this.chatService.threadMessageEditObservable.subscribe((message?: ChatMessage) => {
                 if (message) {
                     this.startEditingMessage(message);
-                } else {
-                    this.cancelEditing();
+                } else if (this.isEditing) {
+                    // Clear editing state without calling cancelEditing() to avoid infinite loop
+                    this.editingMessage = undefined;
+                    this.isEditing = false;
+                    this.input = '';
+                    this.attachments = [];
+                    this.showMarkdownPreview = false;
                 }
             })
         );
