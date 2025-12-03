@@ -27,6 +27,8 @@ nb-layout-column.ad-column {
   flex-direction: column;
   justify-content: flex-end;
   transition: width 0.3s ease;
+  margin-left: var(--ad-margin, 0px);
+  margin-right: var(--ad-margin, 0px);
 
   &.with-thread {
     width: 33.333% !important;

@@ -63,7 +63,7 @@ export class ChannelComponent implements OnInit {
     private searchService: SearchService
   ) { }
 
-  ad: Ad = { src: '', width: 0 };
+  ad: Ad = { src: '', width: 0, margin: 0 };
   userInfo?: User;
 
   ngOnInit(): void {

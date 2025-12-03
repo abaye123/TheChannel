@@ -21,6 +21,7 @@ export class AdvertisingComponent {
     this._ad = ad;
     this.sayfeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ad.src);
     this.renderer.setStyle(document.getElementById('container'), '--ad-width', `${ad.width}px`, RendererStyleFlags2.DashCase);
+    this.renderer.setStyle(document.getElementById('container'), '--ad-margin', `${ad.margin}px`, RendererStyleFlags2.DashCase);
   }
 
   sayfeUrl: SafeResourceUrl = '';

@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 export interface Ad {
   src: string;
   width: number; // Width in pixels
+  margin: number; // Margin from screen edges in pixels
 }
 
 @Injectable({
