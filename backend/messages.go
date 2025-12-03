@@ -45,7 +45,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	messages, err := funcGetMessageRange(ctx, int64(offset), int64(limit), isAdmin, settingConfig.CountViews, isAuthenticated, isModerator, direction)
+	response, err := funcGetMessageRange(ctx, int64(offset), int64(limit), isAdmin, settingConfig.CountViews, isAuthenticated, isModerator, direction)
 	if err != nil {
 		log.Printf("Failed to get messages: %v\n", err)
 		http.Error(w, "error", http.StatusInternalServerError)
@@ -53,9 +53,9 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(messages)
+	json.NewEncoder(w).Encode(response)
 
-	addViewsToMessages(ctx, messages, userId)
+	addViewsToMessages(ctx, response.Messages, userId)
 }
 
 func getThreadRepliesHandler(w http.ResponseWriter, r *http.Request) {

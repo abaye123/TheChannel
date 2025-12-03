@@ -558,8 +558,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(this.chatService.getMessages(oldestId, this.limit, "desc"));
-      if (response && response.length > 0) {
-        const newMessages = response.filter(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             return true;
@@ -568,7 +568,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.messages.push(...newMessages);
-        this.hasOldMessages = response.length >= this.limit;
+        this.hasOldMessages = response.messages.length >= this.limit;
 
         const updatedValidIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
         if (updatedValidIds.length > 0) {
@@ -613,8 +613,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(this.chatService.getMessages(newestId, this.limit, "asc"));
-      if (response && response.length > 0) {
-        const newMessages = response.filter(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             return true;
@@ -623,7 +623,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.messages.unshift(...newMessages.reverse());
-        this.hasNewMessages = response.length >= this.limit;
+        this.hasNewMessages = response.messages.length >= this.limit;
 
         setTimeout(() => {
           newMessages.forEach(msg => {
@@ -668,8 +668,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction));
       
-      if (response && response.length > 0) {
-        const newMessages = response.filter(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             return true;
@@ -679,15 +679,15 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         if (opt.scrollDown) {
           this.messages.unshift(...newMessages.reverse());
-          this.hasNewMessages = response.length >= this.limit;
+          this.hasNewMessages = response.messages.length >= this.limit;
         } else {
-          if (this.messages.length === 0 && response.length > 0) {
+          if (this.messages.length === 0 && response.messages.length > 0) {
             // Initial load
             this.messages = newMessages;
           } else {
             this.messages.push(...newMessages);
           }
-          this.hasOldMessages = response.length >= this.limit;
+          this.hasOldMessages = response.messages.length >= this.limit;
         }
 
         const updatedValidIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
@@ -700,17 +700,17 @@ export class ChatComponent implements OnInit, OnDestroy {
       } else if (this.messages.length === 0) {
         // Fallback for empty initial load
         const fallbackResponse = await firstValueFrom(this.chatService.getMessages(0, this.limit, 'desc'));
-        if (fallbackResponse && fallbackResponse.length > 0) {
+        if (fallbackResponse && fallbackResponse.messages && fallbackResponse.messages.length > 0) {
           this.messageIds.clear();
-          fallbackResponse.forEach(msg => {
+          fallbackResponse.messages.forEach(msg => {
             if (msg.id) this.messageIds.add(msg.id);
           });
-          this.messages = fallbackResponse;
+          this.messages = fallbackResponse.messages;
           const validIds = this.messages.map(m => m.id).filter(id => id !== undefined) as number[];
           if (validIds.length > 0) {
             this.offset = Math.min(...validIds);
           }
-          this.hasOldMessages = fallbackResponse.length >= this.limit;
+          this.hasOldMessages = fallbackResponse.messages.length >= this.limit;
           this.hasNewMessages = false;
           this.updateMessageRanges();
         }
@@ -756,7 +756,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.chatService.getMessages(messageId + Math.floor(this.limit / 2), this.limit, "asc")
       );
 
-      if (response && response.length > 0) {
+      if (response && response.messages && response.messages.length > 0) {
         // Clear existing messages if loading a completely new range
         const shouldReset = this.messages.length === 0 || 
                            !this.isMessageInLoadedRanges(messageId);
@@ -767,7 +767,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
 
         // Add new messages
-        response.forEach(msg => {
+        response.messages.forEach(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             this.messages.push(msg);
@@ -912,8 +912,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.chatService.getMessages(middlePoint + Math.floor(this.limit / 2), this.limit, "asc")
       );
 
-      if (response && response.length > 0) {
-        response.forEach(msg => {
+      if (response && response.messages && response.messages.length > 0) {
+        response.messages.forEach(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
             this.messages.push(msg);

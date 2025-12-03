@@ -22,10 +22,24 @@ export interface ChatMessage {
   replyTo?: number;
   isThread?: boolean;
   originalMessage?: ChatMessage;
-  threadCount?: number; // הוספה חדשה
+  threadCount?: number;
 }
 
-export type ChatResponse = ChatMessage[];
+export interface MessageMetadata {
+  scannedRange: {
+    minId: number;
+    maxId: number;
+  };
+  requestedStart: number;
+  direction: string;
+}
+
+export interface MessagesResponse {
+  messages: ChatMessage[];
+  metadata: MessageMetadata;
+}
+
+export type ChatResponse = MessagesResponse;
 
 export interface ChatFile {
   url: string;
