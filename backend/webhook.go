@@ -102,7 +102,7 @@ type GoogleChatMessage struct {
 }
 
 type GoogleChatThread struct {
-	Name string `json:"name"`
+	ThreadKey string `json:"threadKey,omitempty"`
 }
 
 func sendGoogleChatWebhook(ctx context.Context, message Message) {
@@ -114,10 +114,12 @@ func sendGoogleChatWebhook(ctx context.Context, message Message) {
 
 	// Handle threading for replies
 	if message.ReplyTo > 0 {
-		// Use the parent message ID as the thread name
-		threadName := fmt.Sprintf("thread_%d", message.ReplyTo)
+		// Use the parent message ID as the thread key
+		// threadKey is a custom identifier that creates a new thread if it doesn't exist
+		// or uses an existing one if it does
+		threadKey := fmt.Sprintf("thread_%d", message.ReplyTo)
 		payload.Thread = &GoogleChatThread{
-			Name: threadName,
+			ThreadKey: threadKey,
 		}
 	}
 
