@@ -36,6 +36,20 @@ type Message struct {
 	ThreadCount     int          `json:"threadCount,omitempty" redis:"-"`
 }
 
+type MessageMetadata struct {
+	ScannedRange struct {
+		MinID int `json:"minId"`
+		MaxID int `json:"maxId"`
+	} `json:"scannedRange"`
+	RequestedStart int    `json:"requestedStart"`
+	Direction      string `json:"direction"`
+}
+
+type MessagesResponse struct {
+	Messages []Message       `json:"messages"`
+	Metadata MessageMetadata `json:"metadata"`
+}
+
 type User struct {
 	ID         string     `json:"id"`
 	Username   string     `json:"username"`
@@ -306,6 +320,10 @@ var getMessageRange = redis.NewScript(`
 	end
 
 	local messages = {}
+	local scanned_message_ids = {}
+	local min_scanned_id = nil
+	local max_scanned_id = nil
+	
 	repeat
 		local batch_size = required_length - #messages
 		local stop_index = start_index + batch_size
@@ -322,7 +340,19 @@ var getMessageRange = redis.NewScript(`
 		end
 
 		for i, message_key in ipairs(message_ids) do
-			local messageId = string.match(message_key, '%d+')
+			local messageId = tonumber(string.match(message_key, '%d+'))
+			
+			-- Track all scanned message IDs
+			if messageId then
+				table.insert(scanned_message_ids, messageId)
+				if not min_scanned_id or messageId < min_scanned_id then
+					min_scanned_id = messageId
+				end
+				if not max_scanned_id or messageId > max_scanned_id then
+					max_scanned_id = messageId
+				end
+			end
+			
 			local message_data = redis.call('HGETALL', message_key)
 			local message = parseMessageData(message_data, messageId)
 	
@@ -344,10 +374,23 @@ var getMessageRange = redis.NewScript(`
 
 	until #messages >= required_length
 
-	return cjson.encode(messages)
+	-- Build result with metadata
+	local result = {
+		messages = messages,
+		metadata = {
+			scannedRange = {
+				minId = min_scanned_id,
+				maxId = max_scanned_id
+			},
+			requestedStart = tonumber(string.match(offset_key, '%d+')),
+			direction = direction
+		}
+	}
+
+	return cjson.encode(result)
 `)
 
-func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool, isModerator bool, direction string) ([]Message, error) {
+func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countViews, isAuthenticated bool, isModerator bool, direction string) (MessagesResponse, error) {
 	offsetKeyName := fmt.Sprintf("messages:%d", start)
 	res, err := getMessageRange.Run(ctx, rdb, []string{"m_times:1", offsetKeyName}, []string{
 		strconv.FormatInt(stop, 10),
@@ -363,20 +406,20 @@ func funcGetMessageRange(ctx context.Context, start, stop int64, isAdmin, countV
 	}).Result()
 
 	if err != nil {
-		return []Message{}, err
+		return MessagesResponse{}, err
 	}
 
 	if res == "{}" {
-		return []Message{}, nil
+		return MessagesResponse{}, nil
 	}
 
-	var messages []Message
+	var response MessagesResponse
 	resStr, _ := dyno.GetString(res)
-	if err := json.Unmarshal([]byte(resStr), &messages); err != nil {
-		return []Message{}, err
+	if err := json.Unmarshal([]byte(resStr), &response); err != nil {
+		return MessagesResponse{}, err
 	}
 
-	return messages, nil
+	return response, nil
 }
 
 var sumMessageReactions = redis.NewScript(`
