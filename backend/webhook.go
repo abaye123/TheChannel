@@ -69,13 +69,31 @@ func sendStandardWebhook(ctx context.Context, action string, message Message) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Error sending webhook: %v\n", err)
+		log.Printf("❌ Error sending webhook to %s: %v\n", settingConfig.WebhookURL, err)
 		return
 	}
 	defer resp.Body.Close()
 
-	log.Printf("Sent webhook for action '%s' on message %d. Response code: %d\n",
-		action, message.ID, resp.StatusCode)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		log.Printf("✓ Webhook sent successfully for action '%s' on message %d. Response code: %d\n",
+			action, message.ID, resp.StatusCode)
+	} else {
+		// Read response body for error details
+		bodyBytes := make([]byte, 1024)
+		n, _ := resp.Body.Read(bodyBytes)
+		bodyText := string(bodyBytes[:n])
+
+		log.Printf("❌ Webhook FAILED for action '%s' on message %d\n"+
+			"   URL: %s\n"+
+			"   Status Code: %d %s\n"+
+			"   Response Body: %s\n"+
+			"   Payload: %s\n",
+			action, message.ID,
+			settingConfig.WebhookURL,
+			resp.StatusCode, http.StatusText(resp.StatusCode),
+			bodyText,
+			string(jsonData))
+	}
 }
 
 type GoogleChatMessage struct {
@@ -129,13 +147,31 @@ func sendGoogleChatWebhook(ctx context.Context, message Message) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Error sending Google Chat webhook: %v\n", err)
+		log.Printf("❌ Error sending Google Chat webhook to %s: %v\n", settingConfig.GoogleChatWebhookURL, err)
 		return
 	}
 	defer resp.Body.Close()
 
-	log.Printf("Sent Google Chat webhook for message %d. Response code: %d\n",
-		message.ID, resp.StatusCode)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		log.Printf("✓ Google Chat webhook sent successfully for message %d. Response code: %d\n",
+			message.ID, resp.StatusCode)
+	} else {
+		// Read response body for error details
+		bodyBytes := make([]byte, 1024)
+		n, _ := resp.Body.Read(bodyBytes)
+		bodyText := string(bodyBytes[:n])
+
+		log.Printf("❌ Google Chat webhook FAILED for message %d\n"+
+			"   URL: %s\n"+
+			"   Status Code: %d %s\n"+
+			"   Response Body: %s\n"+
+			"   Payload: %s\n",
+			message.ID,
+			settingConfig.GoogleChatWebhookURL,
+			resp.StatusCode, http.StatusText(resp.StatusCode),
+			bodyText,
+			string(jsonData))
+	}
 }
 
 func formatGoogleChatMessage(message Message) string {
