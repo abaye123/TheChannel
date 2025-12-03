@@ -132,7 +132,13 @@ func sendGoogleChatWebhook(ctx context.Context, message Message) {
 	httpCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(httpCtx, "POST", settingConfig.GoogleChatWebhookURL, bytes.NewBuffer(jsonData))
+	// Build the URL with messageReplyOption if we have a thread
+	webhookURL := settingConfig.GoogleChatWebhookURL
+	if message.ReplyTo > 0 {
+		webhookURL += "&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
+	}
+
+	req, err := http.NewRequestWithContext(httpCtx, "POST", webhookURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("Error creating Google Chat webhook request: %v\n", err)
 		return
