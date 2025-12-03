@@ -53,7 +53,6 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscriptions.push(
       this.chatService.threadVisibleObservable.subscribe((visible: boolean) => {
-        console.log('Thread visibility changed:', visible);
         this.isVisible = visible;
         this.cdr.detectChanges();
       })
@@ -61,7 +60,6 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.chatService.currentThreadMessageObservable.subscribe((message: ChatMessage | undefined) => {
-        console.log('Thread message changed:', message);
         this.threadMessage = message;
         if (message?.id) {
           this.loadThreadReplies(message.id);
@@ -74,7 +72,6 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.chatService.threadMessagesObservable.subscribe((messages: ChatMessage[]) => {
-        console.log('Thread replies updated:', messages);
         this.threadReplies = messages;
         this.markThreadAsReadIfVisible();
         this.cdr.detectChanges();
@@ -93,7 +90,6 @@ export class ThreadPanelComponent implements OnInit, OnDestroy {
   }
 
   closeThread() {
-    console.log('Closing thread');
     this.chatService.closeThread();
   }
 

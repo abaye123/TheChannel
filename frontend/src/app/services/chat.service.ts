@@ -207,10 +207,8 @@ export class ChatService {
   }
 
   openThread(message: ChatMessage) {
-    console.log('ChatService: Opening thread for message', message);
     this.currentThreadMessage.next(message);
     this.threadVisible.next(true);
-    console.log('ChatService: Thread visibility set to true');
     this.loadThreadMessages(message.id!);
   }
 
