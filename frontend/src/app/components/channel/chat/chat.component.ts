@@ -560,11 +560,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     try {
       const response = await firstValueFrom(this.chatService.getMessages(oldestId, this.limit, "desc"));
       if (response && response.messages && response.messages.length > 0) {
+<<<<<<< HEAD
         // Save scanned range from metadata
         if (response.metadata?.scannedRange) {
           this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
         }
 
+=======
+>>>>>>> 151354554179a6cbbc47b3d32c9ff22cf307f4af
         const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
@@ -620,11 +623,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     try {
       const response = await firstValueFrom(this.chatService.getMessages(newestId, this.limit, "asc"));
       if (response && response.messages && response.messages.length > 0) {
+<<<<<<< HEAD
         // Save scanned range from metadata
         if (response.metadata?.scannedRange) {
           this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
         }
 
+=======
+>>>>>>> 151354554179a6cbbc47b3d32c9ff22cf307f4af
         const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
@@ -680,11 +686,14 @@ export class ChatComponent implements OnInit, OnDestroy {
       const response = await firstValueFrom(this.chatService.getMessages(startId, this.limit, direction));
       
       if (response && response.messages && response.messages.length > 0) {
+<<<<<<< HEAD
         // Save scanned range from metadata
         if (response.metadata?.scannedRange) {
           this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
         }
 
+=======
+>>>>>>> 151354554179a6cbbc47b3d32c9ff22cf307f4af
         const newMessages = response.messages.filter(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
@@ -773,11 +782,14 @@ export class ChatComponent implements OnInit, OnDestroy {
       );
 
       if (response && response.messages && response.messages.length > 0) {
+<<<<<<< HEAD
         // Save scanned range from metadata
         if (response.metadata?.scannedRange) {
           this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
         }
 
+=======
+>>>>>>> 151354554179a6cbbc47b3d32c9ff22cf307f4af
         // Clear existing messages if loading a completely new range
         const shouldReset = this.messages.length === 0 || 
                            !this.isMessageInLoadedRanges(messageId);
@@ -998,11 +1010,14 @@ export class ChatComponent implements OnInit, OnDestroy {
       );
 
       if (response && response.messages && response.messages.length > 0) {
+<<<<<<< HEAD
         // Save scanned range from metadata
         if (response.metadata?.scannedRange) {
           this.addScannedRange(response.metadata.scannedRange.minId, response.metadata.scannedRange.maxId);
         }
 
+=======
+>>>>>>> 151354554179a6cbbc47b3d32c9ff22cf307f4af
         response.messages.forEach(msg => {
           if (msg.id && !this.messageIds.has(msg.id)) {
             this.messageIds.add(msg.id);
