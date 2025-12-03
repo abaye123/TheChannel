@@ -1,12 +1,9 @@
 .version-display {
   position: fixed;
-  bottom: 10px;
-  left: 10px;
+  bottom: 0px;
+  left: 8px;
   z-index: 9999;
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: #666;
   pointer-events: none;
   user-select: none;
@@ -27,7 +24,6 @@
   }
 }
 
-// התאמה לערכת צבעים כהה
 @media (prefers-color-scheme: dark) {
   .version-display {
     background-color: rgba(0, 0, 0, 0.85);
