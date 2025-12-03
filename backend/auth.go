@@ -62,54 +62,54 @@ func getGoogleAuthValues(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	defer r.Body.Close()
-    var auth Auth
+	var auth Auth
 
-    if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
 		go saveLoginFailedLog("Decode", err)
-        http.Error(w, "error", http.StatusBadRequest)
+		http.Error(w, "error", http.StatusBadRequest)
 		return
-    }
+	}
 
-    if auth.Code == "" {
+	if auth.Code == "" {
 		go saveLoginFailedLog("Decode", errors.New("invalid credentials"))
-        http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-        return
-    }
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
 
-    origin := r.Header.Get("Origin")
-    var googleOAuthConfig = &oauth2.Config{
-        ClientID:     googleOAuthClientId,
-        ClientSecret: googleOAuthClientSecret,
-        RedirectURL:  origin + "/login",
-        Endpoint:     google.Endpoint,
-    }
+	origin := r.Header.Get("Origin")
+	var googleOAuthConfig = &oauth2.Config{
+		ClientID:     googleOAuthClientId,
+		ClientSecret: googleOAuthClientSecret,
+		RedirectURL:  origin + "/login",
+		Endpoint:     google.Endpoint,
+	}
 
-    token, err := googleOAuthConfig.Exchange(ctx, auth.Code)
-    if err != nil {
+	token, err := googleOAuthConfig.Exchange(ctx, auth.Code)
+	if err != nil {
 		go saveLoginFailedLog("Exchange", err)
-        http.Error(w, "error", http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
 
-    if !token.Valid() {
+	if !token.Valid() {
 		go saveLoginFailedLog("Invalid token", nil)
-        http.Error(w, "Invalid token", http.StatusUnauthorized)
-        return
-    }
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
 
-    var claims jwt.MapClaims
+	var claims jwt.MapClaims
 	tokenStr, _ := dyno.GetString(token.Extra("id_token"))
 	_, _, err = jwt.NewParser().ParseUnverified(tokenStr, &claims)
 	if err != nil {
 		go saveLoginFailedLog("ParseUnverified", err)
-        http.Error(w, "error", http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
 
-    email, _ := dyno.GetString(claims["email"])
+	email, _ := dyno.GetString(claims["email"])
 
 	if settingConfig.AllowOnlyExistingUsers {
 		if _, ok := privilegesUsers.Load(email); !ok {
@@ -121,42 +121,42 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	go registeringEmail(email)
 
-    u, err := getUser(ctx, claims)
-    if err != nil {
+	u, err := getUser(ctx, claims)
+	if err != nil {
 		go saveLoginFailedLog("getUser", err)
-        http.Error(w, "error", http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
 
-    if u.Blocked {
+	if u.Blocked {
 		go saveLoginFailedLog("blocked", err)
-        http.Error(w, "User is blocked", http.StatusForbidden)
-        return
-    }
+		http.Error(w, "User is blocked", http.StatusForbidden)
+		return
+	}
 	picture, _ := dyno.GetString(claims["picture"])
-    userSession := Session{
-        ID:         u.ID,
-        Username:   u.Username,
-        PublicName: u.PublicName,
-        Picture:    picture,
-        Privileges: u.Privileges,
-        Blocked:    u.Blocked,
+	userSession := Session{
+		ID:         u.ID,
+		Username:   u.Username,
+		PublicName: u.PublicName,
+		Picture:    picture,
+		Privileges: u.Privileges,
+		Blocked:    u.Blocked,
 		Email:      u.Email,
-    }
+	}
 
-    session, _ := store.Get(r, cookieName)
-    session.Values["user"] = userSession
-    session.Options.MaxAge = 60 * 60 * 24 * 30 // 30 days
-    if err := session.Save(r, w); err != nil {
+	session, _ := store.Get(r, cookieName)
+	session.Values["user"] = userSession
+	session.Options.MaxAge = 60 * 60 * 24 * 30 // 30 days
+	if err := session.Save(r, w); err != nil {
 		go saveLoginFailedLog("sessionSave", err)
-        http.Error(w, "error", http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
 
-    w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-    response := Response{Success: true}
-    json.NewEncoder(w).Encode(response)
+	response := Response{Success: true}
+	json.NewEncoder(w).Encode(response)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
@@ -176,22 +176,32 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func checkLogin(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        session, _ := store.Get(r, cookieName)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, cookieName)
 
-        userSession, ok := session.Values["user"].(Session)
-        if !ok {
-            http.Error(w, "User not authenticated", http.StatusUnauthorized)
-            return
-        }
+		userSession, ok := session.Values["user"].(Session)
+		if !ok {
+			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			return
+		}
 
-        if userSession.Blocked {
-            http.Error(w, "User is blocked", http.StatusForbidden)
-            return
-        }
+		if userSession.Blocked {
+			http.Error(w, "User is blocked", http.StatusForbidden)
+			return
+		}
 
-        next.ServeHTTP(w, r)
-    })
+		// Convert Session to User and set in context
+		user := &User{
+			ID:         userSession.ID,
+			Username:   userSession.Username,
+			Email:      userSession.Email,
+			PublicName: userSession.PublicName,
+			Privileges: userSession.Privileges,
+			Blocked:    userSession.Blocked,
+		}
+		ctx := context.WithValue(r.Context(), "user", user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func checkPrivilege(r *http.Request, privilege Privilege) bool {
@@ -228,43 +238,43 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 		return nil, errors.New("name not found in claims")
 	}
 	id, _ := claims.GetSubject() // Google user ID
-	
+
 	if v, ok := privilegesUsers.Load(email); ok {
 		user = v.(User)
-		
+
 		if user.Deleted {
 			if settingConfig.AllowOnlyExistingUsers {
 				return nil, errors.New("user account was deleted and cannot be restored")
 			}
-			
+
 			privileges := Privileges{}
 			if settingConfig.AutoGrantWriterPrivilege {
 				privileges[Writer] = true
 			}
-			
+
 			user = User{
 				ID:         id,
-				Username: 	name,
+				Username:   name,
 				Email:      email,
 				PublicName: name,
 				Privileges: privileges,
 				Blocked:    false,
 				Deleted:    false, // Remove the mark as deleted
 			}
-			
+
 			privilegesUsers.Store(email, user)
 			users, err := dbGetUsersList(ctx)
 			if err != nil && err != redis.Nil {
 				return nil, err
 			}
-			
+
 			for i, u := range users {
 				if u.Email == email {
 					users[i] = user
 					break
 				}
 			}
-			
+
 			if err := dbSetUsersList(ctx, users); err != nil {
 				return nil, err
 			}
@@ -282,7 +292,7 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 				user.PublicName = name
 				updated = true
 			}
-			
+
 			if updated {
 				privilegesUsers.Store(email, user)
 				users, err := dbGetUsersList(ctx)
@@ -304,33 +314,33 @@ func getUser(ctx context.Context, claims jwt.MapClaims) (*User, error) {
 		if settingConfig.AllowOnlyExistingUsers {
 			return nil, errors.New("user not registered in system")
 		}
-		
+
 		privileges := Privileges{}
 		if settingConfig.AutoGrantWriterPrivilege {
 			privileges[Writer] = true
 		}
-		
+
 		user = User{
 			ID:         id,
-			Username: 	name,
+			Username:   name,
 			Email:      email,
 			PublicName: name,
 			Privileges: privileges,
 			Blocked:    false,
 			Deleted:    false,
 		}
-		
+
 		privilegesUsers.Store(email, user)
 		users, err := dbGetUsersList(ctx)
 		if err != nil && err != redis.Nil {
 			return nil, err
 		}
-		
+
 		users = append(users, user)
 		if err := dbSetUsersList(ctx, users); err != nil {
 			return nil, err
 		}
 	}
-	
+
 	return &user, nil
 }

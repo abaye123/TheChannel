@@ -60,7 +60,7 @@ func getChannelInfo(w http.ResponseWriter, r *http.Request) {
 	channel.HideMemberCountForNonAdmins = settingConfig.HideMemberCountForNonAdmins
 
 	// Check if user is admin
-	user := r.Context().Value("user").(*User)
+	user, _ := r.Context().Value("user").(*User)
 	isAdmin := user != nil && user.Privileges != nil && user.Privileges["admin"]
 
 	// Set Views based on user's admin status and setting
