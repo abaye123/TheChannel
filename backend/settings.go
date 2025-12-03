@@ -54,6 +54,9 @@ type SettingConfig struct {
 	MessageSignature            string
 	SharingCookies              string
 	HideMemberCountForNonAdmins bool
+	AllowApiFileUpload          bool
+	ApiMaxFilesPerMessage       int64
+	ApiMaxFileSizePerFile       int64
 }
 
 type Setting struct {
@@ -92,6 +95,27 @@ func (s *Settings) ToConfig() *SettingConfig {
 	config.ThreadsEnabled = false
 	config.MessageSignature = ""
 	config.AllowOnlyExistingUsers = false
+
+	// Load API file upload settings from ENV only
+	if allowUpload := os.Getenv("ALLOW_API_FILE_UPLOAD"); allowUpload == "true" {
+		config.AllowApiFileUpload = true
+	} else {
+		config.AllowApiFileUpload = false
+	}
+
+	config.ApiMaxFilesPerMessage = 5
+	if maxFiles := os.Getenv("API_MAX_FILES_PER_MESSAGE"); maxFiles != "" {
+		if parsed, err := strconv.ParseInt(maxFiles, 10, 64); err == nil && parsed > 0 {
+			config.ApiMaxFilesPerMessage = parsed
+		}
+	}
+
+	config.ApiMaxFileSizePerFile = 5
+	if maxSize := os.Getenv("API_MAX_FILE_SIZE_PER_FILE"); maxSize != "" {
+		if parsed, err := strconv.ParseInt(maxSize, 10, 64); err == nil && parsed > 0 {
+			config.ApiMaxFileSizePerFile = parsed
+		}
+	}
 
 	for _, setting := range *s {
 		switch setting.Key {

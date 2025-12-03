@@ -76,6 +76,8 @@ func main() {
 	// Protected with api key
 	// r.Post("/import/post", addNewPost)
 	r.Post("/api/import/post", addNewPost)
+	r.Post("/api/external/post", addNewPost)
+	r.Post("/api/external/post-with-files", addNewPostWithFiles)
 
 	r.Get("/auth/google", getGoogleAuthValues)
 	r.Post("/auth/login", login)
